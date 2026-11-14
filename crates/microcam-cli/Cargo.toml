@@ -1,0 +1,16 @@
+[package]
+name = "microcam-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CLI client of the microcamd control socket"
+
+[[bin]]
+name = "microcam"
+path = "src/main.rs"
+
+[dependencies]
+libc.workspace = true
+microcam-core = { path = "../microcam-core" }
+serde_json.workspace = true
+serde.workspace = true

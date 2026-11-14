@@ -1,0 +1,501 @@
+# Hardware and software map ‖ Карта железа и нашего софта
+# tab: Frames ‖ Кадры
+# languages: en ru
+...@_style
+# The YIZHAN 4K microscope camera (SigmaStar SSC8836 / Mercury6, GC8613 sensor): the SoC's blocks with their ports,
+# channels and layers, our software and the vendor's, and the paths the frames take between them, as microcamd builds
+# them now. Blocks are placed by hand (`top`/`left` of the top-level blocks, kept by TALA; inside a device its ports,
+# channels and layers stand in a grid). State: HDMI's frames from a canvas pool read by DISP; USB and the recording
+# readers of the pool whose frame is theirs, the photo during a recording a reader of the recording's pool for one canvas.
+vars: {
+  d2-config: {layout-engine: tala}
+  # what lives where: a memory block and the ports, blocks and arrows its buffers go through (the pointer over one
+  # lights the other; tools/scheme/README.md)
+  links: {
+    "mem.pool": "cv; scl.d0.p0; scl.d0.p0 -> disp.d0.l0.p0; scl.d0.p0 -> venc.j.c0; scl.d0.p0 -> venc.h.c1; scl.d0.p0 -> venc.j.c2"
+    "mem.jring": "venc.j.c0; venc.j.c0 -> microcamd.pump"
+    "mem.codec": "venc.h"
+    "mem.own": "microcamd.ui; microcamd.res; ge; scl.d3; microcamd.res -> scl.d3; microcamd.ui -> ge; microcamd.ui -> scl.d3; ge -> rgn"
+    "mem.cmdq": "scl; disp"
+    "mem.misc": "isp; ge"
+  }
+  # what each arrow carries, how and who moves it (shown under the pointer; tools/scheme/README.md)
+  arrows: {
+    "vif.pads.p0 -> vif.d0.p0": "RAW10 lines from pad 0 into dev 0; by the hardware, every frame. [R] ‖ Строки RAW10 от площадки 0 в dev 0; железо само, каждый кадр. [R]"
+    "hdmitx -> monitor": "HDMI 1.4 signal to the monitor; by the hardware. [R][S] ‖ Сигнал HDMI 1.4 на монитор; железо само. [R][S]"
+    "venc.h.c0 -> microcamd.pump": "Compressed H.264 / H.265 frame (byte stream); uvc-pump takes it the same way as MJPEG. [R] ‖ Сжатый кадр H.264 / H.265 (поток байт); uvc-pump забирает его так же, как MJPEG. [R]"
+    "rgn -> gop.g2": "GOP 2 reads the canvases of the USB menu windows by DMA, every frame. [R] ‖ GOP 2 читает холсты окон меню USB по DMA каждый кадр. [R]"
+    "rgn -> gop.g3": "GOP 3 reads the canvases of the windows over the zoom frames by DMA, every frame. [R] ‖ GOP 3 читает холсты окон над кадрами зума по DMA каждый кадр. [R]"
+    "sensor -> vif.pads.p0": "RAW10 lines over MIPI CSI-2; by the hardware, every frame. [R] ‖ Строки RAW10 по MIPI CSI-2; железо само, каждый кадр. [R]"
+    "vif.d0.p0 -> isp.c0": "Lines with no memory (REALTIME, an MI_SYS bind); by the hardware. [R] ‖ Строки без памяти (REALTIME, привязка MI_SYS); железо само. [R]"
+    "isp.p0 -> scl.d0": "NV12 lines with no memory (REALTIME); by the hardware, every frame. [R] ‖ Строки NV12 без памяти (REALTIME); железо само, каждый кадр. [R]"
+    "scl.d0.p0 -> disp.d0.l0.p0": |md
+      HDMI frame. The port writes the live picture **straight into a canvas** of microcam_canvas (pool 2); DISP reads the whole canvas **by reference**, 1:1; no copy of the live picture. Pictures, black and the menu over them lie in the canvas beforehand (GE). canvases counted from what each reader holds and its rate: 5 for DISP alone at 30, 6 beside USB MJPEG 4K45 (one more with a picture pasted in); a closed frame: the port is off, 3 canvases, a canvas is handed on by the feed clock. [R]
+      ‖
+      Кадр HDMI. Порт пишет живое **прямо в холст** microcam_canvas (пул 2), DISP читает холст целиком **по ссылке**, 1:1; 0 копий живого. Картинки, чёрное и меню над ними лежат в холсте заранее (GE). холсты считаются из того, сколько каждый читатель держит холст, и его частоты: 5 для одного DISP на 30, 6 рядом с USB MJPEG 4K45 (на один больше при вклейке); закрытый кадр — порт выключен, 3 холста, холст отдаётся по часам подачи. [R]
+    |
+    "scl.d0.p0 -> venc.j.c0": |md
+      USB in the shared frame: when the USB frame equals the HDMI frame (size, menu level, crop, layout), the USB encoder is a **second reader** of the HDMI pool, by reference, at its own rate (it takes a canvas when the canvas's capture time reaches its next one); USB then has no port, pool, menu layer or bake of its own. The reader is added and removed with no HDMI step. [R]
+      ‖
+      USB в общем кадре: когда кадр USB равен кадру HDMI (размер, уровень меню, кроп, раскладка), кодер USB — **второй читатель** пула HDMI, по ссылке, со своей частотой (берёт холст, когда время кадра дошло до его следующего); своего порта, пула, слоя меню и запекания у USB нет. Читателя добавляют и снимают без шага HDMI. [R]
+    |
+    "scl.d0.p0 -> venc.h.c1": |md
+      Recording in the shared frame: when the recording frame equals the HDMI frame (size, what is shown, crop, layout), the H.264 encoder is one more reader of the HDMI pool, by reference, at its own rate; port 1, the recording pool and its menu layer are not built. At 4K beside DISP and USB JPEG: holds a canvas 29 ms, all canvases, 25 fps [R 2026-11-10]. Otherwise the USB frame, otherwise its own.
+      ‖
+      Запись в общем кадре: когда кадр записи равен кадру HDMI (размер, что показано, кроп, раскладка), кодер H.264 — ещё один читатель пула HDMI, по ссылке, со своей частотой; порт 1, пул записи и её слой меню не строятся. На 4K рядом с DISP и JPEG USB: держит холст 29 мс, все холсты, 25 к/с [R 2026-11-10]. Иначе — кадр USB, иначе свой.
+    |
+    "scl.d0.p0 -> venc.j.c2": "Photo during a recording: JPEG channel 2 is a reader of the pool the recording reads, handed one finished canvas; no copy. [R] ‖ Фото во время записи: JPEG-канал 2 — читатель пула, который читает запись, ему отдают один готовый холст; копии нет. [R]"
+    "dec.vdec -> scl.d1.c2": "While a file is shown: VDEC port 0 by an **MI_SYS bind** (FRAME_BASE) into the output's channel on SCL dev 1 — HDMI and, if USB has its own frame, channel 0; the output's SCL port 0 is silent. The menu: RGN on the channel's port. [R] ‖ Во время показа файла: порт 0 VDEC по **привязке MI_SYS** (FRAME_BASE) в канал выхода на SCL dev 1 — HDMI и, если у USB свой кадр, канал 0; порт SCL 0 выхода молчит. Меню — RGN на порту канала. [R]"
+    "scl.d0.p0 -> scl.d1.c2": "HDMI zoom (and a 16:10 / 4:3 screen at 2160p): the port's crop by an MI_SYS bind through memory → the zoom scaler, whose output writes into the canvases of pool 2. +17 ms at 4K. [R] ‖ При зуме HDMI (и экране 16:10 / 4:3 на 2160p): кроп порта по привязке MI_SYS в память → масштабатор зума, его выход пишет в холсты пула 2. +17 мс на 4K. [R]"
+    "scl.d0.p2 -> venc.j.c0": |md
+      USB frame. The port writes the live picture **straight into a canvas** of microcam_canvas (a window in the canvas or the whole canvas); the encoder takes the whole canvas **by reference**; no copy of the live picture. Pictures, black and the menu over them lie in the canvas beforehand (GE). canvases counted as for HDMI: 3 at 4K45 (one more with a picture pasted in); a closed frame: the port is off, a canvas is handed on by the feed clock. When the USB frame equals the HDMI frame, this port and pool are not built: the encoder reads the HDMI pool. [R]
+      ‖
+      Кадр USB. Порт пишет живое **прямо в холст** microcam_canvas (окно в холсте или весь холст), кодер берёт холст целиком **по ссылке**; 0 копий живого. Картинки, чёрное и меню над ними лежат в холсте заранее (GE). холсты считаются как у HDMI: 3 при 4K45 (на один больше при вклейке); закрытый кадр — порт выключен, холст отдаётся по часам подачи. Когда кадр USB равен кадру HDMI, этот порт и пул не строятся: кодер читает пул HDMI. [R]
+    |
+    "scl.d0.p2 -> venc.h.c0": "USB frame in H.264/H.265 when it holds only the live picture with no zoom: the port is **tied to the encoder by a ring** (HW_RING, a one-frame ring, 11.9 MB at 4K); the encoder reads the bands right behind the writing — the stream ~1 ms after the last line. Otherwise canvases, as for MJPEG. [R] ‖ Кадр USB в H.264/H.265, когда в нём только живая картинка без зума: порт **связан с кодером кольцом** (HW_RING, кольцо на один кадр, 11,9 МБ при 4K), кодер читает полосы сразу за записью — поток через ~1 мс после последней строки. Иначе — холсты, как MJPEG. [R]"
+    "scl.d0.p1 -> venc.h.c1": "Recording frame when it is its own (equal to neither the HDMI nor the USB frame). The port writes **straight into a canvas** of microcam_canvas; the H.264 encoder takes the whole canvas by reference; no copy; canvases counted as for HDMI: 4 at 4K25. [R] ‖ Кадр записи, когда он свой (не равен кадру HDMI или USB). Порт пишет **прямо в холст** microcam_canvas, кодер H.264 берёт холст целиком по ссылке; 0 копий; холсты считаются как у HDMI: 4 при 4K25. [R]"
+    "scl.d0.p1 -> venc.j.c1": "Photo: the port's frame, composed for the shot together with the menu (GOP); feed hands it to the JPEG encoder; no copy, one frame. [R] ‖ Фото: кадр порта, собранный для снимка вместе с меню (GOP), feed отдаёт его JPEG-энкодеру; 0 копий, один кадр. [R]"
+    "scl.d0.p2 -> scl.d1.c0": "Zoom: the port's crop by an **MI_SYS bind** through memory (FRAME_BASE) → the zoom scaler; MI_SYS moves it. From there feed hands its frame to the encoder. [R] ‖ При зуме: кроп порта по **привязке MI_SYS** в память (FRAME_BASE) → масштабатор зума; двигает MI_SYS. Дальше в энкодер его кадр отдаёт feed. [R]"
+    "scl.d0.p1 -> scl.d1.c1": "Zoom: the same for the recording — an MI_SYS bind through memory. [R] ‖ При зуме: то же для записи — привязка MI_SYS по памяти. [R]"
+    "disp.d0 -> hdmitx": "DISP0's scan-out into HDMI-TX, line by line; by the hardware. [R] ‖ Развёртка DISP0 в HDMI-TX строками; железо само. [R]"
+    "venc.j.c0 -> microcamd.pump": "Compressed frame (byte stream). uvc-pump takes it as soon as it is ready and puts it into a free gadget buffer; when a newer one is ready, the older is dropped. [R] ‖ Сжатый кадр (поток байт). uvc-pump забирает его, как только готов, и кладёт в свободный буфер гаджета; новее готов — старый теряется. [R]"
+    "microcamd.pump -> gadget": "Gadget buffers; every frame. [R] ‖ Буферы гаджета; каждый кадр. [R]"
+    "gadget -> host": "USB 2.0, isochronous. [R] ‖ USB 2.0, изохронно. [R]"
+    "venc.h.c1 -> microcamd.recorder": "H.264 stream; recorder writes MP4. [R] ‖ Поток H.264; recorder пишет MP4. [R]"
+    "venc.j.c1 -> microcamd.recorder": "JPEG photo. [R] ‖ JPEG фото. [R]"
+    "venc.j.c2 -> microcamd.recorder": "JPEG photo during a recording. [R] ‖ JPEG фото во время записи. [R]"
+    "microcamd.recorder -> sd": "MP4 / JPEG files. [R] ‖ Файлы MP4 / JPEG. [R]"
+    "sd -> gadget": "The whole card (/dev/mmcblk0) as the host's removable disk (a mass-storage LUN), on the command `card share`; meanwhile it is not mounted on the camera, photo and recording are refused. Back: `card take` or ejecting it on the host. [R] ‖ Карта целиком (/dev/mmcblk0) — съёмный диск хоста (LUN накопителя), по команде `card share`; на камере она в это время не смонтирована, фото и запись отказаны. Обратно — `card take` или извлечение на хосте. [R]"
+    "microcamd.card -> sd": "Mounts the card on /mnt when it is inserted, lets it go when it is removed (kernel events); with the card removed it stops the recording and the player. [R] ‖ Монтирует карту на /mnt, когда она вставлена, отпускает, когда вынута (события ядра); при вынутой карте останавливает запись и плеер. [R]"
+    "microcamd.res -> scl.d3": "Decoded NV12 picture in the media heap (the menu's budget); one for all outputs, held while the scene shows it. [R] ‖ Распакованная картинка NV12 в медиакуче (бюджет меню); одна на все выходы, держится, пока сцена её показывает. [R]"
+    "ge -> cv": "GE puts into the outputs' canvases (HDMI, USB, recording) the pictures (scaled once by SCL dev 3), black and the menu over the pictures; on a change of layout or menu; with a picture over the live one, every frame. [R] ‖ GE кладёт в холсты выходов (HDMI, USB, запись) картинки (их SCL dev 3 масштабирует один раз), чёрное и меню над картинками; при смене раскладки и меню; при картинке поверх живого — каждый кадр. [R]"
+    "microcamd.ui -> ge": "ui calls GE: tiles → each output's windows; at every change of the menu. [R] ‖ ui зовёт GE: тайлы → окна каждого выхода; при каждом изменении меню. [R]"
+    "microcamd.ui -> scl.d3": "Baking the menu over the pictures of each still frame, HDMI too, once for the outputs showing the same: SCL dev 3 turns a band of the NV12 picture into ARGB8888 and back into an NV12 patch, GE between them lays the menu as in an RGN layer (4 bits); called from the ui thread, synchronous, at every change of the menu over pictures. [R] ‖ Запекание меню над картинками каждого стоп-кадра, HDMI тоже, один раз на выходы, показывающие один и тот же: SCL dev 3 переводит полосу картинки NV12 → ARGB8888 и обратно в заплатку NV12, GE между ними кладёт меню как в слое RGN (4 бита); вызов из потока ui, синхронный, при каждом изменении меню над картинками. [R]"
+    "ge -> rgn": "GE writes the menu windows into microcam_rgn canvases (ARGB4444), 2–3 per window; on a change. [R] ‖ GE пишет окна меню в холсты microcam_rgn (ARGB4444), 2–3 на окно; при изменении. [R]"
+    "rgn -> gop.g1": "GOP reads the canvases by DMA, every frame. [R] ‖ GOP читает холсты DMA каждый кадр. [R]"
+    "rgn -> gop.g0": "GOP 0 reads the canvases of the HDMI menu windows by DMA, every frame. [R] ‖ GOP 0 читает холсты окон меню HDMI по DMA каждый кадр. [R]"
+    "gop.g0 -> scl.d0.p0": "The menu is blended into the HDMI frame over the live window while the scaler writes it; over pictures the menu is baked into the canvas. [R] ‖ Меню смешивается с кадром HDMI над живым окном, пока масштабатор его пишет; над картинками меню запечено в холст. [R]"
+    "gop.g1 -> scl.d0.p1": "The menu is blended into the frame while the scaler writes it; no copy. [R] ‖ Меню смешивается с кадром, пока масштабатор его пишет; копии нет. [R]"
+    "gop.g2 -> scl.d0.p2": "The menu is blended into the USB frame while the scaler writes it. [R] ‖ Меню смешивается с кадром USB, пока масштабатор его пишет. [R]"
+    "gop.g3 -> scl.d1": "The menu over the zoom frames. [R] ‖ Меню над кадрами зума. [R]"
+    "a3 -> isp": "ISP statistics → 3A every frame (wakes `/dev/isp_fe`); back: white balance into the ISP, exposure and gain into the sensor. [R] ‖ Статистика ISP → 3A каждый кадр (будит `/dev/isp_fe`); обратно — баланс белого в ISP, выдержка и усиление в сенсор. [R]"
+    "scene -> microcamd.control": "Scene and edits over the socket (Unix, pictures through memfd) or TCP 7700. [R] ‖ Сцена и правки по сокету (Unix, картинки через memfd) или TCP 7700. [R]"
+    "ir -> microcamd.keys": "`EV_KEY` events from `/dev/input/event0`: press, the kernel's repeats, release. [R] ‖ События `EV_KEY` из `/dev/input/event0`: нажатие, повторы ядра, отпускание. [R]"
+  }
+}
+
+classes: {
+  port: {height: 30; style: {font-size: 13; fill: "#15283d"; stroke: "#2f6fb3"; border-radius: 3}}
+  idle: {height: 30; style: {font-size: 13; fill: "#1a1a1a"; stroke: "#555555"; stroke-dash: 3; font-color: "#7a8494"; border-radius: 3}}
+  dev: {style: {font-size: 15; fill: "#1d3550"; stroke: "#2f6fb3"; border-radius: 6}}
+  devoff: {style: {font-size: 15; fill: "#161616"; stroke: "#555555"; stroke-dash: 3; font-color: "#7a8494"; border-radius: 6}}
+  mem: {style: {font-size: 12; fill: "#3a2f20"; stroke: "#9a7b4f"; border-radius: 2}}
+  memfree: {style: {font-size: 12; fill: "#141414"; stroke: "#555555"; stroke-dash: 3; font-color: "#8a94a3"; border-radius: 2}}
+  memused: {style: {font-size: 12; fill: "#262b33"; stroke: "#6b7480"; border-radius: 2}}
+  thread: {height: 46; style: {font-size: 13; fill: "#12301f"; stroke: "#2f9e6a"; border-radius: 3}}
+}
+
+legend: "" {
+  class: legend
+  top: 0
+  left: 0
+  grid-rows: 1
+  grid-gap: 10
+  hw: "SoC block ‖ блок SoC" {class: hw; width: 100; height: 30}
+  port: "port / channel / layer ‖ порт / канал / слой" {class: port; width: 150; height: 30}
+  idle: "unused ‖ не используем" {class: idle; width: 120; height: 30}
+  ours: "our code ‖ наш код" {class: ours; width: 90; height: 30}
+  vend: "vendor code ‖ код вендора" {class: vend; width: 110; height: 30}
+  ext: "off-chip ‖ вне SoC" {class: ext; width: 80; height: 30}
+  rt: "── lines, no memory ‖ ── строки без памяти" {shape: text; style: {font-color: "#5fb3ff"; font-size: 13}}
+  frames: "- - frames in memory (number = buffers) ‖ - - кадры в памяти (число = буферов)" {shape: text; style: {font-color: "#f0c060"; font-size: 13}}
+  ctl: "····· control ‖ ····· управление" {shape: text; style: {font-color: "#9a8cff"; font-size: 13}}
+}
+
+# ── our software ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+microcamd: "microcamd — our daemon ‖ microcamd — наш демон" {
+  class: ours
+  tooltip: "**Process** · microcamd — our daemon, owns the whole chain\n\nOurs: builds and tears down the blocks in an order the SoC does not hang on, and picks the cheapest transition between states [R] ‖ **Процесс** · microcamd — наш демон, владеет всей цепочкой\n\nУ нас: строит и разбирает блоки в порядке, при котором SoC не виснет, и выбирает самый дешёвый переход между состояниями [R]"
+  top: 1260
+  left: 300
+  grid-rows: 1
+  grid-gap: 6
+  control: "control\nscene, settings ‖ control\nсцена, настройки" {class: thread; tooltip: "**microcamd thread** · control — takes the scene, commands and settings\n\nOurs: Unix socket `/tmp/microcam.sock` (pictures through memfd) and TCP 7700 [R]; the camera's settings as one list whoever changes them — the menu, the USB host, the CLI — every picture knob sent to the ISP after each IQ load; the ones the user set saved to `/customer/microcam/settings.json` [R] ‖ **Поток microcamd** · control — приём сцены, команд и настроек\n\nУ нас: Unix-сокет `/tmp/microcam.sock` (картинки через memfd) и TCP 7700 [R]; настройки камеры одним списком, кто бы их ни менял — меню, USB-хост, командная строка, — после каждой загрузки IQ в ISP уходят все ручки картинки; выставленные пользователем сохраняются в `/customer/microcam/settings.json` [R]"}
+  keys: "keys\nthe remote ‖ keys\nпульт" {class: thread; tooltip: "**microcamd thread** · keys — the remote\n\nOurs: reads `/dev/input/event0` and sends each key, its press, repeats and release, to the scene's owner alone; `key` from any connection writes a press into the same device, so it comes back as the remote's with the kernel's repeats [R] ‖ **Поток microcamd** · keys — пульт\n\nУ нас: читает `/dev/input/event0` и шлёт каждую кнопку — нажатие, повторы, отпускание — только владельцу сцены; `key` с любого соединения пишет нажатие в то же устройство, и оно возвращается как от пульта, с повторами ядра [R]"}
+  pipeline: "pipeline\nbuilds the hardware ‖ pipeline\nстроит железо" {class: thread; tooltip: "**microcamd thread** · pipeline — builds the hardware\n\nOurs: sets up and tears down VIF, ISP, SCL, DISP, VENC; SCL dev 3 copies for pictures; every 5 s trims the sensor's frame length (vts) so a frame arrives ~5 ms before DISP's pass [R] ‖ **Поток microcamd** · pipeline — строит железо\n\nУ нас: включает и разбирает VIF, ISP, SCL, DISP, VENC; копии SCL dev 3 для картинок; раз в 5 с подстраивает длину кадра сенсора (vts), чтобы кадр приходил за ~5 мс до прохода DISP [R]"}
+  res: "res\npictures ‖ res\nкартинки" {class: thread; tooltip: "**microcamd thread** · res — pictures\n\nOurs: JPEG from the card through JPD and SCL dev 3 into NV12 / ABGR in the media heap (the CPU only for what JPD does not take); reads the file's header, makes the small form from its thumbnail; an MP4's picture is its cover [R] ‖ **Поток microcamd** · res — картинки\n\nУ нас: JPEG с карты — через JPD и SCL dev 3 в NV12 / ABGR в медиакуче (процессор — только что JPD не берёт); читает заголовок файла, мелкую форму делает из его миниатюры; картинка MP4 — его обложка [R]"}
+  feed: "feed\nhands out frames ‖ feed\nотдаёт кадры" {class: thread; tooltip: "**microcamd thread** · feed — hands out the frames\n\nOurs: takes the frames of the SCL ports (the pools' canvases) and hands them to the pool's readers — the encoders and DISP — with no copy; frames beyond a reader's rate it returns evenly [R]. With a live picture and no overlays it hands DISP the canvas the moment it is lent to the port — DISP scans ~3.5 ms behind the writing [R] ‖ **Поток microcamd** · feed — раздаёт кадры\n\nУ нас: берёт кадры портов SCL (холсты пулов) и отдаёт их читателям пула — энкодерам и DISP — без копии; кадры сверх частоты читателя возвращает равномерно [R]. При живой картинке без наложений отдаёт DISP холст сразу при выдаче его порту — DISP сканирует в ~3,5 мс за записью [R]"}
+  ui: "ui\ndraws the menu ‖ ui\nрисует меню" {class: thread; tooltip: "**microcamd thread** · ui — draws the menu\n\nLimits: menu budget 24 MiB for tiles and pictures [R]\n\nOurs: tiny-skia tiles in the media heap; GE builds each output's windows from them [R] ‖ **Поток microcamd** · ui — рисует меню\n\nПределы: бюджет меню 24 МиБ на тайлы и картинки [R]\n\nУ нас: тайлы tiny-skia в медиакуче, GE собирает из них окна каждого выхода [R]"}
+  pump: "uvc-pump\nUSB" {class: thread; tooltip: "**microcamd thread** · uvc-pump — sending to USB\n\nOurs: takes a compressed frame as soon as it is ready and puts it into a free gadget buffer; the host always gets the newest [R] ‖ **Поток microcamd** · uvc-pump — отправка на USB\n\nУ нас: забирает сжатый кадр, как только он готов, и кладёт в свободный буфер гаджета; хосту всегда самый свежий [R]"}
+  recorder: "recorder\nMP4 / JPEG" {class: thread; tooltip: "**microcamd thread** · recorder — recording\n\nOurs: writes MP4 and JPEG photos to the card; into each MP4 of ours a cover, a 480×270 still of its first frame [R] ‖ **Поток microcamd** · recorder — запись\n\nУ нас: пишет MP4 и фото JPEG на карту; в каждый свой MP4 — обложку, кадр 480×270 его начала [R]"}
+  card: "card\nSD card ‖ card\nSD-карта" {class: thread; tooltip: "**microcamd thread** · card — owner of the SD card\n\nOurs: mounts and lets go of the card on kernel events (the vendor's mdev hook is off), hands it to the host as a removable disk and takes it back [R] ‖ **Поток microcamd** · card — владелец SD-карты\n\nУ нас: монтирует и отпускает карту по событиям ядра (вендорский mdev-хук выключен), отдаёт её хосту как съёмный диск и забирает обратно [R]"}
+  player: "player\nMP4 → VDEC" {class: thread; tooltip: "**microcamd thread** · player — the player\n\nOurs: reads the MP4 samples from the card one by one and hands them to VDEC at the file's times; on pause asks VDEC to decode the current sample again at the file's rate [R] ‖ **Поток microcamd** · player — плеер\n\nУ нас: читает отсчёты MP4 с карты по одному и отдаёт их VDEC в моменты файла; на паузе просит VDEC декодировать текущий отсчёт заново с частотой файла [R]"}
+}
+
+a3: "3A (libcus3a)\nexposure, balance ‖ 3A (libcus3a)\nэкспозиция, баланс" {
+  class: vend
+  tooltip: "**Vendor library** · 3A (libcus3a, libispalgo) — exposure and white balance\n\nLimits: exposure 300–14000 µs, gain ×1–×8 at start [R]\n\nOurs: inside microcamd: every frame, from the ISP statistics, sets the sensor's exposure and gain, and the ISP's balance [R] ‖ **Библиотека вендора** · 3A (libcus3a, libispalgo) — экспозиция и баланс белого\n\nПределы: выдержка 300–14000 мкс, усиление ×1–×8 при старте [R]\n\nУ нас: внутри microcamd: каждый кадр по статистике ISP ставит выдержку и усиление сенсору, баланс — ISP [R]"
+  top: 80
+  left: 480
+}
+
+scene: "microcam-menu\nour menu ‖ microcam-menu\nнаше меню" {
+  class: ours
+  tooltip: "**Process** · microcam-menu — our menu program, the scene's owner\n\nOurs: gets the remote's keys and the camera's state from microcamd over the control socket, sends it the whole scene and the settings; started by `app-start.sh` after microcamd and restarted when it dies or hangs [R] ‖ **Процесс** · microcam-menu — наша программа меню, владелец сцены\n\nУ нас: получает от microcamd кнопки пульта и состояние камеры через управляющий сокет, шлёт ему сцену целиком и настройки; запускается `app-start.sh` после microcamd и перезапускается, если упала или зависла [R]"
+  top: 1140
+  left: 20
+}
+
+ir: "IR remote\n18 keys ‖ ИК-пульт\n18 кнопок" {
+  class: hw
+  tooltip: "**Device** · the IR remote and the SoC's IR decoder (rc-core, `mstar ir`)\n\nLimits: one key at a time — a second key while one is held gives nothing; the kernel repeats a held key from ~505 ms every 140 ms [R]\n\nOurs: microcamd's keys thread reads it [R] ‖ **Устройство** · ИК-пульт и ИК-декодер SoC (rc-core, `mstar ir`)\n\nПределы: одна кнопка за раз — вторая при удержанной ничего не даёт; ядро повторяет удержанную с ~505 мс каждые 140 мс [R]\n\nУ нас: его читает поток keys microcamd [R]"
+  top: 1270
+  left: 20
+}
+
+ge: "GE\n2D engine ‖ GE\n2D-движок" {
+  class: hw
+  tooltip: "**SoC block** · GE — 2D engine, blitter\n\nLimits: copies, blends, stretches rectangles; synchronous, no channels or ports [R]\n\nOurs: builds the menu windows from tiles for the ui thread [R] ‖ **Блок SoC** · GE — 2D-движок, блиттер\n\nПределы: копирует, смешивает, растягивает прямоугольники; синхронный, каналов и портов нет [R]\n\nУ нас: собирает окна меню из тайлов для потока ui [R]"
+  top: 80
+  left: 760
+}
+
+rgn: "microcam_rgn\nmenu canvases ‖ microcam_rgn\nхолсты меню" {
+  class: ours
+  tooltip: "**Kernel module** · microcam_rgn — our windows over the frame\n\nLimits: up to 8 windows per port; handles 0–1023; GOP shows 8 per frame [R]\n\nOurs: ARGB4444 canvases in the media heap, 2–3 per window, for HDMI, USB, recording and photo [R] ‖ **Модуль ядра** · microcam_rgn — наши окна поверх кадра\n\nПределы: до 8 окон на порт; описателей 0–1023; на кадр GOP показывает 8 [R]\n\nУ нас: холсты ARGB4444 в медиакуче, 2–3 на окно, для HDMI, USB, записи и фото [R]"
+  top: 80
+  left: 960
+}
+
+cv: "microcam_canvas\nencoder canvases ‖ microcam_canvas\nхолсты кодеров" {
+  class: ours
+  tooltip: "**Kernel module** · microcam_canvas — the frames the encoders read\n\nLimits: up to 4 pools of 8 canvases, up to 4 readers per pool; a port's window from a column that is a multiple of 16 [R]\n\nOurs: a pool of canvases per output (HDMI pool 2, USB 0, recording and photo 1); gives a port a window in a free canvas and each reader (an encoder, DISP) the whole canvas, and sees by itself when the reader let it go; JPEG 3, H.264 4, DISP 5 [R]. Stamps the time a canvas is lent to the port and let go by each reader (`/proc/microcam_canvas_lent`, `/proc/microcam_canvas_holds`): from them microcamd keeps the sensor in step with the monitor and hands DISP a canvas the moment it is lent to the port, while the port still writes it [R] ‖ **Модуль ядра** · microcam_canvas — кадры, которые читают кодеры\n\nПределы: до 4 пулов по 8 холстов, до 4 читателей на пул; окно порта с колонки, кратной 16 [R]\n\nУ нас: пул холстов на выход (HDMI — пул 2, USB — 0, запись и фото — 1); порту даёт окно в свободном холсте, каждому читателю (кодер, DISP) — холст целиком и сам видит, когда тот его отпустил; JPEG 3, H.264 4, DISP 5 [R]. Метит время выдачи холста порту и отпускания каждым читателем (`/proc/microcam_canvas_lent`, `/proc/microcam_canvas_holds`): по ним microcamd держит сенсор в такт с монитором и отдаёт DISP холст в момент выдачи порту, пока тот его ещё пишет [R]"
+  top: 80
+  left: 1180
+}
+
+# ── the picture's path ────────────────────────────────────────────────────────────────────────────────────────────────
+
+sensor: "GC8613 sensor\nRAW10 ‖ Сенсор GC8613\nRAW10" {
+  class: ext
+  tooltip: "**External device** · GC8613 sensor — the camera's image sensor\n\nLimits: RAW10, 4K up to 45 fps, 1080p up to 121, MIPI CSI-2 [R]\n\nOurs: the only source of the picture ‖ **Внешнее устройство** · сенсор GC8613 — матрица камеры\n\nПределы: RAW10, 4K до 45 к/с, 1080p до 121, MIPI CSI-2 [R]\n\nУ нас: единственный источник картинки"
+  top: 420
+  left: 0
+}
+
+vif: "MIPI-CSI + VIF\ncapture ‖ MIPI-CSI + VIF\nприём" {
+  class: dev
+  tooltip: "**SoC block** · MIPI-CSI + VIF — sensor capture\n\nLimits: 4 CSI-2 receivers, 4 groups, 16 devices, 8 hardware pipes; realtime only on pipes 0–2 and port 0 [R]\n\nOurs: pad 0 → dev 0 → port 0 → ISP as lines [R] ‖ **Блок SoC** · MIPI-CSI + VIF — приём сенсора\n\nПределы: 4 приёмника CSI-2, 4 группы, 16 устройств, 8 аппаратных труб; в реальном времени только трубы 0–2 и порт 0 [R]\n\nУ нас: площадка 0 → dev 0 → порт 0 → ISP строками [R]"
+  top: 340
+  left: 200
+  grid-columns: 1
+  grid-gap: 4
+  pads: "CSI pads ‖ площадки CSI" {
+    class: dev
+    tooltip: "**CSI-2 receivers** · pads 0–3 — one per sensor\n\nOurs: pad 0 [R] ‖ **Приёмники CSI-2** · площадки 0–3 — по одной на сенсор\n\nУ нас: площадка 0 [R]"
+    grid-rows: 1
+    grid-gap: 3
+    p0: "0" {class: port; tooltip: "**CSI pad** · 0 — MIPI receiver\n\nOurs: our sensor [R] ‖ **Площадка CSI** · 0 — приёмник MIPI\n\nУ нас: наш сенсор [R]"}
+    p1: "1" {class: idle; tooltip: "**CSI pad** · 1 — MIPI receiver\n\nOurs: unused ‖ **Площадка CSI** · 1 — приёмник MIPI\n\nУ нас: не используем"}
+    p2: "2" {class: idle; tooltip: "**CSI pad** · 2 — MIPI receiver\n\nOurs: unused ‖ **Площадка CSI** · 2 — приёмник MIPI\n\nУ нас: не используем"}
+    p3: "3" {class: idle; tooltip: "**CSI pad** · 3 — MIPI receiver\n\nOurs: unused ‖ **Площадка CSI** · 3 — приёмник MIPI\n\nУ нас: не используем"}
+  }
+  d0: "dev 0" {
+    class: dev
+    tooltip: "**VIF device** · dev 0 — group 0, MIPI\n\nLimits: MIPI linear only on dev 0, 4, 8, 12 [R]\n\nOurs: takes the sensor [R] ‖ **Устройство VIF** · dev 0 — группа 0, MIPI\n\nПределы: MIPI линейный — только dev 0, 4, 8, 12 [R]\n\nУ нас: принимает сенсор [R]"
+    grid-rows: 1
+    grid-gap: 3
+    p0: "port 0\nwhole ‖ порт 0\nцеликом" {class: port; height: 46; tooltip: "**VIF port** · dev 0, port 0 — the whole frame, unscaled\n\nLimits: the only one that runs realtime [R]\n\nOurs: lines into the ISP [R] ‖ **Порт VIF** · dev 0, порт 0 — кадр целиком без масштаба\n\nПределы: только он идёт в реальном времени [R]\n\nУ нас: строки в ISP [R]"}
+    p1: "port 1\ncrop ‖ порт 1\nкроп" {class: idle height: 46; tooltip: "**VIF port** · dev 0, port 1 — crop into memory\n\nOurs: unused ‖ **Порт VIF** · dev 0, порт 1 — кроп в память\n\nУ нас: не используем"}
+  }
+  more: "dev 1–15" {class: idle; tooltip: "**VIF devices** · dev 1–15\n\nLimits: by the SDK 8 of the 16 are usable — which ones is unknown [S]\n\nOurs: unused ‖ **Устройства VIF** · dev 1–15\n\nПределы: по SDK годны 8 из 16 — какие, неизвестно [S]\n\nУ нас: не используем"}
+}
+
+isp: "ISP\nraw → NV12 ‖ ISP\nсырое → NV12" {
+  class: dev
+  tooltip: "**SoC block** · ISP — raw to colour\n\nLimits: one device, up to 32 channels (the kernel module allows 16) [R]\n\nOurs: dev 0, channel 0 [R] ‖ **Блок SoC** · ISP — сырое в цвет\n\nПределы: одно устройство, до 32 каналов (модуль ядра разрешает 16) [R]\n\nУ нас: dev 0, канал 0 [R]"
+  top: 340
+  left: 480
+  grid-columns: 1
+  grid-gap: 4
+  c0: "channel 0 ‖ канал 0" {class: port; tooltip: "**ISP channel** · 0 — the sensor's stream\n\nOurs: the only one [R] ‖ **Канал ISP** · 0 — поток сенсора\n\nУ нас: единственный [R]"}
+  p0: "port 0 · live ‖ порт 0 · живое" {class: port; tooltip: "**ISP port** · 0 — the live output\n\nLimits: realtime only, and only into SCL dev 0 [R]\n\nOurs: into SCL dev 0 [R] ‖ **Порт ISP** · 0 — живой выход\n\nПределы: только в реальном времени и только в SCL dev 0 [R]\n\nУ нас: в SCL dev 0 [R]"}
+  p1: "port 1 · to memory ‖ порт 1 · в память" {class: idle; tooltip: "**ISP port** · 1 — YUV DMA into memory\n\nLimits: YUYV / NV12 / 422SP [R]\n\nOurs: unused ‖ **Порт ISP** · 1 — YUV DMA в память\n\nПределы: YUYV / NV12 / 422SP [R]\n\nУ нас: не используем"}
+  p2: "port 2 · IR ‖ порт 2 · ИК" {class: idle; tooltip: "**ISP port** · 2 — the IR plane\n\nLimits: for RGB-IR sensors; only together with port 0 or 1 [R]\n\nOurs: unused ‖ **Порт ISP** · 2 — плоскость ИК\n\nПределы: для RGB-IR сенсоров; только вместе с портом 0 или 1 [R]\n\nУ нас: не используем"}
+  more: "channels 1–31 ‖ каналы 1–31" {class: idle; tooltip: "**ISP channels** · 1–31\n\nOurs: unused ‖ **Каналы ISP** · 1–31\n\nУ нас: не используем"}
+}
+
+scl: "SCL — scalers ‖ SCL — масштабаторы" {
+  class: dev
+  tooltip: "**SoC block** · SCL — scalers\n\nLimits: 6 hardware scalers HWSCL0–5, each one output of one device; output width HWSCL0/1 up to 4608, HWSCL2–5 up to 3840; up to 34 channels, 6 ports per channel [R][S]\n\nOurs: dev 0, 1 and 3 [R] ‖ **Блок SoC** · SCL — масштабаторы\n\nПределы: 6 аппаратных масштабаторов HWSCL0–5, каждый — один выход и одного устройства; ширина выхода HWSCL0/1 до 4608, HWSCL2–5 до 3840; до 34 каналов, 6 портов на канал [R][S]\n\nУ нас: dev 0, 1 и 3 [R]"
+  top: 340
+  left: 720
+  grid-columns: 1
+  grid-gap: 6
+  d0: "dev 0 · main · channel 0 ‖ dev 0 · главный · канал 0" {
+    class: dev
+    tooltip: "**SCL device** · dev 0, channel 0 — the main scaler\n\nLimits: input only from the ISP, realtime; port p = the mask's p-th scaler [R]\n\nOurs: mask 7 → HWSCL0, 1, 2 [R] ‖ **Устройство SCL** · dev 0, канал 0 — главный масштабатор\n\nПределы: вход только из ISP в реальном времени; порт p = p-й масштабатор маски [R]\n\nУ нас: маска 7 → HWSCL0, 1, 2 [R]"
+    grid-columns: 2
+    grid-gap: 3
+    p0: "0 → HDMI" {class: port; tooltip: "**SCL port** · dev 0, port 0 — HWSCL0's output\n\nLimits: width up to 4608 [S]\n\nOurs: HDMI's live window, writes straight into the canvases of pool 2 [R] ‖ **Порт SCL** · dev 0, порт 0 — выход HWSCL0\n\nПределы: ширина до 4608 [S]\n\nУ нас: живое окно HDMI, пишет прямо в холсты пула 2 [R]"}
+    p1: "1 → recording, photo ‖ 1 → запись, фото" {class: port; tooltip: "**SCL port** · dev 0, port 1 — HWSCL1's output\n\nLimits: width up to 4608 [S]\n\nOurs: the recording and photo frame, writes straight into the canvases of pool 1; off while the recording frame equals the HDMI or the USB frame [R] ‖ **Порт SCL** · dev 0, порт 1 — выход HWSCL1\n\nПределы: ширина до 4608 [S]\n\nУ нас: кадр записи и фото, пишет прямо в холсты пула 1; выключен, пока кадр записи равен кадру HDMI или USB [R]"}
+    p2: "2 → USB" {class: port; tooltip: "**SCL port** · dev 0, port 2 — HWSCL2's output\n\nLimits: width up to 3840 [S]\n\nOurs: the USB frame, writes straight into the canvases of pool 0; off while the USB frame equals the HDMI frame [R]; in H.264/H.265 with one live picture and no zoom it writes a ring tied to the encoder [R] ‖ **Порт SCL** · dev 0, порт 2 — выход HWSCL2\n\nПределы: ширина до 3840 [S]\n\nУ нас: кадр USB, пишет прямо в холсты пула 0; выключен, пока кадр USB равен кадру HDMI [R]; в H.264/H.265 с одной живой картинкой без зума пишет кольцо, связанное с кодером [R]"}
+    p3: "3" {class: idle; tooltip: "**SCL port** · dev 0, port 3\n\nLimits: not available with mask 7 (INVALID_PORTID) [R]\n\nOurs: unused ‖ **Порт SCL** · dev 0, порт 3\n\nПределы: при маске 7 недоступен (INVALID_PORTID) [R]\n\nУ нас: не используем"}
+    p4: "4" {class: idle; tooltip: "**SCL port** · dev 0, port 4\n\nLimits: not available with mask 7 [R]\n\nOurs: unused ‖ **Порт SCL** · dev 0, порт 4\n\nПределы: при маске 7 недоступен [R]\n\nУ нас: не используем"}
+    p5: "5" {class: idle; tooltip: "**SCL port** · dev 0, port 5\n\nLimits: not available with mask 7 [R]\n\nOurs: unused ‖ **Порт SCL** · dev 0, порт 5\n\nПределы: при маске 7 недоступен [R]\n\nУ нас: не используем"}
+  }
+  d1: "dev 1 · zoom · HWSCL3 ‖ dev 1 · зум · HWSCL3" {
+    class: dev
+    tooltip: "**SCL device** · dev 1 — zoom\n\nLimits: input from memory or from JPD, realtime [R]\n\nOurs: mask 8 → HWSCL3; three channels share it in time, working only during a zoom [R] ‖ **Устройство SCL** · dev 1 — зум\n\nПределы: вход из памяти или из JPD в реальном времени [R]\n\nУ нас: маска 8 → HWSCL3; три канала делят его по времени, работают только при зуме [R]"
+    grid-columns: 2
+    grid-gap: 3
+    c0: "ch. 0 → USB ‖ кан. 0 → USB" {class: port; tooltip: "**SCL channel** · dev 1, channel 0 — port 0 on HWSCL3\n\nOurs: enlarges port 2's crop for USB [R] ‖ **Канал SCL** · dev 1, канал 0 — порт 0 на HWSCL3\n\nУ нас: увеличивает кроп порта 2 для USB [R]"}
+    c1: "ch. 1 → recording ‖ кан. 1 → запись" {class: port; tooltip: "**SCL channel** · dev 1, channel 1 — port 0 on HWSCL3\n\nOurs: enlarges port 1's crop for the recording [R] ‖ **Канал SCL** · dev 1, канал 1 — порт 0 на HWSCL3\n\nУ нас: увеличивает кроп порта 1 для записи [R]"}
+    c2: "ch. 2 → HDMI ‖ кан. 2 → HDMI" {class: port; tooltip: "**SCL channel** · dev 1, channel 2 — port 0 on HWSCL3\n\nOurs: enlarges port 0's crop for HDMI during a zoom (DISP no longer scales: the menu lies in the canvas); while a file is shown it writes VDEC's frame into the HDMI pool [R] ‖ **Канал SCL** · dev 1, канал 2 — порт 0 на HWSCL3\n\nУ нас: увеличивает кроп порта 0 для HDMI при зуме (DISP больше не масштабирует: меню лежит в холсте); во время показа файла пишет в пул HDMI кадр VDEC [R]"}
+  }
+  d2: "dev 2 · straight from VIF ‖ dev 2 · прямо из VIF" {class: devoff; tooltip: "**SCL device** · dev 2 — scaling straight from VIF\n\nLimits: only from VIF, realtime; a bind from memory is refused [R]\n\nOurs: unused ‖ **Устройство SCL** · dev 2 — масштаб прямо из VIF\n\nПределы: только из VIF в реальном времени; привязка из памяти отвергается [R]\n\nУ нас: не используем"}
+  d3: "dev 3 · StretchBuf · HWSCL5" {
+    class: dev
+    tooltip: "**SCL device** · dev 3 — StretchBuf, memory to memory\n\nLimits: rotation 90/180/270 only here; mask 0x20 → HWSCL5 is required [R]\n\nOurs: scales the pictures to their windows (once) and turns NV12 ↔ ARGB bands when baking the menu [R] ‖ **Устройство SCL** · dev 3 — StretchBuf, из памяти в память\n\nПределы: поворот 90/180/270 только здесь; маска 0x20 → HWSCL5 обязательна [R]\n\nУ нас: масштабирует картинки под их окна (один раз) и переводит полосы NV12 ↔ ARGB при запекании меню [R]"
+    grid-columns: 2
+    grid-gap: 3
+    c20: "ch. 0x20 ‖ кан. 0x20" {class: port; tooltip: "**SCL channel** · dev 3, 0x20 — the driver's internal channel\n\nOurs: through StretchBuf [R] ‖ **Канал SCL** · dev 3, 0x20 — внутренний канал драйвера\n\nУ нас: через StretchBuf [R]"}
+    c21: "ch. 0x21 ‖ кан. 0x21" {class: port; tooltip: "**SCL channel** · dev 3, 0x21 — the driver's internal channel\n\nOurs: through StretchBuf [R] ‖ **Канал SCL** · dev 3, 0x21 — внутренний канал драйвера\n\nУ нас: через StretchBuf [R]"}
+  }
+  hw4: "HWSCL4 · free ‖ HWSCL4 · свободен" {class: idle; tooltip: "**Scaler** · HWSCL4 — free\n\nLimits: by default its output is GOP 4's overlay [R]\n\nOurs: unused (dev 1 in probes) [R] ‖ **Масштабатор** · HWSCL4 — свободен\n\nПределы: по умолчанию его выход — оверлей GOP 4 [R]\n\nУ нас: не используем (в пробах — dev 1) [R]"}
+}
+
+gop: "GOP over the SCL outputs ‖ GOP над выходами SCL" {
+  class: dev
+  tooltip: "**SoC block** · GOP over the SCL outputs — overlays\n\nLimits: 8 windows per GOP; I8/I4/I2/ARGB1555/ARGB4444, no stretching [R]\n\nOurs: the menu over the live window on HDMI, USB, in the recording, photo and zoom — GOP 0–3 [R] ‖ **Блок SoC** · GOP над выходами SCL — оверлеи\n\nПределы: 8 окон на GOP; I8/I4/I2/ARGB1555/ARGB4444, без растяжения [R]\n\nУ нас: меню над живым окном на HDMI, USB, в записи, фото и зуме — GOP 0–3 [R]"
+  top: 200
+  left: 700
+  grid-rows: 1
+  grid-gap: 3
+  g0: "0 · HW0" {class: port; tooltip: "**GOP** · 0 — over HWSCL0, the HDMI port\n\nOurs: the HDMI menu over the live window [R] ‖ **GOP** · 0 — над HWSCL0, портом HDMI\n\nУ нас: меню HDMI над живым окном [R]"}
+  g1: "1 · HW1" {class: port; tooltip: "**GOP** · 1 — over HWSCL1\n\nOurs: the menu in the recording and photo [R] ‖ **GOP** · 1 — над HWSCL1\n\nУ нас: меню в записи и фото [R]"}
+  g2: "2 · HW2" {class: port; tooltip: "**GOP** · 2 — over HWSCL2\n\nOurs: the menu on USB [R] ‖ **GOP** · 2 — над HWSCL2\n\nУ нас: меню на USB [R]"}
+  g3: "3 · HW3" {class: port; tooltip: "**GOP** · 3 — over HWSCL3\n\nOurs: the menu over the zoom frames, both channels [R] ‖ **GOP** · 3 — над HWSCL3\n\nУ нас: меню над кадрами зума, оба канала [R]"}
+  g4: "4 · HW4" {class: idle; tooltip: "**GOP** · 4 — over HWSCL4\n\nOurs: unused ‖ **GOP** · 4 — над HWSCL4\n\nУ нас: не используем"}
+  g5: "5 · DIVP" {class: idle; tooltip: "**GOP** · 5 — over DIVP\n\nLimits: other masks give it to LDC or HWSCL5 [R]\n\nOurs: unused ‖ **GOP** · 5 — над DIVP\n\nПределы: другие маски отдают его LDC или HWSCL5 [R]\n\nУ нас: не используем"}
+}
+
+disp: "DISP — display ‖ DISP — дисплей" {
+  class: dev
+  tooltip: "**SoC block** · DISP — display\n\nLimits: two devices; ports only enlarge (up to 16×), NV12 only; layer 0's windows do not overlap; HDMI, VGA, CVBS, TTL, MIPI-DSI, BT601/656/1120 [R][S]\n\nOurs: DISP0 on HDMI [R] ‖ **Блок SoC** · DISP — дисплей\n\nПределы: два устройства; порты только увеличивают (до 16×), только NV12; окна слоя 0 не перекрываются; HDMI, VGA, CVBS, TTL, MIPI-DSI, BT601/656/1120 [R][S]\n\nУ нас: DISP0 на HDMI [R]"
+  top: 340
+  left: 1260
+  grid-columns: 1
+  grid-gap: 6
+  d0: "DISP0" {
+    class: dev
+    tooltip: "**DISP device** · DISP0\n\nOurs: drives HDMI [R] ‖ **Устройство DISP** · DISP0\n\nУ нас: ведёт HDMI [R]"
+    grid-columns: 1
+    grid-gap: 4
+    l0: "video layer 0 · ports ‖ видеослой 0 · порты" {
+      class: dev
+      tooltip: "**DISP layer** · video layer 0 (MOP0) — 16 input ports\n\nLimits: windows do not overlap [S]\n\nOurs: port 0 — the whole HDMI canvas; ports 1–15 unused [R] ‖ **Слой DISP** · видеослой 0 (MOP0) — 16 входных портов\n\nПределы: окна не перекрываются [S]\n\nУ нас: порт 0 — холст HDMI целиком; порты 1–15 не используем [R]"
+      grid-rows: 2
+      grid-columns: 8
+      grid-gap: 2
+      p0: "0" {class: port; tooltip: "**DISP port** · layer 0, port 0\n\nOurs: the whole canvas of pool 2, 1:1 — the live picture, pictures and menu already in it; feed hands it on [R] ‖ **Порт DISP** · слой 0, порт 0\n\nУ нас: холст пула 2 целиком, 1:1 — живое, картинки и меню уже в нём; отдаёт feed [R]"}
+      p1: "1" {class: idle; tooltip: "**DISP port** · layer 0, port 1\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 1\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p2: "2" {class: idle; tooltip: "**DISP port** · layer 0, port 2\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 2\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p3: "3" {class: idle; tooltip: "**DISP port** · layer 0, port 3\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 3\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p4: "4" {class: idle; tooltip: "**DISP port** · layer 0, port 4\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 4\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p5: "5" {class: idle; tooltip: "**DISP port** · layer 0, port 5\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 5\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p6: "6" {class: idle; tooltip: "**DISP port** · layer 0, port 6\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 6\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p7: "7" {class: idle; tooltip: "**DISP port** · layer 0, port 7\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 7\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p8: "8" {class: idle; tooltip: "**DISP port** · layer 0, port 8\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 8\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p9: "9" {class: idle; tooltip: "**DISP port** · layer 0, port 9\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 9\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p10: "10" {class: idle; tooltip: "**DISP port** · layer 0, port 10\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 10\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p11: "11" {class: idle; tooltip: "**DISP port** · layer 0, port 11\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 11\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p12: "12" {class: idle; tooltip: "**DISP port** · layer 0, port 12\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 12\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p13: "13" {class: idle; tooltip: "**DISP port** · layer 0, port 13\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 13\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p14: "14" {class: idle; tooltip: "**DISP port** · layer 0, port 14\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 14\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+      p15: "15" {class: idle; tooltip: "**DISP port** · layer 0, port 15\n\nOurs: unused — the pictures lie in the canvas [R] ‖ **Порт DISP** · слой 0, порт 15\n\nУ нас: не используем — картинки лежат в холсте [R]"}
+    }
+    pip: "video layer 1 · PIP ‖ видеослой 1 · PIP" {class: idle; tooltip: "**DISP layer** · video layer 1 (MOP1, PIP) — one port\n\nOurs: unused [R] ‖ **Слой DISP** · видеослой 1 (MOP1, PIP) — один порт\n\nУ нас: не используем [R]"}
+    cur: "GOP 6 · cursor ‖ GOP 6 · курсор" {class: idle; tooltip: "**UI layer** · GOP 6 — DISP0's hardware cursor, one window over fb0\n\nLimits: an icon up to 128×128; a call waits for a display frame, 17–21 ms [R]\n\nOurs: unused — fbdev is unloaded, the cursor goes as patches of its own in the canvas [R] ‖ **Слой UI** · GOP 6 — аппаратный курсор DISP0, одно окно над fb0\n\nПределы: значок до 128×128; вызов ждёт кадр дисплея, 17–21 мс [R]\n\nУ нас: не используем — fbdev выгружен, курсор идёт своими заплатками в холсте [R]"}
+    ui: "GOP 7 · fb0 menu ‖ GOP 7 · меню fb0" {class: idle; tooltip: "**UI layer** · GOP 7 — DISP0's menu (fb0)\n\nLimits: up to ARGB8888, with stretching [R]\n\nOurs: unused — fbdev is unloaded, the HDMI menu lies in the frame (GOP 0 and baking) [R] ‖ **Слой UI** · GOP 7 — меню DISP0 (fb0)\n\nПределы: до ARGB8888, с растяжением [R]\n\nУ нас: не используем — fbdev выгружен, меню HDMI лежит в кадре (GOP 0 и запекание) [R]"}
+  }
+  d1: "DISP1 — unused ‖ DISP1 — не используем" {
+    class: devoff
+    tooltip: "**DISP device** · DISP1 — the second display\n\nLimits: layers 2 and 3, GOP 8/9; whether it can drive HDMI on our board is not checked [R]\n\nOurs: unused ‖ **Устройство DISP** · DISP1 — второй дисплей\n\nПределы: слои 2 и 3, GOP 8/9; может ли вести HDMI на нашей плате — не проверено [R]\n\nУ нас: не используем"
+    grid-columns: 1
+    grid-gap: 4
+    l2: "video layer 2 · 16 ports ‖ видеослой 2 · 16 портов" {class: idle; tooltip: "**DISP layer** · video layer 2 — 16 ports\n\nOurs: unused ‖ **Слой DISP** · видеослой 2 — 16 портов\n\nУ нас: не используем"}
+    l3: "video layer 3 · PIP ‖ видеослой 3 · PIP" {class: idle; tooltip: "**DISP layer** · video layer 3 — PIP\n\nOurs: unused ‖ **Слой DISP** · видеослой 3 — PIP\n\nУ нас: не используем"}
+    g8: "GOP 8 · cursor ‖ GOP 8 · курсор" {class: idle; tooltip: "**UI layer** · GOP 8 — DISP1's cursor\n\nOurs: unused ‖ **Слой UI** · GOP 8 — курсор DISP1\n\nУ нас: не используем"}
+    g9: "GOP 9 · UI" {class: idle; tooltip: "**UI layer** · GOP 9 — DISP1's UI\n\nOurs: unused ‖ **Слой UI** · GOP 9 — UI DISP1\n\nУ нас: не используем"}
+  }
+  wbc: "WBC · screen capture ‖ WBC · запись экрана" {class: idle; tooltip: "**DISP block** · WBC — screen capture into memory\n\nLimits: one DMA, NV12, downscale only [R]\n\nOurs: only in our probes [R] ‖ **Блок DISP** · WBC — запись экрана в память\n\nПределы: один DMA, NV12, только уменьшает [R]\n\nУ нас: только в наших пробах [R]"}
+}
+
+hdmitx: "HDMI-TX" {
+  class: hw
+  tooltip: "**SoC block** · HDMI-TX — HDMI transmitter\n\nLimits: HDMI 1.4, up to 4K30 / 1080p60; no ports of its own, follows DISP's scan-out [R][S]\n\nOurs: the best mode by the monitor's EDID [R] ‖ **Блок SoC** · HDMI-TX — передатчик HDMI\n\nПределы: HDMI 1.4, до 4K30 / 1080p60; своих портов нет, идёт по развёртке DISP [R][S]\n\nУ нас: лучший режим по EDID монитора [R]"
+  top: 420
+  left: 1740
+}
+
+monitor: "Monitor ‖ Монитор" {class: ext; top: 420; left: 1900; tooltip: "**External device** · monitor over HDMI ‖ **Внешнее устройство** · монитор по HDMI"}
+
+venc: "VENC — encoders ‖ VENC — энкодеры" {
+  class: dev
+  tooltip: "**SoC block** · VENC — encoders\n\nLimits: channels 0–32, up to 17 at once; H.26x up to 4096×2176, JPEG up to 8192×8192; H.264 4K ≈ 29.5 fps [R][S]\n\nOurs: dev 0 and dev 8, two channels each [R] ‖ **Блок SoC** · VENC — энкодеры\n\nПределы: каналы 0–32, одновременно до 17; H.26x до 4096×2176, JPEG до 8192×8192; H.264 4K ≈ 29,5 к/с [R][S]\n\nУ нас: dev 0 и dev 8, по два канала [R]"
+  top: 880
+  left: 1260
+  # devices side by side, channel 1 (recording, photo) above channel 0 (USB) as SCL's port 1 is above port 2:
+  # their arrows then do not cross
+  grid-columns: 2
+  grid-gap: 6
+  h: "dev 0 · H.264 / H.265" {
+    class: dev
+    tooltip: "**VENC device** · dev 0 — H.264 / H.265, one Wave5 core\n\nOurs: USB and recording [R] ‖ **Устройство VENC** · dev 0 — H.264 / H.265, одно ядро Wave5\n\nУ нас: USB и запись [R]"
+    grid-columns: 1
+    grid-gap: 3
+    c1: "ch. 1\nrecording ‖ кан. 1\nзапись" {class: port; height: 46; tooltip: "**VENC channel** · dev 0, channel 1\n\nOurs: H.264 for the recording [R] ‖ **Канал VENC** · dev 0, канал 1\n\nУ нас: H.264 для записи [R]"}
+    c0: "ch. 0\nUSB ‖ кан. 0\nUSB" {class: port; height: 46; tooltip: "**VENC channel** · dev 0, channel 0\n\nOurs: H.264 / H.265 for USB [R] ‖ **Канал VENC** · dev 0, канал 0\n\nУ нас: H.264 / H.265 для USB [R]"}
+    more: "2–16" {class: idle; height: 46; tooltip: "**VENC channels** · dev 0, 2–16\n\nOurs: unused ‖ **Каналы VENC** · dev 0, 2–16\n\nУ нас: не используем"}
+  }
+  j: "dev 8 · JPEG" {
+    class: dev
+    tooltip: "**VENC device** · dev 8 — JPEG (JPE)\n\nOurs: USB MJPEG and photo [R] ‖ **Устройство VENC** · dev 8 — JPEG (JPE)\n\nУ нас: USB MJPEG и фото [R]"
+    grid-columns: 1
+    grid-gap: 3
+    c2: "ch. 2\nphoto\nwhile recording ‖ кан. 2\nфото\nпри записи" {class: port; height: 62; tooltip: "**VENC channel** · dev 8, channel 2\n\nOurs: JPEG photo during a recording — a reader of the recording's pool for one canvas [R] ‖ **Канал VENC** · dev 8, канал 2\n\nУ нас: JPEG фото во время записи — читатель пула записи на один холст [R]"}
+    c1: "ch. 1\nphoto ‖ кан. 1\nфото" {class: port; height: 46; tooltip: "**VENC channel** · dev 8, channel 1\n\nLimits: beside USB 4K45 a second JPEG channel does not get in the way [R]\n\nOurs: JPEG photo [R] ‖ **Канал VENC** · dev 8, канал 1\n\nПределы: рядом с USB 4K45 второй канал JPEG не мешает [R]\n\nУ нас: JPEG фото [R]"}
+    c0: "ch. 0\nUSB MJPEG ‖ кан. 0\nUSB MJPEG" {class: port; height: 46; tooltip: "**VENC channel** · dev 8, channel 0\n\nOurs: MJPEG for USB [R] ‖ **Канал VENC** · dev 8, канал 0\n\nУ нас: MJPEG для USB [R]"}
+    more: "3–16" {class: idle; height: 46; tooltip: "**VENC channels** · dev 8, 3–16\n\nOurs: unused ‖ **Каналы VENC** · dev 8, 3–16\n\nУ нас: не используем"}
+  }
+}
+
+gadget: "g_webcam + UDC\nUSB 2.0 isoch. ‖ g_webcam + UDC\nUSB 2.0 изохр." {
+  class: ours
+  tooltip: "**Kernel modules** · g_webcam + UDC — a USB camera, network and disk for the PC\n\nLimits: USB 2.0; the controller has separate in and out FIFOs only on ep5 [R]\n\nOurs: our modules — UVC (ep1, ep3), RNDIS (ep5 in+out, ep6), mass storage with the SD card (ep4, ep2) [R] ‖ **Модули ядра** · g_webcam + UDC — USB-камера, сеть и диск для ПК\n\nПределы: USB 2.0; у контроллера только ep5 с раздельными FIFO на вход и выход [R]\n\nУ нас: наши модули — UVC (ep1, ep3), RNDIS (ep5 вход+выход, ep6), накопитель с SD-картой (ep4, ep2) [R]"
+  top: 1040
+  left: 1660
+}
+host: "PC ‖ ПК" {class: ext; top: 1040; left: 1880; tooltip: "**External device** · PC over USB ‖ **Внешнее устройство** · ПК по USB"}
+sd: "SD card ‖ SD-карта" {class: ext; top: 1240; left: 1660; tooltip: "**External device** · SD card\n\nOurs: recording and photo; on command, the host's disk over USB [R] ‖ **Внешнее устройство** · SD-карта\n\nУ нас: запись и фото; по команде — диск хоста по USB [R]"}
+
+# ── decoders, unused blocks ───────────────────────────────────────────────────────────────────────────────────────────────
+
+dec: "decoders: player and pictures ‖ декодеры: плеер и картинки" {
+  class: pool
+  top: 840
+  left: 370
+  grid-rows: 1
+  grid-gap: 8
+  jpd: "JPD\nJPEG decoder ‖ JPD\nJPEG-декодер" {class: dev; tooltip: "**SoC block** · JPD — JPEG decoder\n\nLimits: dev 0, channels 0–15, one YUYV output: into SCL dev 1 realtime or into memory; the input is padded with zeros to 16 bytes, otherwise some files never finish [R]\n\nOurs: the menu's pictures — channel 0 for the time of a decode, the file from the media heap, YUYV into memory scaled down ½–⅛, then SCL dev 3; thumbnails of our photos [R] ‖ **Блок SoC** · JPD — JPEG-декодер\n\nПределы: dev 0, каналы 0–15, один выход YUYV: в SCL dev 1 в реальном времени или в память; вход дополняется нулями до 16 байт, иначе часть файлов не завершается [R]\n\nУ нас: картинки меню — канал 0 на время декода, файл из медиакучи, YUYV в память с уменьшением ½–⅛, дальше SCL dev 3; миниатюры наших фото [R]"}
+  vdec: "VDEC\nvideo decoder ‖ VDEC\nвидеодекодер" {class: dev; tooltip: "**SoC block** · VDEC — video decoder (Wave5, shared with the H.26x encoder)\n\nLimits: dev 0, 32 channels; port 0 scales down to 1/8; 4K ~31 ms per frame, beside H.264 4K30 USB both are slower [R]\n\nOurs: the player — channel 0, port 0 bound into the outputs' SCL dev 1 channels while a file is shown; the device is held until microcamd exits [R] ‖ **Блок SoC** · VDEC — видеодекодер (Wave5, общий с H.26x-энкодером)\n\nПределы: dev 0, 32 канала; порт 0 масштабирует вниз до 1/8; 4K ~31 мс на кадр, рядом с H.264 4K30 USB оба медленнее [R]\n\nУ нас: плеер — канал 0, порт 0 по привязке в каналы SCL dev 1 выходов, пока идёт показ; устройство держим до выхода microcamd [R]"}
+}
+
+off: "unused ‖ не используем" {
+  class: pool
+  top: 840
+  left: 0
+  grid-rows: 1
+  grid-gap: 8
+  ldc: "LDC\ndistortion ‖ LDC\nдисторсия" {class: devoff; tooltip: "**SoC block** · LDC — lens distortion correction\n\nLimits: dev 0, channels 0–15, one input and one output [R]\n\nOurs: unused ‖ **Блок SoC** · LDC — коррекция дисторсии\n\nПределы: dev 0, каналы 0–15, вход и выход по одному [R]\n\nУ нас: не используем"}
+  divp: "DIVP" {class: devoff; tooltip: "**SoC block** · DIVP — video processing on the SCL banks\n\nLimits: no mi_divp of its own on the camera; the number of channels is unknown [R]\n\nOurs: unused ‖ **Блок SoC** · DIVP — обработка видео на банках SCL\n\nПределы: своего mi_divp на камере нет; число каналов неизвестно [R]\n\nУ нас: не используем"}
+  ipu: "IPU (NPU)" {class: devoff; tooltip: "**SoC block** · IPU — neural accelerator\n\nLimits: up to 48 channels, a network per channel; off the picture's path [R]\n\nOurs: unused ‖ **Блок SoC** · IPU — нейроускоритель\n\nПределы: до 48 каналов, по сети на канал; вне пути картинки [R]\n\nУ нас: не используем"}
+}
+
+# ── memory ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+# a block's width is its size (9.5 px a MB); the numbers are `microcam mem` of 2026-11-14 evening (USB MJPEG 4K45 joined to
+# HDMI 2160p30, the menu up)
+
+mem: "media heap (MMA) · 176 MB · measured 2026-11-14: HDMI 2160p30 + USB MJPEG 4K45 in the shared frame, the menu up ‖ медиакуча (MMA) · 176 МБ · замер 2026-11-14: HDMI 2160p30 + USB MJPEG 4K45 в общем кадре, меню запущено" {
+  class: pool
+  top: 1410
+  left: 0
+  grid-rows: 1
+  grid-gap: 2
+  tooltip: "**Pool** · media heap (MMA) — the DRAM shared by frames and hardware buffers\n\nLimits: 176 MB, set in U-Boot (`mma_heap`) [R]\n\nOurs: the strip is `microcam mem` of 2026-11-14: 110.6 used, 65.4 free [R]. USB in H.264/H.265 instead of MJPEG takes the SCL→encoder ring 11.9 and the H.264 encoder 19.8 instead of the JPEG ring (measured 2026-11-11) [R] ‖ **Пул** · медиакуча (MMA) — общая DRAM для кадров и буферов железа\n\nПределы: 176 МБ, задано в U-Boot (`mma_heap`) [R]\n\nУ нас: полоска — `microcam mem` 2026-11-14: занято 110,6, свободно 65,4 [R]. USB в H.264/H.265 вместо MJPEG берёт кольцо SCL→кодер 11,9 и кодер H.264 19,8 вместо кольца JPEG (замер 2026-11-11) [R]"
+  pool: "shared pool HDMI + USB + recording\n6 × 12.0 = 71.7 ‖ общий пул HDMI + USB + запись\n6 × 12,0 = 71,7" {class: mem; width: 681; height: 52; tooltip: "**Buffer** · the canvases of pool 2 (microcam_canvas) — HDMI frames, read too by the USB encoder and the recording encoder when their frame equals the HDMI frame\n\nLimits: canvases of 12.0 MB (4K NV12, 2176 lines), counted from what each reader holds and its rate — 5 with DISP alone at 30 or beside a 4K25 recording, 6 beside USB MJPEG 4K45; one more with a picture pasted in [R]\n\nOurs: SCL port 0 writes the live picture into them, pictures and the menu lie there beforehand; DISP and JPEG read them whole by reference [R] ‖ **Буфер** · холсты пула 2 (microcam_canvas) — кадры HDMI, их же читают кодер USB и кодер записи, когда их кадр равен кадру HDMI\n\nПределы: холсты по 12,0 МБ (4K NV12, строк 2176), число — из того, сколько каждый читатель держит холст, и его частоты: 5 с одним DISP на 30 или рядом с записью 4K25, 6 рядом с USB MJPEG 4K45; на один больше при вклейке [R]\n\nУ нас: порт SCL 0 пишет в них живое, картинки и меню лежат заранее; DISP и JPEG читают целиком по ссылке [R]"}
+  menu: "menu\n19.8 ‖ меню\n19,8" {class: mem; width: 188; height: 52; tooltip: "**Buffer** · the menu's canvases (microcam_rgn) — the menu windows GOP lays over the SCL outputs\n\nLimits: 10 canvases, 19.8 MB in this measurement [R]\n\nOurs: the menu program's scene, drawn by GE [R] ‖ **Буфер** · холсты меню (microcam_rgn) — окна меню, которые GOP кладёт поверх выходов SCL\n\nПределы: 10 холстов, 19,8 МБ в этом замере [R]\n\nУ нас: сцена программы меню, рисует GE [R]"}
+  own: "" {class: mem; width: 61; height: 52; tooltip: "**Buffer** · microcamd's own media memory — the GE and baking bands, staging\n\nLimits: microcamd's share is what the video leaves (84.7 MB in this measurement) [R]\n\nOurs: 6.4 MB [R] ‖ **Буфер** · своя медиапамять microcamd — полосы GE и запекания, промежуточные буферы\n\nПределы: доля microcamd — то, что оставляет видео (84,7 МБ в этом замере) [R]\n\nУ нас: 6,4 МБ [R]"}
+  codec: "" {class: mem; width: 47; height: 52; tooltip: "**Buffer** · the H.26x device (Wave5): mma_heap_codec 4.0 + vcodec_dev 0.9 — held from the first H.26x channel on [R] ‖ **Буфер** · устройство H.26x (Wave5): mma_heap_codec 4,0 + vcodec_dev 0,9 — держится с первого канала H.26x [R]"}
+  jring: "" {class: mem; width: 29; height: 52; tooltip: "**Buffer** · the output ring of the USB JPEG encoder — compressed frames\n\nLimits: 3.1 MB at 4K45 in this measurement [R]\n\nOurs: uvc-pump takes the frames from it [R] ‖ **Буфер** · выходное кольцо JPEG-энкодера USB — сжатые кадры\n\nПределы: 3,1 МБ при 4K45 в этом замере [R]\n\nУ нас: из него uvc-pump забирает кадры [R]"}
+  cmdq: "" {class: mem; width: 28; height: 52; tooltip: "**Buffer** · CMDQ — the engines' command queues, 3.0 MB [R] ‖ **Буфер** · CMDQ — очереди команд движков, 3,0 МБ [R]"}
+  misc: "" {class: mem; width: 25; height: 52; tooltip: "**Buffer** · interbuf 2.0, ISP, logs, GE 0.6 — 2.6 MB [R] ‖ **Буфер** · interbuf 2,0, ISP, логи, GE 0,6 — 2,6 МБ [R]"}
+  free: "free\n65.4 ‖ свободно\n65,4" {class: memfree; width: 621; height: 52; tooltip: "**Free** · 65.4 MB in this measurement [R] ‖ **Свободно** · 65,4 МБ в этом замере [R]"}
+}
+
+ram: "Linux RAM · 74.3 MB ‖ Linux RAM · 74,3 МБ" {
+  class: pool
+  top: 1530
+  left: 0
+  grid-rows: 1
+  grid-gap: 2
+  tooltip: "**Pool** · Linux RAM — the memory of the processes and the kernel\n\nLimits: 74.3 MB (MemTotal) [R]\n\nOurs: 20.8 MB available in the same measurement, microcamd resident 26.1; the tile layers' budget `LAYER_BYTES` 12 MiB [R] ‖ **Пул** · Linux RAM — память процессов и ядра\n\nПределы: 74,3 МБ (MemTotal) [R]\n\nУ нас: в том же замере доступно 20,8 МБ, microcamd в памяти 26,1; бюджет слоёв тайла `LAYER_BYTES` 12 МиБ [R]"
+  used: "used · 53.5 ‖ занято · 53,5" {class: memused; width: 508; height: 40; tooltip: "**Used** · about 53.5 MB: processes and kernel (74.3 − 20.8 available), microcamd 26.1 of it ‖ **Занято** · около 53,5 МБ: процессы и ядро (74,3 − доступные 20,8), из них microcamd 26,1"}
+  free: "available 20.8 ‖ доступно 20,8" {class: memfree; width: 198; height: 40; tooltip: "**Available** · 20.8 MB (MemAvailable) in this measurement [R] ‖ **Доступно** · 20,8 МБ (MemAvailable) в этом замере [R]"}
+}
+
+# ── arrows: the picture ──────────────────────────────────────────────────────────────────────────────────────────────
+
+sensor -> vif.pads.p0: "RAW10" {class: rt}
+vif.pads.p0 -> vif.d0.p0: {class: rt}
+vif.d0.p0 -> isp.c0: "lines ‖ строки" {class: rt}
+isp.p0 -> scl.d0: "NV12 lines ‖ NV12 строки" {class: rt}
+
+scl.d0.p0 -> disp.d0.l0.p0: "HDMI frame · 5 ‖ кадр HDMI · 5" {class: frames}
+scl.d0.p2 -> venc.j.c0: "USB frame · 3 ‖ кадр USB · 3" {class: frames}
+scl.d0.p0 -> venc.j.c0: "USB in the shared frame ‖ USB в общем кадре" {class: frames}
+scl.d0.p2 -> venc.h.c0: "USB ring ‖ кольцо USB" {class: frames}
+scl.d0.p1 -> venc.h.c1: "recording frame · 4 ‖ кадр записи · 4" {class: frames}
+scl.d0.p1 -> venc.j.c1: "photo ‖ фото" {class: frames}
+scl.d0.p0 -> venc.h.c1: "recording in the shared frame ‖ запись в общем кадре" {class: frames}
+scl.d0.p0 -> venc.j.c2: "photo while recording ‖ фото при записи" {class: frames}
+scl.d0.p2 -> scl.d1.c0: "zoom ‖ зум" {class: frames}
+scl.d0.p1 -> scl.d1.c1: "zoom ‖ зум" {class: frames}
+scl.d0.p0 -> scl.d1.c2: "zoom ‖ зум" {class: frames}
+
+disp.d0 -> hdmitx: "scan-out ‖ развёртка" {class: rt}
+hdmitx -> monitor: "HDMI" {class: rt}
+
+venc.j.c0 -> microcamd.pump: "MJPEG" {class: data}
+venc.h.c0 -> microcamd.pump: "H.264/5" {class: data}
+microcamd.pump -> gadget: "USB frames ‖ кадры USB" {class: data}
+gadget -> host: "USB" {class: rt}
+venc.h.c1 -> microcamd.recorder: "H.264" {class: data}
+venc.j.c1 -> microcamd.recorder: "JPEG" {class: data}
+venc.j.c2 -> microcamd.recorder: "JPEG" {class: data}
+microcamd.recorder -> sd: "MP4 / JPEG" {class: data}
+microcamd.card -> sd: "mounts ‖ монтирует" {class: ctl}
+sd -> gadget: "disk to the host ‖ диск хосту" {class: data}
+sd -> microcamd.player: "MP4" {class: data}
+microcamd.player -> dec.vdec: "samples ‖ отсчёты" {class: data}
+dec.vdec -> scl.d1.c2: "frame ‖ кадр" {class: frames}
+
+# ── arrows: pictures and the menu ─────────────────────────────────────────────────────────────────────────────────────
+
+microcamd.res -> dec.jpd: "JPEG" {class: data}
+dec.jpd -> scl.d3: "YUYV" {class: frames}
+microcamd.res -> scl.d3: "NV12 picture ‖ картинка NV12" {class: frames}
+ge -> cv: "pictures, menu ‖ картинки, меню" {class: data}
+
+microcamd.ui -> ge: "commands ‖ команды" {class: ctl}
+microcamd.ui -> scl.d3: "baking ‖ запекание" {class: ctl}
+ge -> rgn: "menu windows ‖ окна меню" {class: data}
+rgn -> gop.g0: "canvases ‖ холсты" {class: data}
+rgn -> gop.g1: "canvases ‖ холсты" {class: data}
+rgn -> gop.g2: "canvases ‖ холсты" {class: data}
+rgn -> gop.g3: "canvases ‖ холсты" {class: data}
+gop.g0 -> scl.d0.p0: "menu ‖ меню" {class: data}
+gop.g1 -> scl.d0.p1: "menu ‖ меню" {class: data}
+gop.g2 -> scl.d0.p2: "menu ‖ меню" {class: data}
+gop.g3 -> scl.d1: "menu ‖ меню" {class: data}
+
+# ── arrows: control ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+a3 -> isp: "statistics ↔ settings ‖ статистика ↔ настройки" {class: ctl}
+microcamd.pipeline -> sensor: "frame length\nin step with HDMI ‖ длина кадра\nв такт с HDMI" {class: ctl}
+cv -> microcamd.feed: "canvas lent to the port ‖ холст выдан порту" {class: ctl}
+scene -> microcamd.control: "scene, settings ‖ сцена, настройки" {class: ctl}
+microcamd.control -> scene: "keys, state ‖ кнопки, состояние" {class: ctl}
+ir -> microcamd.keys: "keys ‖ кнопки" {class: ctl}

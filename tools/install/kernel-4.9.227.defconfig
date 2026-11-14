@@ -1,0 +1,24 @@
+# OpenMicroCam: the kernel configuration that matches the module ABI of the YIZHAN 4K camera's stock kernel (SigmaStar
+# SSC8836 / Mercury6, Linux 4.9.227), as a minimal config over vanilla 4.9.227 for ARCH=arm. prepare-ktree.sh applies it.
+# The lines hold: vermagic «4.9.227 SMP preempt mod_unload ARMv7 thumb2 p2v8» (SMP, PREEMPT, MODULE_UNLOAD,
+# THUMB2_KERNEL; no MODVERSIONS, no LOCALVERSION), the layout of struct module (PERF_EVENTS, JUMP_LABEL, ARM_MODULE_PLTS,
+# FTRACE off), of struct device and the locks (CMA, DMA_CMA, DEBUG_SPINLOCK, DEBUG_MUTEXES), the L2 cache calls
+# (CACHE_L2X0 off) and the USB core and gadget core as modules (USB, USB_GADGET =m); DEBUG_KERNEL is the debug options' gate.
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_PERF_EVENTS=y
+CONFIG_JUMP_LABEL=y
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+# CONFIG_CACHE_L2X0 is not set
+CONFIG_SMP=y
+CONFIG_PREEMPT=y
+CONFIG_THUMB2_KERNEL=y
+CONFIG_ARM_MODULE_PLTS=y
+CONFIG_CMA=y
+CONFIG_DMA_CMA=y
+CONFIG_USB=m
+CONFIG_USB_GADGET=m
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+# CONFIG_FTRACE is not set

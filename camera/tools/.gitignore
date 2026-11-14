@@ -1,0 +1,6 @@
+*.o
+fbhide
+dispdump
+dpctool
+isptool
+portdepth

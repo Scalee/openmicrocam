@@ -1,0 +1,910 @@
+lib	export	specified_in	class	ioctl_nr(size)	copy_back	notes	importers_on_camera
+libcam_os_wrapper	CamOsAtomicAddNegative	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicAddReturn	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsAtomicAndFetch	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicCompareAndSwap	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicDecAndTest	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicDecReturn	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsAtomicFetchAnd	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicFetchNand	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicFetchOr	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicFetchXor	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicIncAndTest	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicIncReturn	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsAtomicNandFetch	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicOrFetch	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicRead	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicSet	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicSubAndTest	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsAtomicSubReturn	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsAtomicXorFetch	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsCallStack	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsChipId	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsChipRevision	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsCopyFromUpperLayer	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsCopyToUpperLayer	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsDirectMemAlloc	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsDirectMemMiuToPhys	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsDirectMemPhysToMiu	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsDirectMemPhysToVirt	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsDirectMemRelease	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsDirectMemStat	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsDirectMemVirtToPhys	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsDramInfo	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsGetChar	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsGetHz	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsGetJiffies	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsGetMonotonicTime	mi-user-abi.md §7	identical to source (i6e)				libmi_vdf.so
+libcam_os_wrapper	CamOsGetTimeInMs	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsGetTimeOfDay	mi-user-abi.md §7	identical to source (i6e)				libmi_ao.so
+libcam_os_wrapper	CamOsHexdump	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsIdrAlloc	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsIdrDestroy	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsIdrFind	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsIdrInit	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsIdrInitEx	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsIdrRemove	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsInInterrupt	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsIrqDisable	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsIrqEnable	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsIrqFree	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsIrqRequest	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsJiffiesDiff	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsJiffiesToMs	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsListSort	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsMathDivS64	mi-user-abi.md §7	source behaviour, compiler-only diff				libispalgo.so
+libcam_os_wrapper	CamOsMathDivU64	mi-user-abi.md §7	source behaviour, compiler-only diff				libispalgo.so
+libcam_os_wrapper	CamOsMemAlloc	mi-user-abi.md §7	source (i6c / informal_idr)				libcus3a.so,libmi_ai.so,libmi_ao.so,libmi_ipu.so,libmi_vdf.so
+libcam_os_wrapper	CamOsMemAllocAtomic	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemCacheAlloc	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsMemCacheAllocAtomic	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsMemCacheCreate	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemCacheDestroy	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemCacheFree	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemCalloc	mi-user-abi.md §7	source (i6c / informal_idr)				libispalgo.so,libmi_ipu.so
+libcam_os_wrapper	CamOsMemCallocAtomic	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemFlush	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemFlushExt	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemFromUserModeMap	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsMemFromUserModeUnmap	mi-user-abi.md §7	identical to source (i6c)				
+libcam_os_wrapper	CamOsMemInvalidate	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMemMap	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsMemMiuToPhys	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsMemPhysToMiu	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsMemPhysToVirt	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemRealloc	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemReallocAtomic	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemRelease	mi-user-abi.md §7	identical to source (i6e)				libcus3a.so,libispalgo.so,libmi_ao.so,libmi_ipu.so,libmi_vdf.so
+libcam_os_wrapper	CamOsMemUnmap	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsMemVirtToPhys	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMemoryBarrier	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMiuPipeFlush	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMsDelay	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMsSleep	mi-user-abi.md §7	identical to source (i6e)				libmi_hdmi.so,libmi_jpd.so,libmi_shadow.so,libmi_vdf.so,libmi_venc.so
+libcam_os_wrapper	CamOsMsToJiffies	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsMutexDestroy	mi-user-abi.md §7	identical to source (i6e)				libcus3a.so,libmi_ipu.so,libmi_jpd.so,libmi_sed.so,libmi_vdf.so,libmi_venc.so
+libcam_os_wrapper	CamOsMutexInit	mi-user-abi.md §7	source behaviour, compiler-only diff				libcus3a.so,libmi_ipu.so,libmi_jpd.so,libmi_sed.so,libmi_vdf.so,libmi_venc.so
+libcam_os_wrapper	CamOsMutexLock	mi-user-abi.md §7	source behaviour, compiler-only diff				libcus3a.so,libmi_ipu.so,libmi_jpd.so,libmi_sed.so,libmi_vdf.so,libmi_venc.so
+libcam_os_wrapper	CamOsMutexTryLock	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsMutexUnlock	mi-user-abi.md §7	source behaviour, compiler-only diff				libcus3a.so,libmi_ipu.so,libmi_jpd.so,libmi_sed.so,libmi_vdf.so,libmi_venc.so
+libcam_os_wrapper	CamOsPanic	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsPhysMemSize	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsPrintString	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsPrintf	mi-user-abi.md §7	source behaviour, compiler-only diff				libcus3a.so,libispalgo.so,libmi_ipu.so,libmi_sed.so,libmi_vdf.so
+libcam_os_wrapper	CamOsPropertyGet	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsPropertySet	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsRwsemDeinit	mi-user-abi.md §7	source behaviour, compiler-only diff				libmi_vdf.so
+libcam_os_wrapper	CamOsRwsemDownRead	mi-user-abi.md §7	identical to source (i6e)				libmi_ai.so,libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsRwsemDownWrite	mi-user-abi.md §7	source behaviour, compiler-only diff				libmi_ai.so,libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsRwsemInit	mi-user-abi.md §7	identical to source (i6e)				libmi_ai.so,libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsRwsemTryDownRead	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsRwsemTryDownWrite	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsRwsemUpRead	mi-user-abi.md §7	identical to source (i6e)				libmi_ai.so,libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsRwsemUpWrite	mi-user-abi.md §7	source behaviour, compiler-only diff				libmi_ai.so,libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsScanf	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsSetTimeOfDay	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsSmpMemoryBarrier	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsSnprintf	mi-user-abi.md §7	source behaviour, compiler-only diff				libcus3a.so
+libcam_os_wrapper	CamOsSpinInit	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsSpinLock	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsSpinLockIrqSave	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsSpinUnlock	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsSpinUnlockIrqRestore	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsStrError	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsStrtol	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsStrtoul	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsStrtoull	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsTcondDeinit	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondInit	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondSignal	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondSignalAll	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondTimedWait	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTcondTimedWaitInterruptible	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	CamOsTcondWait	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondWaitActive	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTcondWaitInterruptible	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsThreadChangePriority	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsThreadCreate	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				libmi_sed.so,libmi_shadow.so,libmi_vdf.so
+libcam_os_wrapper	CamOsThreadGetID	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsThreadGetName	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsThreadJoin	mi-user-abi.md §7	identical to source (i6e)				libmi_sed.so,libmi_shadow.so,libmi_vdf.so
+libcam_os_wrapper	CamOsThreadSchedule	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsThreadSetName	mi-user-abi.md §7	identical to source (i6e)				libmi_shadow.so,libmi_vdf.so
+libcam_os_wrapper	CamOsThreadShouldStop	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsThreadStop	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsThreadWakeUp	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTimeDiff	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTimerAdd	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTimerDelete	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTimerDeleteSync	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTimerInit	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTimerModify	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsTsemDeinit	mi-user-abi.md §7	source behaviour, compiler-only diff				libmi_rgn.so,libmi_sys.so
+libcam_os_wrapper	CamOsTsemDown	mi-user-abi.md §7	source behaviour, compiler-only diff				libmi_ai.so,libmi_ao.so,libmi_disp.so,libmi_gfx.so,libmi_hdmi.so,libmi_ipu.so,libmi_isp.so,libmi_jpd.so,libmi_ldc.so,libmi_mipitx.so,libmi_panel.so,libmi_rgn.so,libmi_scl.so,libmi_sensor.so,libmi_shadow.so,libmi_sys.so,libmi_vdec.so,libmi_vdisp.so,libmi_venc.so,libmi_vif.so
+libcam_os_wrapper	CamOsTsemDownInterruptible	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTsemInit	mi-user-abi.md §7	identical to source (i6e)				libmi_rgn.so,libmi_sys.so
+libcam_os_wrapper	CamOsTsemTimedDown	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTsemTryDown	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	CamOsTsemUp	mi-user-abi.md §7	identical to source (i6e)				libmi_ai.so,libmi_ao.so,libmi_disp.so,libmi_gfx.so,libmi_hdmi.so,libmi_ipu.so,libmi_isp.so,libmi_jpd.so,libmi_ldc.so,libmi_mipitx.so,libmi_panel.so,libmi_rgn.so,libmi_scl.so,libmi_sensor.so,libmi_shadow.so,libmi_sys.so,libmi_vdec.so,libmi_vdisp.so,libmi_venc.so,libmi_vif.so
+libcam_os_wrapper	CamOsUsDelay	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsUsSleep	mi-user-abi.md §7	identical to source (i6e)				libmi_ao.so,libmi_vdf.so
+libcam_os_wrapper	CamOsVersion	mi-user-abi.md §7	identical to source (i6e)				
+libcam_os_wrapper	CamOsWorkQueueAdd	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsWorkQueueCancel	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsWorkQueueCreate	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	CamOsWorkQueueDestroy	mi-user-abi.md §7	differs from source (mi-user-abi.md §7.4)				
+libcam_os_wrapper	_CamOsFindFirstZeroBit	mi-user-abi.md §7	source behaviour, compiler-only diff				
+libcam_os_wrapper	_CamOsIdrAlloc	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	_CamOsIdrDestroy	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	_CamOsIdrFind	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	_CamOsIdrInit	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	_CamOsIdrRemove	mi-user-abi.md §7	source (i6c / informal_idr)				
+libcam_os_wrapper	cam_os_wrapper_version_string	mi-user-abi.md §7	data				
+libcam_fs_wrapper	CamFsClose	mi-user-abi.md §8	libc call				libmi_ipu.so
+libcam_fs_wrapper	CamFsOpen	mi-user-abi.md §8	libc call				libmi_ipu.so
+libcam_fs_wrapper	CamFsRead	mi-user-abi.md §8	libc call				libmi_ipu.so
+libcam_fs_wrapper	CamFsSeek	mi-user-abi.md §8	libc call				libmi_ipu.so
+libcam_fs_wrapper	CamFsWrite	mi-user-abi.md §8	libc call				
+libmi_common	MI_OS_AtomicAddNegative	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicAddReturn	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicDecAndTest	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicDecReturn	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicIncAndTest	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicIncReturn	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicRead	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicSet	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicSubAndTest	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_AtomicSubReturn	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_GetMonotonicTime	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_GetTimeOfDay	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MathDivS64	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MathDivU64	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MemAlloc	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MemCalloc	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MemRelease	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MsSleep	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MutexDestroy	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MutexInit	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MutexLock	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_MutexUnlock	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_Printf	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreDestroy	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreDown	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreGetValue	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreInit	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreTimedDown	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SemaphoreUp	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_SetTimeOfDay	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadCreate	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadGetId	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadGetName	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadSetName	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadShouldStop	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_ThreadStop	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_WaitCond	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_WaitCondInit	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_WaitCondSignal	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_common	MI_OS_WaitCondTimed	mi-user-abi.md §9	pthread/libc wrapper				
+libmi_sys	MI_SYS_BindChnPort	mi_sys-2-interfaces.md §5	wrap	0x2:BindChnPort(0x30)			libmi_iqserver.so,libmi_sed.so
+libmi_sys	MI_SYS_BindChnPort2	mi-user-abi.md §10	logic	0x3:BindChnPort2(0x30)			libmi_iqserver.so
+libmi_sys	MI_SYS_BufBlitPa	mi_sys-2-interfaces.md §5	wrap	0x24:BufBlitPa(0xe0)			
+libmi_sys	MI_SYS_BufFillPa	mi_sys-2-interfaces.md §5	wrap	0x23:BufFillPa(0x78)			
+libmi_sys	MI_SYS_ChnInputPortGetBuf	mi_sys-2-interfaces.md §5	logic	0x11:ChnInputPortGetBuf(0x1a0)			libmi_iqserver.so
+libmi_sys	MI_SYS_ChnInputPortGetBufPa	mi_sys-2-interfaces.md §5	logic	0x11:ChnInputPortGetBuf(0x1a0)			
+libmi_sys	MI_SYS_ChnInputPortPutBuf	mi_sys-2-interfaces.md §5	wrap	0x12:ChnInputPortPutBuf(0x118)			libmi_iqserver.so
+libmi_sys	MI_SYS_ChnInputPortPutBufPa	mi_sys-2-interfaces.md §5	wrap	0x12:ChnInputPortPutBuf(0x118)			
+libmi_sys	MI_SYS_ChnInputPortSetUserPicture	mi_sys-2-interfaces.md §5	logic	0x29:ChnInputPortSetUserPicture(0x118)			
+libmi_sys	MI_SYS_ChnOutputPortGetBuf	mi-user-abi.md §10	logic	0x13:ChnOutputPortGetBuf(0x128)			libmi_ai.so,libmi_iqserver.so,libmi_sed.so,libmi_vdf.so
+libmi_sys	MI_SYS_ChnOutputPortGetBufPa	mi-user-abi.md §10	logic	0x13:ChnOutputPortGetBuf(0x128)			
+libmi_sys	MI_SYS_ChnOutputPortPutBuf	mi-user-abi.md §10	wrap	0x14:ChnOutputPortPutBuf(0x4)			libmi_ai.so,libmi_iqserver.so,libmi_sed.so,libmi_vdf.so
+libmi_sys	MI_SYS_ChnOutputPortPutBufPa	mi-user-abi.md §10	wrap	0x14:ChnOutputPortPutBuf(0x4)			
+libmi_sys	MI_SYS_ChnPortInjectBuf	mi_sys-2-interfaces.md §5	wrap	0x1b:ChnPortInjectBuf(0x14)			
+libmi_sys	MI_SYS_CloseFd	mi_sys-2-interfaces.md §5	wrap	0x18:PutPollPrivatePoll(0x4)			libmi_ai.so,libmi_iqserver.so,libmi_venc.so
+libmi_sys	MI_SYS_ConfigPrivateMMAPool	mi_sys-2-interfaces.md §5	logic	0x20:ConfigPrivateMMAHeap(0x3c)			libmi_ipu.so
+libmi_sys	MI_SYS_DisableUserPicture	mi_sys-2-interfaces.md §5	wrap	0x2b:ChnInputPortDisableUserPicture(0x4)			
+libmi_sys	MI_SYS_DupBuf	mi_sys-2-interfaces.md §5	wrap	0x28:ChnDupBufHandle(0x8)			
+libmi_sys	MI_SYS_EnableChnOutputPortLowLatency	mi_sys-2-interfaces.md §5	logic	0x27:EnableChnOuputPortLowLatency(0x18)			
+libmi_sys	MI_SYS_EnableUserPicture	mi_sys-2-interfaces.md §5	wrap	0x2a:ChnInputPortEnableUserPicture(0x4)			
+libmi_sys	MI_SYS_Exit	mi-user-abi.md §10	logic	0x1:Exit(0x4)			
+libmi_sys	MI_SYS_FlushInvCache	mi_sys-2-interfaces.md §5	wrap	0x1e:FlushInvCache(0x8)			libMD_LINUX.so,libOD_LINUX.so,libVG_LINUX.so,libmi_ipu.so,libmi_ive.so,libmi_rgn.so,libmi_sed.so,libmi_venc.so
+libmi_sys	MI_SYS_GetBindbyDest	mi_sys-2-interfaces.md §5	logic	0x5:GetBindbyDest(0x30)			libmi_iqserver.so
+libmi_sys	MI_SYS_GetChnMMAConf	mi_sys-2-interfaces.md §5	wrap	0x10:GetChnMMAConf(0x50)			
+libmi_sys	MI_SYS_GetChnOutputPortDepth	mi_sys-2-interfaces.md §5	logic	0x16:GetChnOutputPortDepth(0x18)			
+libmi_sys	MI_SYS_GetCurPts	mi-user-abi.md §10	wrap	0x7:GetCurPts(0x8)			
+libmi_sys	MI_SYS_GetFd	mi_sys-2-interfaces.md §5	multi	0x19:GetFdFromChnPort(0x14) 0x17:GetPollPrivatePoll(0x14) 0x1a:SetFdToChnPort(0x14) 0x0:type00(0x0)			libmi_ai.so,libmi_iqserver.so
+libmi_sys	MI_SYS_GetReg	mi_sys-2-interfaces.md §5	wrap	0xe:GetReg(0x8)			
+libmi_sys	MI_SYS_GetVersion	mi-user-abi.md §10	wrap	0x6:GetVersion(0x80)			
+libmi_sys	MI_SYS_Init	mi-user-abi.md §10	logic	0x0:Init(0x4)			
+libmi_sys	MI_SYS_InitPtsBase	mi-user-abi.md §10	wrap	0x8:InitPtsBase(0x8)			
+libmi_sys	MI_SYS_MMA_Alloc	mi_sys-2-interfaces.md §5	logic	0x1c:MmaAlloc(0x30)			libMD_LINUX.so,libOD_LINUX.so,libcus3a.so,libmi_iqserver.so,libmi_ive.so,libmi_sed.so
+libmi_sys	MI_SYS_MMA_Free	mi_sys-2-interfaces.md §5	wrap	0x1d:MmaFree(0x8)			libMD_LINUX.so,libOD_LINUX.so,libcus3a.so,libmi_iqserver.so,libmi_ive.so,libmi_sed.so
+libmi_sys	MI_SYS_MemcpyPa	mi_sys-2-interfaces.md §5	wrap	0x22:MemcpyPa(0x18)			
+libmi_sys	MI_SYS_MemsetPa	mi_sys-2-interfaces.md §5	wrap	0x21:MemsetPa(0x10)			
+libmi_sys	MI_SYS_Mmap	mi_sys-2-interfaces.md §5	wrap	0xa:Mmap(0x18)			libMD_LINUX.so,libOD_LINUX.so,libcus3a.so,libmi_ipu.so,libmi_iqserver.so,libmi_ive.so,libmi_jpd.so,libmi_rgn.so,libmi_sed.so,libmi_venc.so
+libmi_sys	MI_SYS_Munmap	mi_sys-2-interfaces.md §5	wrap	0xb:Munmap(0x8)			libMD_LINUX.so,libOD_LINUX.so,libcus3a.so,libmi_ipu.so,libmi_iqserver.so,libmi_ive.so,libmi_jpd.so,libmi_rgn.so,libmi_sed.so,libmi_venc.so
+libmi_sys	MI_SYS_PrivateDevChnHeapAlloc	mi_sys-2-interfaces.md §5	logic	0x25:PrivateDevChnHeapAlloc(0x40)			libmi_ipu.so
+libmi_sys	MI_SYS_PrivateDevChnHeapFree	mi_sys-2-interfaces.md §5	wrap	0x26:PrivateDevChnHeapFree(0x18)			libmi_ipu.so
+libmi_sys	MI_SYS_ReadUuid	mi_sys-2-interfaces.md §5	wrap	0x1f:Read_Uuid(0x8)			
+libmi_sys	MI_SYS_SetChnMMAConf	mi_sys-2-interfaces.md §5	logic	0xf:SetChnMMAConf(0x4c)			
+libmi_sys	MI_SYS_SetChnOutputPortDepth	mi-user-abi.md §10	logic	0x15:SetChnOutputPortDepth(0x18)			libmi_iqserver.so,libmi_vdf.so
+libmi_sys	MI_SYS_SetReg	mi_sys-2-interfaces.md §5	wrap	0xd:SetReg(0x8)			
+libmi_sys	MI_SYS_SyncPts	mi-user-abi.md §10	wrap	0x9:SyncPts(0x8)			
+libmi_sys	MI_SYS_UnBindChnPort	mi-user-abi.md §10	logic	0x4:UnBindChnPort(0x30)			libmi_iqserver.so,libmi_sed.so
+libmi_sys	MI_SYS_Va2Pa	mi_sys-2-interfaces.md §5	wrap	0xc:Va2Pa(0x10)			
+libmi_sys	_MI_PRINT_GetDebugLevel	mi_sys-2-interfaces.md §5	noioctl				libmi_ai.so,libmi_ao.so,libmi_gfx.so,libmi_hdmi.so,libmi_jpd.so,libmi_ldc.so,libmi_shadow.so,libmi_vdec.so,libmi_venc.so
+libmi_sys	g_last_fd_index	mi-user-abi.md §7	data				libmi_ai.so,libmi_ao.so,libmi_disp.so,libmi_gfx.so,libmi_hdmi.so,libmi_ipu.so,libmi_isp.so,libmi_jpd.so,libmi_ldc.so,libmi_mipitx.so,libmi_panel.so,libmi_rgn.so,libmi_scl.so,libmi_sensor.so,libmi_shadow.so,libmi_vdec.so,libmi_vdisp.so,libmi_venc.so,libmi_vif.so
+libmi_sys	g_mi_fd_semalock	mi-user-abi.md §7	data				libmi_ai.so,libmi_ao.so,libmi_disp.so,libmi_gfx.so,libmi_hdmi.so,libmi_ipu.so,libmi_isp.so,libmi_jpd.so,libmi_ldc.so,libmi_mipitx.so,libmi_panel.so,libmi_rgn.so,libmi_scl.so,libmi_sensor.so,libmi_shadow.so,libmi_vdec.so,libmi_vdisp.so,libmi_venc.so,libmi_vif.so
+libmi_sys	g_mi_fd_table	mi-user-abi.md §7	data				libmi_ai.so,libmi_ao.so,libmi_disp.so,libmi_gfx.so,libmi_hdmi.so,libmi_ipu.so,libmi_isp.so,libmi_jpd.so,libmi_ldc.so,libmi_mipitx.so,libmi_panel.so,libmi_rgn.so,libmi_scl.so,libmi_sensor.so,libmi_shadow.so,libmi_vdec.so,libmi_vdisp.so,libmi_venc.so,libmi_vif.so
+libmi_sensor	MI_SNR_CustFunction	mi-capture.md §2.7	wrap	0x10:CustFunction(0x14)			
+libmi_sensor	MI_SNR_DeInitDev	mi-capture.md §2.7	noioctl				
+libmi_sensor	MI_SNR_Disable	mi-user-abi.md §10	wrap	0x1:Disable(0x4)			
+libmi_sensor	MI_SNR_Enable	mi-user-abi.md §10	wrap	0x0:Enable(0x4)			
+libmi_sensor	MI_SNR_GetAnadecSrcAttr	mi-capture.md §2.7	wrap	0x6:GetAnadecSrcAttr(0x1c)	on0		
+libmi_sensor	MI_SNR_GetCurRes	mi-capture.md §2.7	wrap	0xa:GetCurRes(0x3c)	on0		
+libmi_sensor	MI_SNR_GetFps	mi-capture.md §2.7	wrap	0x4:GetFps(0x8)	on0		
+libmi_sensor	MI_SNR_GetOrien	mi-capture.md §2.7	wrap	0xd:GetOrien(0x8)	on0		
+libmi_sensor	MI_SNR_GetPadInfo	mi-user-abi.md §10	wrap	0x2:GetPadInfo(0x38)			
+libmi_sensor	MI_SNR_GetPlaneInfo	mi-user-abi.md §10	wrap	0x3:GetPlaneInfo(0x50)			
+libmi_sensor	MI_SNR_GetPlaneMode	mi-capture.md §2.7	wrap	0xf:GetPlaneMode(0x8)	on0		
+libmi_sensor	MI_SNR_GetRes	mi-user-abi.md §10	wrap	0x9:GetRes(0x3c)			
+libmi_sensor	MI_SNR_InitDev	mi-capture.md §2.7	noioctl				
+libmi_sensor	MI_SNR_QueryResCount	mi-user-abi.md §10	wrap	0x8:QueryResCount(0x8)			
+libmi_sensor	MI_SNR_SetAnadecSrcAttr	mi-capture.md §2.7	wrap	0x7:SetAnadecSrcAttr(0x1c)			
+libmi_sensor	MI_SNR_SetFps	mi-capture.md §2.7	wrap	0x5:SetFps(0x8)			
+libmi_sensor	MI_SNR_SetOrien	mi-capture.md §2.7	wrap	0xc:SetOrien(0x8)			
+libmi_sensor	MI_SNR_SetPlaneMode	mi-user-abi.md §10	wrap	0xe:SetPlaneMode(0x8)			
+libmi_sensor	MI_SNR_SetRes	mi-user-abi.md §10	wrap	0xb:SetRes(0x8)			
+libmi_vif	MI_VIF_CallBackTask_Register	mi-capture.md §3.16	noioctl				
+libmi_vif	MI_VIF_CallBackTask_UnRegister	mi-capture.md §3.16	noioctl				
+libmi_vif	MI_VIF_CreateDevGroup	mi-user-abi.md §10	wrap	0x0:CreateDevGroup(0x20)			
+libmi_vif	MI_VIF_CreateDevGroupExt	mi-capture.md §3.16	wrap	0x1:CreateDevGroupExt(0x34)			
+libmi_vif	MI_VIF_DestroyDevGroup	mi-user-abi.md §10	wrap	0x2:DestroyDevGroup(0x4)			
+libmi_vif	MI_VIF_DisableDev	mi-user-abi.md §10	wrap	0x7:DisableDev(0x4)			
+libmi_vif	MI_VIF_DisableOutputPort	mi-user-abi.md §10	wrap	0xc:DisableOutputPort(0x8)			
+libmi_vif	MI_VIF_EnableDev	mi-user-abi.md §10	wrap	0x6:EnableDev(0x4)			
+libmi_vif	MI_VIF_EnableOutputPort	mi-user-abi.md §10	wrap	0xb:EnableOutputPort(0x8)			
+libmi_vif	MI_VIF_GetDevAttr	mi-capture.md §3.16	wrap	0x5:GetDevAttr(0x18)	on0		
+libmi_vif	MI_VIF_GetDevGroupAttr	mi-capture.md §3.16	wrap	0x3:GetDevGroupAttr(0x20)	on0		libmi_iqserver.so
+libmi_vif	MI_VIF_GetDevStatus	mi-capture.md §3.16	wrap	0x8:GetDevStatus(0x18)	on0		libmi_iqserver.so
+libmi_vif	MI_VIF_GetOutputPortAttr	mi-capture.md §3.16	wrap	0xa:GetOutputPortAttr(0x1c)	on0		libmi_iqserver.so
+libmi_vif	MI_VIF_Query	mi-user-abi.md §10	wrap	0xd:Query(0x24)			
+libmi_vif	MI_VIF_SetDevAttr	mi-user-abi.md §10	wrap	0x4:SetDevAttr(0x18)			
+libmi_vif	MI_VIF_SetOutputPortAttr	mi-user-abi.md §10	wrap	0x9:SetOutputPortAttr(0x1c)			
+libmi_isp	MI_ISP_AE_GetAeHwAvgStats	mi-capture.md §5	isp api wrapper	Get id 0x2e01 (0xb408 B)		route kernel; kernel MS_CAM_ISP_GetAeHwAvgStats	libcus3a.so
+libmi_isp	MI_ISP_AE_GetConverge	mi-capture.md §5	isp api wrapper	Get id 0x1408 (0x28 B)		route cus3a-AE; kernel AE_GetConverge	
+libmi_isp	MI_ISP_AE_GetDayNightDetection	mi-capture.md §5	isp api wrapper	Get id 0x1418 (0xc B)		route cus3a-AE; kernel AE_GetDayNightDetection	
+libmi_isp	MI_ISP_AE_GetEVComp	mi-capture.md §5	isp api wrapper	Get id 0x1403 (0x8 B)		route cus3a-AE; kernel AE_GetEVComp	
+libmi_isp	MI_ISP_AE_GetExpoMode	mi-user-abi.md §10	isp api wrapper	Get id 0x1404 (0x4 B)		route cus3a-AE; kernel AE_GetExpMode	
+libmi_isp	MI_ISP_AE_GetExposureLimit	mi-user-abi.md §10	isp api wrapper	Get id 0x1409 (0x20 B)		route cus3a-AE; kernel AE_GetExposureLimit	
+libmi_isp	MI_ISP_AE_GetFlicker	mi-user-abi.md §10	isp api wrapper	Get id 0x140e (0x4 B)		route cus3a-AE; kernel AE_GetFlicker	
+libmi_isp	MI_ISP_AE_GetFlickerEX	mi-capture.md §5	isp api wrapper	Get id 0x1413 (0x10 B)		route cus3a-AE; kernel AE_GetFlickerEX	
+libmi_isp	MI_ISP_AE_GetHDR	mi-capture.md §5	isp api wrapper	Get id 0x1411 (0x84 B)		route cus3a-AE; kernel AE_GetAEHDR	
+libmi_isp	MI_ISP_AE_GetHisto0HwStats	mi-capture.md §5	isp api wrapper	Get id 0x2e02 (0x100 B)		route kernel; kernel MS_CAM_ISP_GetHistoHwStats	libcus3a.so
+libmi_isp	MI_ISP_AE_GetHisto1HwStats	mi-capture.md §5	isp api wrapper	Get id 0x2e03 (0x100 B)		route kernel; kernel MS_CAM_ISP_GetHistoHwStats	libcus3a.so
+libmi_isp	MI_ISP_AE_GetHistoWghtY	mi-capture.md §5	isp api wrapper	Get id 0x1401 (0x208 B)		route cus3a-AE; kernel AE_GetHistWghtY	
+libmi_isp	MI_ISP_AE_GetManualExpo	mi-user-abi.md §10	isp api wrapper	Get id 0x1405 (0x10 B)		route cus3a-AE; kernel AE_GetManualExpo	
+libmi_isp	MI_ISP_AE_GetManualShortExpo	mi-capture.md §5	isp api wrapper	Get id 0x1412 (0x10 B)		route cus3a-AE; kernel AE_GetManualExpoShort	
+libmi_isp	MI_ISP_AE_GetPlainLongExpoTable	mi-capture.md §5	isp api wrapper	Get id 0x140a (0x104 B)		route cus3a-AE; kernel AE_GetPlainExpTbl	
+libmi_isp	MI_ISP_AE_GetPlainShortExpoTable	mi-capture.md §5	isp api wrapper	Get id 0x140b (0x104 B)		route cus3a-AE; kernel AE_GetPlainShortExpTbl	
+libmi_isp	MI_ISP_AE_GetRGBIRAE	mi-capture.md §5	isp api wrapper	Get id 0x1410 (0x8 B)		route cus3a-AE; kernel AE_GetRGBIRAE	
+libmi_isp	MI_ISP_AE_GetRgbIrHistoHwStats	mi-capture.md §5	isp api wrapper	Get id 0x2e1e (0x200 B)		route kernel; kernel MS_CAM_ISP_GetRgbIrHistoHwStats	libcus3a.so
+libmi_isp	MI_ISP_AE_GetStabilizer	mi-capture.md §5	isp api wrapper	Get id 0x1415 (0x8 B)		route cus3a-AE; kernel AE_GetStabilizer	
+libmi_isp	MI_ISP_AE_GetState	mi-capture.md §5	isp api wrapper	Get id 0x1406 (0x4 B)		route cus3a-AE; kernel AE_GetState	
+libmi_isp	MI_ISP_AE_GetStrategy	mi-capture.md §5	isp api wrapper	Get id 0x140f (0x128 B)		route cus3a-AE; kernel AE_GetStrategy	
+libmi_isp	MI_ISP_AE_GetStrategyEX	mi-capture.md §5	isp api wrapper	Get id 0x1416 (0x294 B)		route cus3a-AE; kernel AE_GetStrategyEX	
+libmi_isp	MI_ISP_AE_GetTarget	mi-user-abi.md §10	isp api wrapper	Get id 0x1407 (0x84 B)		route cus3a-AE; kernel AE_GetTarget	
+libmi_isp	MI_ISP_AE_GetWinWgt	mi-capture.md §5	isp api wrapper	Get id 0x140d (0xc04 B)		route cus3a-AE; kernel AE_GetWinWgt	
+libmi_isp	MI_ISP_AE_GetWinWgtType	mi-capture.md §5	isp api wrapper	Get id 0x140c (0x4 B)		route cus3a-AE; kernel AE_GetWinWgtType	
+libmi_isp	MI_ISP_AE_QueryDayNightInfo	mi-capture.md §5	isp api wrapper	Get id 0x1419 (0xc B)		route cus3a-AE; kernel inline	
+libmi_isp	MI_ISP_AE_QueryExposureInfo	mi-user-abi.md §10	isp api wrapper	Get id 0x1402 (0x23c B)		route cus3a-AE; kernel AE_QueryExposureInfo	
+libmi_isp	MI_ISP_AE_QueryFlickerInfo	mi-capture.md §5	isp api wrapper	Get id 0x1414 (0xc B)		route cus3a-AE; kernel AE_GetFlickerInfo	
+libmi_isp	MI_ISP_AE_QueryStrategyEXInfo	mi-capture.md §5	isp api wrapper	Get id 0x1417 (0xe B)		route cus3a-AE; kernel AE_GetStrategyEXInfo	
+libmi_isp	MI_ISP_AE_SetConverge	mi-capture.md §5	isp api wrapper	Set id 0x1408 (0x28 B)		route cus3a-AE; kernel AE_SetConverge	
+libmi_isp	MI_ISP_AE_SetDayNightDetection	mi-capture.md §5	isp api wrapper	Set id 0x1418 (0xc B)		route cus3a-AE; kernel AE_SetDayNightDetection	
+libmi_isp	MI_ISP_AE_SetEVComp	mi-capture.md §5	isp api wrapper	Set id 0x1403 (0x8 B)		route cus3a-AE; kernel AE_SetEVComp	
+libmi_isp	MI_ISP_AE_SetExpoMode	mi-user-abi.md §10	isp api wrapper	Set id 0x1404 (0x4 B)		route cus3a-AE; kernel AE_SetExpMode	
+libmi_isp	MI_ISP_AE_SetExposureLimit	mi-capture.md §5	isp api wrapper	Set id 0x1409 (0x20 B)		route cus3a-AE; kernel AE_SetExposureLimit	
+libmi_isp	MI_ISP_AE_SetFlicker	mi-user-abi.md §10	isp api wrapper	Set id 0x140e (0x4 B)		route cus3a-AE; kernel AE_SetFlicker	
+libmi_isp	MI_ISP_AE_SetFlickerEX	mi-capture.md §5	isp api wrapper	Set id 0x1413 (0x10 B)		route cus3a-AE; kernel AE_SetFlickerEX	
+libmi_isp	MI_ISP_AE_SetHDR	mi-capture.md §5	isp api wrapper	Set id 0x1411 (0x84 B)		route cus3a-AE; kernel AE_SetAEHDR	
+libmi_isp	MI_ISP_AE_SetManualExpo	mi-user-abi.md §10	isp api wrapper	Set id 0x1405 (0x10 B)		route cus3a-AE; kernel AE_SetManualExpo	
+libmi_isp	MI_ISP_AE_SetManualShortExpo	mi-capture.md §5	isp api wrapper	Set id 0x1412 (0x10 B)		route cus3a-AE; kernel AE_SetManualExpoShort	
+libmi_isp	MI_ISP_AE_SetPlainLongExpoTable	mi-capture.md §5	isp api wrapper	Set id 0x140a (0x104 B)		route cus3a-AE; kernel AE_SetPlainExpTbl	
+libmi_isp	MI_ISP_AE_SetPlainShortExpoTable	mi-capture.md §5	isp api wrapper	Set id 0x140b (0x104 B)		route cus3a-AE; kernel AE_SetPlainShortExpTbl	
+libmi_isp	MI_ISP_AE_SetRGBIRAE	mi-capture.md §5	isp api wrapper	Set id 0x1410 (0x8 B)		route cus3a-AE; kernel AE_SetRGBIRAE	
+libmi_isp	MI_ISP_AE_SetStabilizer	mi-capture.md §5	isp api wrapper	Set id 0x1415 (0x8 B)		route cus3a-AE; kernel AE_SetStabilizer	
+libmi_isp	MI_ISP_AE_SetState	mi-capture.md §5	isp api wrapper	Set id 0x1406 (0x4 B)		route cus3a-AE; kernel AE_SetState	
+libmi_isp	MI_ISP_AE_SetStrategy	mi-capture.md §5	isp api wrapper	Set id 0x140f (0x128 B)		route cus3a-AE; kernel AE_SetStrategy	
+libmi_isp	MI_ISP_AE_SetStrategyEX	mi-capture.md §5	isp api wrapper	Set id 0x1416 (0x294 B)		route cus3a-AE; kernel AE_SetStrategyEX	
+libmi_isp	MI_ISP_AE_SetTarget	mi-user-abi.md §10	isp api wrapper	Set id 0x1407 (0x84 B)		route cus3a-AE; kernel AE_SetTarget	
+libmi_isp	MI_ISP_AE_SetWinWgt	mi-capture.md §5	isp api wrapper	Set id 0x140d (0xc04 B)		route cus3a-AE; kernel AE_SetWinWgt	
+libmi_isp	MI_ISP_AE_SetWinWgtType	mi-capture.md §5	isp api wrapper	Set id 0x140c (0x4 B)		route cus3a-AE; kernel AE_SetWinWgtType	
+libmi_isp	MI_ISP_AF_GetAccWeight	mi-capture.md §5	isp api wrapper	Get id 0x1c2b (0x110 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetAttr	mi-capture.md §5	isp api wrapper	Get id 0x1c29 (0x10 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWFilterAttr	mi-capture.md §5	isp api wrapper	Get id 0x1c03 (0x54 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWFilterSq	mi-capture.md §5	isp api wrapper	Get id 0x1c04 (0x34 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWLdg	mi-capture.md §5	isp api wrapper	Get id 0x1c09 (0x28 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWPreFilter	mi-capture.md §5	isp api wrapper	Get id 0x1c07 (0xc B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWRoiMode	mi-capture.md §5	isp api wrapper	Get id 0x1c01 (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWSource	mi-capture.md §5	isp api wrapper	Get id 0x1c06 (0x4 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWWin	mi-capture.md §5	isp api wrapper	Get id 0x1c02 (0x80 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWYMap	mi-capture.md §5	isp api wrapper	Get id 0x1c08 (0x1c B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetHWYParam	mi-capture.md §5	isp api wrapper	Get id 0x1c05 (0x3 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetMotor	mi-capture.md §5	isp api wrapper	Get id 0x1c2a (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetOneShot	mi-capture.md §5	isp api wrapper	Get id 0x1c2c (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetSceneChange	mi-capture.md §5	isp api wrapper	Get id 0x1c2d (0x18 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetSearch	mi-capture.md §5	isp api wrapper	Get id 0x1c2f (0x6 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_GetSearchStart	mi-capture.md §5	isp api wrapper	Get id 0x1c2e (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_QueryInfo	mi-capture.md §5	isp api wrapper	Get id 0x1c30 (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetAccWeight	mi-capture.md §5	isp api wrapper	Set id 0x1c2b (0x110 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetAttr	mi-capture.md §5	isp api wrapper	Set id 0x1c29 (0x10 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWFilterAttr	mi-capture.md §5	isp api wrapper	Set id 0x1c03 (0x54 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWFilterSq	mi-capture.md §5	isp api wrapper	Set id 0x1c04 (0x34 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWLdg	mi-capture.md §5	isp api wrapper	Set id 0x1c09 (0x28 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWPreFilter	mi-capture.md §5	isp api wrapper	Set id 0x1c07 (0xc B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWRoiMode	mi-capture.md §5	isp api wrapper	Set id 0x1c01 (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWSource	mi-capture.md §5	isp api wrapper	Set id 0x1c06 (0x4 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWWin	mi-capture.md §5	isp api wrapper	Set id 0x1c02 (0x80 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWYMap	mi-capture.md §5	isp api wrapper	Set id 0x1c08 (0x1c B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetHWYParam	mi-capture.md §5	isp api wrapper	Set id 0x1c05 (0x3 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetMotor	mi-capture.md §5	isp api wrapper	Set id 0x1c2a (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetOneShot	mi-capture.md §5	isp api wrapper	Set id 0x1c2c (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetSceneChange	mi-capture.md §5	isp api wrapper	Set id 0x1c2d (0x18 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetSearch	mi-capture.md §5	isp api wrapper	Set id 0x1c2f (0x6 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_AF_SetSearchStart	mi-capture.md §5	isp api wrapper	Set id 0x1c2e (0x8 B)		route cus3a-AF; kernel inline	
+libmi_isp	MI_ISP_ALGO_API_CmdLoadBinFile	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_ALGO_API_CmdLoadCaliData	mi-capture.md §5	isp api wrapper	Set id 0x2410 (? B)		route kernel; kernel CALIv30_OB_CaliApply	
+libmi_isp	MI_ISP_ALGO_API_DisableAllApi	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_ALGO_GET_ALL	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_ALGO_SET_ALL	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_API_CRC32	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_API_CmdLoadBinFile	mi-user-abi.md §10	noioctl				
+libmi_isp	MI_ISP_API_CmdLoadCaliData	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_API_DUMP_PARAM	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_API_EXCUTE_CMD	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_API_Reset	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_AWB_GetAttr	mi-user-abi.md §10	isp api wrapper	Get id 0x1802 (0x5b8 B)		route cus3a-AWB; kernel AWB_GetAttr	
+libmi_isp	MI_ISP_AWB_GetAttrEx	mi-capture.md §5	isp api wrapper	Get id 0x1803 (0x34 B)		route cus3a-AWB; kernel AWB_GetAttrEx	
+libmi_isp	MI_ISP_AWB_GetAwbHwAvgStats	mi-capture.md §5	isp api wrapper	Get id 0x2e07 (0x8708 B)		route kernel; kernel MS_CAM_ISP_GetAwbHwAvgStats	libcus3a.so
+libmi_isp	MI_ISP_AWB_GetAwbHwAvgStatsShort	mi-capture.md §5	isp api wrapper	Get id 0x2e19 (0x8708 B)		route kernel; kernel MS_CAM_ISP_GetAwbHwAvgStatsShort	libcus3a.so
+libmi_isp	MI_ISP_AWB_GetCTCaliAttr	mi-capture.md §5	isp api wrapper	Get id 0x2c03 (0x54 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_GetCTMwbAttr	mi-capture.md §5	isp api wrapper	Get id 0x1806 (0x4 B)		route cus3a-AWB; kernel AWB_GetCTMwb	
+libmi_isp	MI_ISP_AWB_GetCTStats	mi-capture.md §5	isp api wrapper	Get id 0x2c04 (0x5a04 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_GetCTWeight	mi-capture.md §5	isp api wrapper	Get id 0x1805 (0x16 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_GetCurCTCaliAttr	mi-capture.md §5	isp api wrapper	Get id 0x2c06 (0x50 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_GetDayNightDetection	mi-capture.md §5	isp api wrapper	Get id 0x1807 (0xc B)		route cus3a-AWB; kernel AWB_GetDayNightDetection	
+libmi_isp	MI_ISP_AWB_GetHWStats	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_AWB_GetHWStats_Cus	mi-capture.md §5	isp api wrapper	Get id 0x2e07 (0x8708 B)		route kernel; kernel MS_CAM_ISP_GetAwbHwAvgStats	
+libmi_isp	MI_ISP_AWB_GetMultiLSAttr	mi-capture.md §5	isp api wrapper	Get id 0x1804 (0x2c B)		route cus3a-AWB; kernel AWB_GetMultiLSAttr	
+libmi_isp	MI_ISP_AWB_GetStabilizer	mi-capture.md §5	isp api wrapper	Get id 0x1809 (0xc B)		route cus3a-AWB; kernel AWB_GetStabilizer	
+libmi_isp	MI_ISP_AWB_QueryDayNightInfo	mi-capture.md §5	isp api wrapper	Get id 0x1808 (0xc B)		route cus3a-AWB; kernel inline	
+libmi_isp	MI_ISP_AWB_QueryInfo	mi-user-abi.md §10	isp api wrapper	Get id 0x1801 (0x18 B)		route cus3a-AWB; kernel AWB_QueryInfo	
+libmi_isp	MI_ISP_AWB_SetAttr	mi-user-abi.md §10	isp api wrapper	Set id 0x1802 (0x5b8 B)		route cus3a-AWB; kernel AWB_SetAttr	
+libmi_isp	MI_ISP_AWB_SetAttrEx	mi-capture.md §5	isp api wrapper	Set id 0x1803 (0x34 B)		route cus3a-AWB; kernel AWB_SetAttrEx	
+libmi_isp	MI_ISP_AWB_SetCTCaliAttr	mi-capture.md §5	isp api wrapper	Set id 0x2c03 (0x54 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_SetCTMwbAttr	mi-capture.md §5	isp api wrapper	Set id 0x1806 (0x4 B)		route cus3a-AWB; kernel AWB_SetCTMwb	
+libmi_isp	MI_ISP_AWB_SetCTWeight	mi-capture.md §5	isp api wrapper	Set id 0x1805 (0x16 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_AWB_SetDayNightDetection	mi-capture.md §5	isp api wrapper	Set id 0x1807 (0xc B)		route cus3a-AWB; kernel AWB_SetDayNightDetection	
+libmi_isp	MI_ISP_AWB_SetMultiLSAttr	mi-capture.md §5	isp api wrapper	Set id 0x1804 (0x2c B)		route cus3a-AWB; kernel AWB_SetMultiLSAttr	
+libmi_isp	MI_ISP_AWB_SetStabilizer	mi-capture.md §5	isp api wrapper	Set id 0x1809 (0xc B)		route cus3a-AWB; kernel AWB_SetStabilizer	
+libmi_isp	MI_ISP_Alloc_IQDataBuf	mi-capture.md §5	wrap	0xe:Alloc_IQDataBuf(0x8)			libmi_iqserver.so
+libmi_isp	MI_ISP_CUS3A_CaptureHdrRawImage	mi-capture.md §5	isp api wrapper	Set id 0x2e16 (0x18 B)		route kernel; kernel MS_CAM_CaptureHdrRawImage	libmi_iqserver.so
+libmi_isp	MI_ISP_CUS3A_Enable	mi-capture.md §5	isp api wrapper	Set id 0x2e08 (0x3 B)		route kernel; kernel MS_CAM_ISP_SetCus3AEnable (before the switch)	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_EnableISPOutImage	mi-capture.md §5	isp api wrapper	Get id 0x2e14 (0x14 B)		route kernel; kernel MS_CAM_EnableISPOutImage	libmi_iqserver.so
+libmi_isp	MI_ISP_CUS3A_GetAFFilter	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_CUS3A_GetAFFilterSq	mi-capture.md §5	isp api wrapper	Get id 0x2e10 (0x34 B)		route kernel; kernel CameraGetAFFilterSq	
+libmi_isp	MI_ISP_CUS3A_GetAFFilter_Geo	mi-capture.md §5	isp api wrapper	Get id 0x2e0f (0x8c B)		route kernel; kernel CameraGetAFFilterAttr	
+libmi_isp	MI_ISP_CUS3A_GetAFLdg	mi-capture.md §5	isp api wrapper	Get id 0x2e28 (0x28 B)		route kernel; kernel CameraGetAFLdg	
+libmi_isp	MI_ISP_CUS3A_GetAFPreFilter	mi-capture.md §5	isp api wrapper	Get id 0x2e26 (0xc B)		route kernel; kernel CameraGetAFPreFilter	
+libmi_isp	MI_ISP_CUS3A_GetAFRoiMode	mi-capture.md §5	isp api wrapper	Get id 0x2e11 (0x8 B)		route kernel; kernel CameraGetAF_ROI_Mode	
+libmi_isp	MI_ISP_CUS3A_GetAFSource	mi-capture.md §5	isp api wrapper	Get id 0x2e25 (0x4 B)		route kernel; kernel CameraGetAF_Source	
+libmi_isp	MI_ISP_CUS3A_GetAFStats	mi-capture.md §5	isp api wrapper	Get id 0x2e0d (0x1c00 B)		route kernel; kernel MS_CAM_ISP_GetAfHwStats	
+libmi_isp	MI_ISP_CUS3A_GetAFWindow	mi-capture.md §5	isp api wrapper	Get id 0x2e0e (0x14 B)		route kernel; kernel CameraGetAFWindow	
+libmi_isp	MI_ISP_CUS3A_GetAFYMap	mi-capture.md §5	isp api wrapper	Get id 0x2e27 (0x1c B)		route kernel; kernel CameraGetAFYMap	
+libmi_isp	MI_ISP_CUS3A_GetAFYParam	mi-capture.md §5	isp api wrapper	Get id 0x2e24 (0x3 B)		route kernel; kernel CameraGetAF_YParam	
+libmi_isp	MI_ISP_CUS3A_GetAeInitStatus	mi-capture.md §5	isp api wrapper	Get id 0x2e04 (0x6c B)		route kernel; kernel MS_CAM_ISP_GetAeInitStatus	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_GetAeStatus	mi-capture.md §5	isp api wrapper	Get id 0x2e05 (0x41 B)		route kernel; kernel MS_CAM_ISP_GetAeStatus	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_GetAfStatus	mi-capture.md §5	isp api wrapper	Get id 0x2e20 (0x10 B)		route kernel; kernel MS_CAM_ISP_GetAfStatus	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_GetAwbStatus	mi-capture.md §5	isp api wrapper	Get id 0x2e09 (0x29 B)		route kernel; kernel MS_CAM_ISP_GetAwbStatus	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_GetISPOutImageCount	mi-capture.md §5	isp api wrapper	Get id 0x2e15 (0x4 B)		route kernel; kernel CameraISP_ImageStoreGetCounter	libmi_iqserver.so
+libmi_isp	MI_ISP_CUS3A_GetImageResolution	mi-capture.md §5	isp api wrapper	Get id 0x2e13 (0x10 B)		route kernel; kernel MS_CAM_GetImageResolution	libmi_iqserver.so
+libmi_isp	MI_ISP_CUS3A_SetAECropSize	mi-capture.md §5	isp api wrapper	Set id 0x2e22 (0x8 B)		route kernel; kernel MS_CAM_ISP_SetAEWindowBlockRange	
+libmi_isp	MI_ISP_CUS3A_SetAEHistogramWindow	mi-capture.md §5	isp api wrapper	Set id 0x2e12 (0xa B)		route kernel; kernel CameraSetHistoWins	
+libmi_isp	MI_ISP_CUS3A_SetAEWindowBlockNumber	mi-capture.md §5	isp api wrapper	Set id 0x2e0b (0x4 B)		route kernel; kernel MS_CAM_ISP_SetAEWindowBlockNumber	
+libmi_isp	MI_ISP_CUS3A_SetAFFilter	mi-capture.md §5	noioctl				libispalgo.so,libsigma3a.so
+libmi_isp	MI_ISP_CUS3A_SetAFFilterSq	mi-capture.md §5	isp api wrapper	Set id 0x2e10 (0x34 B)		route kernel; kernel CameraSetAFFilterSq	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAFFilter_Geo	mi-capture.md §5	isp api wrapper	Set id 0x2e0f (0x8c B)		route kernel; kernel CameraSetAFFilterAttr	
+libmi_isp	MI_ISP_CUS3A_SetAFLdg	mi-capture.md §5	isp api wrapper	Set id 0x2e28 (0x28 B)		route kernel; kernel CameraSetAFLdg	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAFPreFilter	mi-capture.md §5	isp api wrapper	Set id 0x2e26 (0xc B)		route kernel; kernel CameraSetAFPreFilter	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAFRoiMode	mi-capture.md §5	isp api wrapper	Set id 0x2e11 (0x8 B)		route kernel; kernel CameraSetAF_ROI_Mode	libispalgo.so,libsigma3a.so
+libmi_isp	MI_ISP_CUS3A_SetAFSource	mi-capture.md §5	isp api wrapper	Set id 0x2e25 (0x4 B)		route kernel; kernel CameraSetAF_Source	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAFWindow	mi-capture.md §5	isp api wrapper	Set id 0x2e0e (0x14 B)		route kernel; kernel MS_CAM_SetAFWindow	libispalgo.so,libsigma3a.so
+libmi_isp	MI_ISP_CUS3A_SetAFYMap	mi-capture.md §5	isp api wrapper	Set id 0x2e27 (0x1c B)		route kernel; kernel CameraSetAFYMap	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAFYParam	mi-capture.md §5	isp api wrapper	Set id 0x2e24 (0x3 B)		route kernel; kernel CameraSetAF_YParam	libispalgo.so
+libmi_isp	MI_ISP_CUS3A_SetAWBCropSize	mi-capture.md §5	isp api wrapper	Set id 0x2e23 (0x8 B)		route kernel; kernel MS_CAM_ISP_SetAWBWindowBlockRange	
+libmi_isp	MI_ISP_CUS3A_SetAWBSampling	mi-capture.md §5	isp api wrapper	Set id 0x2e0c (0xc B)		route kernel; kernel MS_CAM_ISP_SetAWBSampling	
+libmi_isp	MI_ISP_CUS3A_SetAeParam	mi-capture.md §5	isp api wrapper	Set id 0x2e06 (0x38 B)		route kernel; kernel MS_CAM_ISP_SetAeParam	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_SetAfParam	mi-capture.md §5	isp api wrapper	Set id 0x2e21 (0xc B)		route kernel; kernel MS_CAM_ISP_SetAfParam	libcus3a.so
+libmi_isp	MI_ISP_CUS3A_SetAwbParam	mi-capture.md §5	isp api wrapper	Set id 0x2e0a (0x18 B)		route kernel; kernel MS_CAM_ISP_SetAwbParam	libcus3a.so
+libmi_isp	MI_ISP_CallBackTask_Register	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_CallBackTask_Unregister	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_CreateChannel	mi-user-abi.md §10	logic	0x2:CreateChannel(0x58)			
+libmi_isp	MI_ISP_CreateDevice	mi-user-abi.md §10	wrap	0x0:CreateDevice(0x8)			
+libmi_isp	MI_ISP_DestoryDevice	mi-user-abi.md §10	wrap	0x1:DestoryDevice(0x4)			
+libmi_isp	MI_ISP_DestroyChannel	mi-user-abi.md §10	logic	0x3:DestroyChannel(0x8)			
+libmi_isp	MI_ISP_DisableOutputPort	mi-user-abi.md §10	wrap	0xd:DisableOutputPort(0xc)			
+libmi_isp	MI_ISP_DisableUserspace3A	mi-capture.md §5	noioctl				libmi_vpe.so
+libmi_isp	MI_ISP_EnableOutputPort	mi-user-abi.md §10	wrap	0xc:EnableOutputPort(0xc)			
+libmi_isp	MI_ISP_EnableUserspace3A	mi-capture.md §5	noioctl				libmi_vpe.so
+libmi_isp	MI_ISP_Free_IQDataBuf	mi-capture.md §5	wrap	0xf:Free_IQDataBuf(0x8)			libmi_iqserver.so
+libmi_isp	MI_ISP_GET_ALL	mi-capture.md §5	noioctl				libmi_iqserver.so
+libmi_isp	MI_ISP_GetChnParam	mi-capture.md §5	wrap	0x7:GetChnParam(0x18)			libmi_iqserver.so
+libmi_isp	MI_ISP_GetDebugLevel_AE	mi-capture.md §5	isp api wrapper	Get id 0x3000 (0x4 B)		route cus3a-AE; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_GetDebugLevel_AF	mi-capture.md §5	isp api wrapper	Get id 0x3003 (0x4 B)		route cus3a-AF; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_GetDebugLevel_AWB	mi-capture.md §5	isp api wrapper	Get id 0x3001 (0x4 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_GetFrameMetaInfo	mi-capture.md §5	isp api wrapper	Get id 0x2e17 (0x18 B)		route kernel; kernel MS_CAM_ISP_GetFrameMetaInfo	
+libmi_isp	MI_ISP_GetIQApiData	mi-capture.md §5	wrap	0x11:GetIQApiData(0x1c)			
+libmi_isp	MI_ISP_GetInputPortCrop	mi-user-abi.md §10	wrap	0x5:GetInputPortCrop(0x10)			
+libmi_isp	MI_ISP_GetIspRoot	mi-capture.md §5	isp api wrapper	Get id 0x66 (0x40 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	libcus3a.so
+libmi_isp	MI_ISP_GetOutputPortParam	mi-capture.md §5	wrap	0xb:GetOutputPortParam(0x18)			
+libmi_isp	MI_ISP_GetPortCurZoomAttr	mi-capture.md §5	wrap	0x18:GetPortCurZoomAttr(0x14)			
+libmi_isp	MI_ISP_IQ_GetALSC	mi-capture.md §5	isp api wrapper	Get id 0x1028 (0x2090 B)		route kernel; kernel IQ_GetALSC	
+libmi_isp	MI_ISP_IQ_GetALSC_ADJ	mi-capture.md §5	isp api wrapper	Get id 0x103c (0x98 B)		route kernel; kernel IQ_GetALSC_ADJ	
+libmi_isp	MI_ISP_IQ_GetALSC_CTRL	mi-capture.md §5	isp api wrapper	Get id 0x102a (0x94 B)		route kernel; kernel IQ_GetALSC_CTRL	
+libmi_isp	MI_ISP_IQ_GetAPIBypassMode	mi-capture.md §5	isp api wrapper	Get id 0x2803 (0x8 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	libmi_iqserver.so
+libmi_isp	MI_ISP_IQ_GetAdaptiveGamma	mi-capture.md §5	isp api wrapper	Get id 0x1036 (0x404 B)		route kernel; kernel IQ_GetAdaptiveGamma	
+libmi_isp	MI_ISP_IQ_GetBrightness	mi-user-abi.md §10	isp api wrapper	Get id 0x1006 (0x4c B)		route kernel; kernel IQ_GetBrightness	
+libmi_isp	MI_ISP_IQ_GetCOLORTRANS	mi-capture.md §5	isp api wrapper	Get id 0x101d (0x1c B)		route kernel; kernel IQ_GetCOLORTRANS	
+libmi_isp	MI_ISP_IQ_GetColorToGray	mi-user-abi.md §10	isp api wrapper	Get id 0x1004 (0x4 B)		route kernel; kernel inline	
+libmi_isp	MI_ISP_IQ_GetContrast	mi-user-abi.md §10	isp api wrapper	Get id 0x1005 (0x4c B)		route kernel; kernel IQ_GetContrast	
+libmi_isp	MI_ISP_IQ_GetCrossTalk	mi-capture.md §5	isp api wrapper	Get id 0x1013 (0x15c B)		route kernel; kernel IQ_GetCrossTalk	
+libmi_isp	MI_ISP_IQ_GetDEMOSAIC	mi-capture.md §5	isp api wrapper	Get id 0x101c (0x1a0 B)		route kernel; kernel IQ_GetDEMOSAIC	
+libmi_isp	MI_ISP_IQ_GetDUMMY	mi-capture.md §5	isp api wrapper	Get id 0x1033 (0x6650 B)		route kernel; kernel IQ_GetDUMMY	
+libmi_isp	MI_ISP_IQ_GetDUMMY_EX	mi-capture.md §5	isp api wrapper	Get id 0x1034 (0x60c B)		route kernel; kernel IQ_GetDUMMY_EX	
+libmi_isp	MI_ISP_IQ_GetDayNightDetection	mi-capture.md §5	isp api wrapper	Get id 0x1807 (0xc B)		route cus3a-AWB; kernel AWB_GetDayNightDetection	
+libmi_isp	MI_ISP_IQ_GetDefog	mi-user-abi.md §10	isp api wrapper	Get id 0x100b (0x1c B)		route kernel; kernel IQ_GetDefog	
+libmi_isp	MI_ISP_IQ_GetDynamicDP	mi-capture.md §5	isp api wrapper	Get id 0x1017 (0x2f4 B)		route kernel; kernel IQ_GetDynamicDP	
+libmi_isp	MI_ISP_IQ_GetDynamicDP_CLUSTER	mi-capture.md §5	isp api wrapper	Get id 0x102b (0x48c B)		route kernel; kernel IQ_GetDynamicDP_CLUSTER	
+libmi_isp	MI_ISP_IQ_GetEffect	mi-capture.md §5	isp api wrapper	Get id 0x101f (0xc B)		route kernel; kernel IQ_GetEffect	
+libmi_isp	MI_ISP_IQ_GetEnSysMcnrMemory	mi-capture.md §5	isp api wrapper	Get id 0x1020 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_GetFPN	mi-capture.md §5	isp api wrapper	Get id 0x101a (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_GetFalseColor	mi-capture.md §5	isp api wrapper	Get id 0x100d (0x90 B)		route kernel; kernel IQ_GetFalseColor	
+libmi_isp	MI_ISP_IQ_GetFastMode	mi-capture.md §5	isp api wrapper	Get id 0x1003 (0x4 B)		route kernel; kernel IQ_GetFastMdoe	
+libmi_isp	MI_ISP_IQ_GetHDR	mi-capture.md §5	isp api wrapper	Get id 0x101e (0x3c0 B)		route kernel; kernel IQ_GetHDR	
+libmi_isp	MI_ISP_IQ_GetHDR_EX	mi-capture.md §5	isp api wrapper	Get id 0x1030 (0x1c B)		route kernel; kernel IQ_GetHDR_EX	
+libmi_isp	MI_ISP_IQ_GetHSV	mi-capture.md §5	isp api wrapper	Get id 0x1018 (0x134c B)		route kernel; kernel IQ_GetHSV	
+libmi_isp	MI_ISP_IQ_GetIQMode	mi-capture.md §5	isp api wrapper	Get id 0x1022 (0x4 B)		route kernel; kernel IQ_GetMode	
+libmi_isp	MI_ISP_IQ_GetIQind	mi-capture.md §5	isp api wrapper	Get id 0x2802 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_GetLSC	mi-capture.md §5	isp api wrapper	Get id 0x1021 (0x250 B)		route kernel; kernel IQ_GetLSC	
+libmi_isp	MI_ISP_IQ_GetLSC_CTRL	mi-capture.md §5	isp api wrapper	Get id 0x1029 (0x94 B)		route kernel; kernel IQ_GetLSC_CTRL	
+libmi_isp	MI_ISP_IQ_GetLightness	mi-user-abi.md §10	isp api wrapper	Get id 0x1007 (0x4c B)		route kernel; kernel IQ_GetLightness	
+libmi_isp	MI_ISP_IQ_GetNR3D	mi-capture.md §5	isp api wrapper	Get id 0x100e (0x844 B)		route kernel; kernel IQ_GetNR3D	
+libmi_isp	MI_ISP_IQ_GetNR3D_EX	mi-capture.md §5	isp api wrapper	Get id 0x1032 (0x24 B)		route kernel; kernel IQ_GetNR_3D_EX	
+libmi_isp	MI_ISP_IQ_GetNR3D_P1	mi-capture.md §5	isp api wrapper	Get id 0x1025 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_GetNRChroma	mi-capture.md §5	isp api wrapper	Get id 0x1011 (0x118 B)		route kernel; kernel IQ_GetNRChroma	
+libmi_isp	MI_ISP_IQ_GetNRChroma_Adv	mi-capture.md §5	isp api wrapper	Get id 0x102e (0x308 B)		route kernel; kernel IQ_GetNRChroma_Adv	
+libmi_isp	MI_ISP_IQ_GetNRChroma_Pre	mi-capture.md §5	isp api wrapper	Get id 0x1037 (0x1a0 B)		route kernel; kernel IQ_GetNRChroma_Pre	
+libmi_isp	MI_ISP_IQ_GetNRDeSpike	mi-capture.md §5	isp api wrapper	Get id 0x100f (0x24c B)		route kernel; kernel IQ_GetNRDeSpike	
+libmi_isp	MI_ISP_IQ_GetNRLuma	mi-capture.md §5	isp api wrapper	Get id 0x1010 (0x24c B)		route kernel; kernel IQ_GetNRLuma	
+libmi_isp	MI_ISP_IQ_GetNRLuma_Adv	mi-capture.md §5	isp api wrapper	Get id 0x102d (0x9bc B)		route kernel; kernel IQ_GetNRLuma_Adv	
+libmi_isp	MI_ISP_IQ_GetOBC	mi-capture.md §5	isp api wrapper	Get id 0x1014 (0x90 B)		route kernel; kernel IQ_GetOBC	
+libmi_isp	MI_ISP_IQ_GetOBC_P1	mi-capture.md §5	isp api wrapper	Get id 0x1015 (0x90 B)		route kernel; kernel IQ_GetOBC_P1	
+libmi_isp	MI_ISP_IQ_GetPFC	mi-capture.md §5	isp api wrapper	Get id 0x101b (0x190 B)		route kernel; kernel IQ_GetPFC	
+libmi_isp	MI_ISP_IQ_GetPFC_EX	mi-capture.md §5	isp api wrapper	Get id 0x102f (0x20 B)		route kernel; kernel IQ_GetPFC_EX	
+libmi_isp	MI_ISP_IQ_GetParaInitStatus	mi-capture.md §5	isp api wrapper	Get id 0x1002 (0x4 B)		route kernel; kernel IQ_GetParaInitStatus	
+libmi_isp	MI_ISP_IQ_GetR2Y	mi-capture.md §5	isp api wrapper	Get id 0x1027 (0x18 B)		route kernel; kernel IQ_GetR2Y	
+libmi_isp	MI_ISP_IQ_GetRGBGamma	mi-capture.md §5	isp api wrapper	Get id 0x1008 (0x6608 B)		route kernel; kernel IQ_GetGammaLUT	
+libmi_isp	MI_ISP_IQ_GetRGBIR	mi-capture.md §5	isp api wrapper	Get id 0x1019 (0x2f4 B)		route kernel; kernel IQ_GetRGBIR	
+libmi_isp	MI_ISP_IQ_GetRGBMatrix	mi-capture.md §5	isp api wrapper	Get id 0x100c (0x1e8 B)		route kernel; kernel IQ_GetRGBmatrix	
+libmi_isp	MI_ISP_IQ_GetSHP_EX	mi-capture.md §5	isp api wrapper	Get id 0x1031 (0x624 B)		route kernel; kernel IQ_GetSHP_EX	
+libmi_isp	MI_ISP_IQ_GetSaturation	mi-user-abi.md §10	isp api wrapper	Get id 0x100a (0x1a0 B)		route kernel; kernel IQ_GetSaturation	
+libmi_isp	MI_ISP_IQ_GetSharpness	mi-user-abi.md §10	isp api wrapper	Get id 0x1012 (0x1328 B)		route kernel; kernel IQ_GetSharpness	
+libmi_isp	MI_ISP_IQ_GetTEMP	mi-capture.md §5	isp api wrapper	Get id 0x1038 (0x108 B)		route kernel; kernel IQ_GetTEMP	
+libmi_isp	MI_ISP_IQ_GetTEMP_INFO	mi-capture.md §5	isp api wrapper	Get id 0x1039 (0x1 B)		route kernel; kernel inline	
+libmi_isp	MI_ISP_IQ_GetVersionInfo	mi-capture.md §5	isp api wrapper	Get id 0x1001 (0xc B)		route kernel; kernel IQ_GetVersionInfo	
+libmi_isp	MI_ISP_IQ_GetWDR	mi-user-abi.md §10	isp api wrapper	Get id 0x1016 (0x668 B)		route kernel; kernel IQ_GetWDR	
+libmi_isp	MI_ISP_IQ_GetWDRCurveAdv	mi-capture.md §5	isp api wrapper	Get id 0x1026 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_GetWDRCurveFull	mi-capture.md §5	isp api wrapper	Get id 0x1035 (0xf3c B)		route kernel; kernel IQ_GetWDRCurveFull	
+libmi_isp	MI_ISP_IQ_GetYUVGamma	mi-capture.md §5	isp api wrapper	Get id 0x1009 (0x4408 B)		route kernel; kernel IQ_GetYUVGammaLUT	
+libmi_isp	MI_ISP_IQ_QueryCCMInfo	mi-capture.md §5	isp api wrapper	Get id 0x102c (0x1a B)		route kernel; kernel IQ_GetCCMInfo	
+libmi_isp	MI_ISP_IQ_QueryDayNightInfo	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_IQ_SetALSC	mi-capture.md §5	isp api wrapper	Set id 0x1028 (0x2090 B)		route kernel; kernel IQ_SetALSC	
+libmi_isp	MI_ISP_IQ_SetALSC_ADJ	mi-capture.md §5	isp api wrapper	Set id 0x103c (0x98 B)		route kernel; kernel IQ_SetALSC_ADJ	
+libmi_isp	MI_ISP_IQ_SetALSC_CTRL	mi-capture.md §5	isp api wrapper	Set id 0x102a (0x94 B)		route kernel; kernel IQ_SetALSC_CTRL	
+libmi_isp	MI_ISP_IQ_SetAPIBypassMode	mi-capture.md §5	isp api wrapper	Set id 0x2803 (0x8 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	libmi_iqserver.so
+libmi_isp	MI_ISP_IQ_SetAdaptiveGamma	mi-capture.md §5	isp api wrapper	Set id 0x1036 (0x404 B)		route kernel; kernel IQ_SetAdaptiveGamma	
+libmi_isp	MI_ISP_IQ_SetBrightness	mi-user-abi.md §10	isp api wrapper	Set id 0x1006 (0x4c B)		route kernel; kernel IQ_SetBrightness	
+libmi_isp	MI_ISP_IQ_SetCOLORTRANS	mi-capture.md §5	isp api wrapper	Set id 0x101d (0x1c B)		route kernel; kernel IQ_SetCOLORTRANS	
+libmi_isp	MI_ISP_IQ_SetColorToGray	mi-user-abi.md §10	isp api wrapper	Set id 0x1004 (0x4 B)		route kernel; kernel inline	
+libmi_isp	MI_ISP_IQ_SetContrast	mi-user-abi.md §10	isp api wrapper	Set id 0x1005 (0x4c B)		route kernel; kernel IQ_SetContrast	
+libmi_isp	MI_ISP_IQ_SetCrossTalk	mi-capture.md §5	isp api wrapper	Set id 0x1013 (0x15c B)		route kernel; kernel IQ_SetCrossTalk	
+libmi_isp	MI_ISP_IQ_SetDEMOSAIC	mi-capture.md §5	isp api wrapper	Set id 0x101c (0x1a0 B)		route kernel; kernel IQ_SetDEMOSAIC	
+libmi_isp	MI_ISP_IQ_SetDUMMY	mi-capture.md §5	isp api wrapper	Set id 0x1033 (0x6650 B)		route kernel; kernel IQ_SetDUMMY	
+libmi_isp	MI_ISP_IQ_SetDUMMY_EX	mi-capture.md §5	isp api wrapper	Set id 0x1034 (0x60c B)		route kernel; kernel IQ_SetDUMMY_EX	
+libmi_isp	MI_ISP_IQ_SetDayNightDetection	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_IQ_SetDefog	mi-user-abi.md §10	isp api wrapper	Set id 0x100b (0x1c B)		route kernel; kernel IQ_SetDefog	
+libmi_isp	MI_ISP_IQ_SetDynamicDP	mi-capture.md §5	isp api wrapper	Set id 0x1017 (0x2f4 B)		route kernel; kernel IQ_SetDynamicDP	
+libmi_isp	MI_ISP_IQ_SetDynamicDP_CLUSTER	mi-capture.md §5	isp api wrapper	Set id 0x102b (0x48c B)		route kernel; kernel IQ_SetDynamicDP_CLUSTER	
+libmi_isp	MI_ISP_IQ_SetEffect	mi-capture.md §5	isp api wrapper	Set id 0x101f (0xc B)		route kernel; kernel IQ_SetEffect	
+libmi_isp	MI_ISP_IQ_SetEnSysMcnrMemory	mi-capture.md §5	isp api wrapper	Set id 0x1020 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_SetFPN	mi-capture.md §5	isp api wrapper	Set id 0x101a (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_SetFalseColor	mi-capture.md §5	isp api wrapper	Set id 0x100d (0x90 B)		route kernel; kernel IQ_SetFalseColor	
+libmi_isp	MI_ISP_IQ_SetFastMode	mi-capture.md §5	isp api wrapper	Set id 0x1003 (0x4 B)		route kernel; kernel IQ_SetFastMdoe	
+libmi_isp	MI_ISP_IQ_SetHDR	mi-capture.md §5	isp api wrapper	Set id 0x101e (0x3c0 B)		route kernel; kernel IQ_SetHDR	
+libmi_isp	MI_ISP_IQ_SetHDR_EX	mi-capture.md §5	isp api wrapper	Set id 0x1030 (0x1c B)		route kernel; kernel IQ_SetHDR_EX	
+libmi_isp	MI_ISP_IQ_SetHSV	mi-user-abi.md §10	isp api wrapper	Set id 0x1018 (0x134c B)		route kernel; kernel IQ_SetHSV	
+libmi_isp	MI_ISP_IQ_SetIQMode	mi-capture.md §5	isp api wrapper	Set id 0x1022 (0x4 B)		route kernel; kernel IQ_SetMode	
+libmi_isp	MI_ISP_IQ_SetLSC	mi-capture.md §5	isp api wrapper	Set id 0x1021 (0x250 B)		route kernel; kernel IQ_SetLSC	
+libmi_isp	MI_ISP_IQ_SetLSC_CTRL	mi-capture.md §5	isp api wrapper	Set id 0x1029 (0x94 B)		route kernel; kernel IQ_SetLSC_CTRL	
+libmi_isp	MI_ISP_IQ_SetLightness	mi-user-abi.md §10	isp api wrapper	Set id 0x1007 (0x4c B)		route kernel; kernel IQ_SetLightness	
+libmi_isp	MI_ISP_IQ_SetNR3D	mi-capture.md §5	isp api wrapper	Set id 0x100e (0x844 B)		route kernel; kernel IQ_SetNR3D	
+libmi_isp	MI_ISP_IQ_SetNR3D_EX	mi-capture.md §5	isp api wrapper	Set id 0x1032 (0x24 B)		route kernel; kernel IQ_SetNR_3D_EX	
+libmi_isp	MI_ISP_IQ_SetNR3D_P1	mi-capture.md §5	isp api wrapper	Set id 0x1025 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_SetNRChroma	mi-capture.md §5	isp api wrapper	Set id 0x1011 (0x118 B)		route kernel; kernel IQ_SetNRChroma	
+libmi_isp	MI_ISP_IQ_SetNRChroma_Adv	mi-capture.md §5	isp api wrapper	Set id 0x102e (0x308 B)		route kernel; kernel IQ_SetNRChroma_Adv	
+libmi_isp	MI_ISP_IQ_SetNRChroma_Pre	mi-capture.md §5	isp api wrapper	Set id 0x1037 (0x1a0 B)		route kernel; kernel IQ_SetNRChroma_Pre	
+libmi_isp	MI_ISP_IQ_SetNRDeSpike	mi-capture.md §5	isp api wrapper	Set id 0x100f (0x24c B)		route kernel; kernel IQ_SetNRDeSpike	
+libmi_isp	MI_ISP_IQ_SetNRLuma	mi-capture.md §5	isp api wrapper	Set id 0x1010 (0x24c B)		route kernel; kernel IQ_SetNRLuma	
+libmi_isp	MI_ISP_IQ_SetNRLuma_Adv	mi-capture.md §5	isp api wrapper	Set id 0x102d (0x9bc B)		route kernel; kernel IQ_SetNRLuma_Adv	
+libmi_isp	MI_ISP_IQ_SetOBC	mi-capture.md §5	isp api wrapper	Set id 0x1014 (0x90 B)		route kernel; kernel IQ_SetOBC	
+libmi_isp	MI_ISP_IQ_SetOBC_P1	mi-capture.md §5	isp api wrapper	Set id 0x1015 (0x90 B)		route kernel; kernel IQ_SetOBC_P1	
+libmi_isp	MI_ISP_IQ_SetPFC	mi-capture.md §5	isp api wrapper	Set id 0x101b (0x190 B)		route kernel; kernel IQ_SetPFC	
+libmi_isp	MI_ISP_IQ_SetPFC_EX	mi-capture.md §5	isp api wrapper	Set id 0x102f (0x20 B)		route kernel; kernel IQ_SetPFC_EX	
+libmi_isp	MI_ISP_IQ_SetR2Y	mi-capture.md §5	isp api wrapper	Set id 0x1027 (0x18 B)		route kernel; kernel IQ_SetR2Y	
+libmi_isp	MI_ISP_IQ_SetRGBGamma	mi-capture.md §5	isp api wrapper	Set id 0x1008 (0x6608 B)		route kernel; kernel IQ_SetGammaLUT	
+libmi_isp	MI_ISP_IQ_SetRGBIR	mi-capture.md §5	isp api wrapper	Set id 0x1019 (0x2f4 B)		route kernel; kernel IQ_SetRGBIR	
+libmi_isp	MI_ISP_IQ_SetRGBMatrix	mi-capture.md §5	isp api wrapper	Set id 0x100c (0x1e8 B)		route kernel; kernel IQ_SetRGBmatrix	
+libmi_isp	MI_ISP_IQ_SetSHP_EX	mi-capture.md §5	isp api wrapper	Set id 0x1031 (0x624 B)		route kernel; kernel IQ_SetSHP_EX	
+libmi_isp	MI_ISP_IQ_SetSaturation	mi-user-abi.md §10	isp api wrapper	Set id 0x100a (0x1a0 B)		route kernel; kernel IQ_SetSaturation	
+libmi_isp	MI_ISP_IQ_SetSharpness	mi-user-abi.md §10	isp api wrapper	Set id 0x1012 (0x1328 B)		route kernel; kernel IQ_SetSharpness	
+libmi_isp	MI_ISP_IQ_SetTEMP	mi-capture.md §5	isp api wrapper	Set id 0x1038 (0x108 B)		route kernel; kernel IQ_SetTEMP	
+libmi_isp	MI_ISP_IQ_SetVersionInfo	mi-capture.md §5	isp api wrapper	Set id 0x1001 (0xc B)		route kernel; kernel IQ_SetVersionInfo	
+libmi_isp	MI_ISP_IQ_SetWDR	mi-user-abi.md §10	isp api wrapper	Set id 0x1016 (0x668 B)		route kernel; kernel IQ_SetWDR	
+libmi_isp	MI_ISP_IQ_SetWDRCurveAdv	mi-capture.md §5	isp api wrapper	Set id 0x1026 (0x4 B)		route kernel; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_IQ_SetWDRCurveFull	mi-capture.md §5	isp api wrapper	Set id 0x1035 (0xf3c B)		route kernel; kernel IQ_SetWDRCurveFull	
+libmi_isp	MI_ISP_IQ_SetYUVGamma	mi-capture.md §5	isp api wrapper	Set id 0x1009 (0x4408 B)		route kernel; kernel IQ_SetYUVGammaLUT	
+libmi_isp	MI_ISP_LoadPortZoomTable	mi-capture.md §5	wrap	0x15:LoadPortZoomTable(0x10)			
+libmi_isp	MI_ISP_ReadSensorData	mi-capture.md §5	isp api wrapper	Get id 0x2e18 (0x18 B)		route kernel; kernel MS_CAM_ISP_ReadSensorData	libmi_iqserver.so
+libmi_isp	MI_ISP_RegisterIspApiAgent	mi-capture.md §5	noioctl				
+libmi_isp	MI_ISP_SET_ALL	mi-capture.md §5	noioctl				libmi_iqserver.so
+libmi_isp	MI_ISP_SetChnParam	mi-user-abi.md §10	wrap	0x6:SetChnParam(0x18)			
+libmi_isp	MI_ISP_SetDebugLevel_AE	mi-capture.md §5	isp api wrapper	Set id 0x3000 (0x4 B)		route cus3a-AE; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_SetDebugLevel_AF	mi-capture.md §5	isp api wrapper	Set id 0x3003 (0x4 B)		route cus3a-AF; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_SetDebugLevel_AWB	mi-capture.md §5	isp api wrapper	Set id 0x3001 (0x4 B)		route cus3a-AWB; not in the kernel's id table (isp-3-iq-api.md)	
+libmi_isp	MI_ISP_SetIQApiData	mi-capture.md §5	wrap	0x10:SetIQApiData(0x1c)			
+libmi_isp	MI_ISP_SetInputPortCrop	mi-capture.md §5	wrap	0x4:SetInputPortCrop(0x10)			
+libmi_isp	MI_ISP_SetOutputPortParam	mi-user-abi.md §10	wrap	0xa:SetOutputPortParam(0x18)			
+libmi_isp	MI_ISP_SkipFrame	mi-capture.md §5	wrap	0x14:SkipFrame(0xc)			
+libmi_isp	MI_ISP_StartChannel	mi-user-abi.md §10	wrap	0x8:StartChannel(0x8)			
+libmi_isp	MI_ISP_StartPortZoom	mi-capture.md §5	wrap	0x16:StartPortZoom(0x14)			
+libmi_isp	MI_ISP_StopChannel	mi-user-abi.md §10	wrap	0x9:StopChannel(0x8)			
+libmi_isp	MI_ISP_StopPortZoom	mi-capture.md §5	wrap	0x17:StopPortZoom(0x8)			
+libmi_isp	MI_ISP_WriteSensorData	mi-capture.md §5	isp api wrapper	Set id 0x2e18 (0x18 B)		route kernel; kernel MS_CAM_ISP_WriteSensorData	libmi_iqserver.so
+libmi_isp	_MI_ISP_GetIspApiData	mi-capture.md §5	noioctl				
+libmi_isp	_MI_ISP_SetIspApiData	mi-capture.md §5	noioctl				
+libmi_isp	call_MI_ISP_AE_SetAEHDR	mi-capture.md §5	api-bin helper			calloc 0x84, copy, -> MI_ISP_AE_SetAEHDR,MI_ISP_AE_SetHDR	
+libmi_isp	call_MI_ISP_AE_SetConverge	mi-capture.md §5	api-bin helper			calloc 0x28, copy, -> MI_ISP_AE_SetConverge	
+libmi_isp	call_MI_ISP_AE_SetEVComp	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AE_SetEVComp,MI_ISP_AE_SetEVComp	
+libmi_isp	call_MI_ISP_AE_SetExpoMode	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_AE_SetExpoMode,MI_ISP_AE_SetExpoMode	
+libmi_isp	call_MI_ISP_AE_SetExposureLimit	mi-capture.md §5	api-bin helper			calloc 0x20, copy, -> MI_ISP_AE_SetExposureLimit,MI_ISP_AE_SetExposureLimit	
+libmi_isp	call_MI_ISP_AE_SetFlicker	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_AE_SetFlicker,MI_ISP_AE_SetFlicker	
+libmi_isp	call_MI_ISP_AE_SetFlickerEX	mi-capture.md §5	api-bin helper			calloc 0x10, copy, -> MI_ISP_AE_SetFlickerEX	
+libmi_isp	call_MI_ISP_AE_SetManualExpo	mi-capture.md §5	api-bin helper			calloc 0x10, copy, -> MI_ISP_AE_SetManualExpo	
+libmi_isp	call_MI_ISP_AE_SetManualShortExpo	mi-capture.md §5	api-bin helper			calloc 0x10, copy, -> MI_ISP_AE_SetManualShortExpo	
+libmi_isp	call_MI_ISP_AE_SetPlainLongExpoTable	mi-capture.md §5	api-bin helper			calloc 0x104, copy, -> MI_ISP_AE_SetPlainLongExpoTable,MI_ISP_AE_SetPlainLongExpoTable	
+libmi_isp	call_MI_ISP_AE_SetPlainShortExpoTable	mi-capture.md §5	api-bin helper			calloc 0x104, copy, -> MI_ISP_AE_SetPlainShortExpoTable,MI_ISP_AE_SetPlainShortExpoTable	
+libmi_isp	call_MI_ISP_AE_SetRGBIRAE	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AE_SetRGBIRAE,MI_ISP_AE_SetRGBIRAE	
+libmi_isp	call_MI_ISP_AE_SetStabilizer	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AE_SetStabilizer,MI_ISP_AE_SetStabilizer	
+libmi_isp	call_MI_ISP_AE_SetState	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_AE_SetState,MI_ISP_AE_SetState	
+libmi_isp	call_MI_ISP_AE_SetStrategy	mi-capture.md §5	api-bin helper			calloc 0x128, copy, -> MI_ISP_AE_SetStrategy,MI_ISP_AE_SetStrategy	
+libmi_isp	call_MI_ISP_AE_SetStrategyEX	mi-capture.md §5	api-bin helper			calloc 0x294, copy, -> MI_ISP_AE_SetStrategyEX,MI_ISP_AE_SetStrategyEX	
+libmi_isp	call_MI_ISP_AE_SetTarget	mi-capture.md §5	api-bin helper			calloc 0x84, copy, -> MI_ISP_AE_SetTarget,MI_ISP_AE_SetTarget	
+libmi_isp	call_MI_ISP_AE_SetWinWgt	mi-capture.md §5	api-bin helper			calloc 0xc04, copy, -> MI_ISP_AE_SetWinWgt,MI_ISP_AE_SetWinWgt	
+libmi_isp	call_MI_ISP_AF_SetAccWeight	mi-capture.md §5	api-bin helper			calloc 0x110, copy, -> MI_ISP_AF_SetAccWeight,MI_ISP_AF_SetAccWeight	
+libmi_isp	call_MI_ISP_AF_SetAttr	mi-capture.md §5	api-bin helper			calloc 0x10, copy, -> MI_ISP_AF_SetAttr,MI_ISP_AF_SetAttr	
+libmi_isp	call_MI_ISP_AF_SetHWFilterAttr	mi-capture.md §5	api-bin helper			calloc 0x54, copy, -> MI_ISP_AF_SetHWFilterAttr,MI_ISP_AF_SetHWFilterAttr	
+libmi_isp	call_MI_ISP_AF_SetHWFilterSq	mi-capture.md §5	api-bin helper			calloc 0x34, copy, -> MI_ISP_AF_SetHWFilterSq	
+libmi_isp	call_MI_ISP_AF_SetHWLdg	mi-capture.md §5	api-bin helper			calloc 0x28, copy, -> MI_ISP_AF_SetHWLdg	
+libmi_isp	call_MI_ISP_AF_SetHWPreFilter	mi-capture.md §5	api-bin helper			calloc 0xc, copy, -> MI_ISP_AF_SetHWPreFilter,MI_ISP_AF_SetHWPreFilter	
+libmi_isp	call_MI_ISP_AF_SetHWRoiMode	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AF_SetHWRoiMode,MI_ISP_AF_SetHWRoiMode	
+libmi_isp	call_MI_ISP_AF_SetHWSource	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_AF_SetHWSource,MI_ISP_AF_SetHWSource	
+libmi_isp	call_MI_ISP_AF_SetHWWin	mi-capture.md §5	api-bin helper			calloc 0x80, copy, -> MI_ISP_AF_SetHWWin,MI_ISP_AF_SetHWWin	
+libmi_isp	call_MI_ISP_AF_SetHWYMap	mi-capture.md §5	api-bin helper			calloc 0x1c, copy, -> MI_ISP_AF_SetHWYMap,MI_ISP_AF_SetHWYMap	
+libmi_isp	call_MI_ISP_AF_SetHWYParam	mi-capture.md §5	api-bin helper			calloc 3, copy, -> MI_ISP_AF_SetHWYParam,MI_ISP_AF_SetHWYParam	
+libmi_isp	call_MI_ISP_AF_SetMotor	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AF_SetMotor,MI_ISP_AF_SetMotor	
+libmi_isp	call_MI_ISP_AF_SetOneShot	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AF_SetOneShot,MI_ISP_AF_SetOneShot	
+libmi_isp	call_MI_ISP_AF_SetSceneChange	mi-capture.md §5	api-bin helper			calloc 0x18, copy, -> MI_ISP_AF_SetSceneChange,MI_ISP_AF_SetSceneChange	
+libmi_isp	call_MI_ISP_AF_SetSearch	mi-capture.md §5	api-bin helper			calloc 6, copy, -> MI_ISP_AF_SetSearch,MI_ISP_AF_SetSearch	
+libmi_isp	call_MI_ISP_AF_SetSearchStart	mi-capture.md §5	api-bin helper			calloc 8, copy, -> MI_ISP_AF_SetSearchStart,MI_ISP_AF_SetSearchStart	
+libmi_isp	call_MI_ISP_AWB_SetAttr	mi-capture.md §5	api-bin helper			calloc 0x5b8, copy, -> MI_ISP_AWB_SetAttr,MI_ISP_AWB_SetAttr	
+libmi_isp	call_MI_ISP_AWB_SetAttrEx	mi-capture.md §5	api-bin helper			calloc 0x34, copy, -> MI_ISP_AWB_SetAttrEx	
+libmi_isp	call_MI_ISP_AWB_SetCTCaliAttr	mi-capture.md §5	api-bin helper			calloc 0x54, copy, -> MI_ISP_AWB_SetCTCaliAttr,MI_ISP_AWB_SetCTCaliAttr	
+libmi_isp	call_MI_ISP_AWB_SetCTMwbAttr	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_AWB_SetCTMwbAttr,MI_ISP_AWB_SetCTMwbAttr	
+libmi_isp	call_MI_ISP_AWB_SetMultiLSAttr	mi-capture.md §5	api-bin helper			calloc 0x2c, copy, -> MI_ISP_AWB_SetMultiLSAttr	
+libmi_isp	call_MI_ISP_AWB_SetStabilizer	mi-capture.md §5	api-bin helper			calloc 0xc, copy, -> MI_ISP_AWB_SetStabilizer,MI_ISP_AWB_SetStabilizer	
+libmi_isp	call_MI_ISP_IQ_SetALSC	mi-capture.md §5	api-bin helper			calloc 0x2090, copy, -> MI_ISP_IQ_SetALSC,MI_ISP_IQ_SetALSC	
+libmi_isp	call_MI_ISP_IQ_SetALSC_ADJ	mi-capture.md §5	api-bin helper			calloc 0x98, copy, -> MI_ISP_IQ_SetALSC_ADJ,MI_ISP_IQ_SetALSC_ADJ	
+libmi_isp	call_MI_ISP_IQ_SetALSC_CTRL	mi-capture.md §5	api-bin helper			calloc 0x94, copy, -> MI_ISP_IQ_SetALSC_CTRL,MI_ISP_IQ_SetALSC_CTRL	
+libmi_isp	call_MI_ISP_IQ_SetAdaptiveGamma	mi-capture.md §5	api-bin helper			calloc 0x404, copy, -> MI_ISP_IQ_SetAdaptiveGamma,MI_ISP_IQ_SetAdaptiveGamma	
+libmi_isp	call_MI_ISP_IQ_SetBrightness	mi-capture.md §5	api-bin helper			calloc 0x4c, copy, -> MI_ISP_IQ_SetBrightness,MI_ISP_IQ_SetBrightness	
+libmi_isp	call_MI_ISP_IQ_SetCOLORTRANS	mi-capture.md §5	api-bin helper			calloc 0x1c, copy, -> MI_ISP_IQ_SetCOLORTRANS,MI_ISP_IQ_SetCOLORTRANS	
+libmi_isp	call_MI_ISP_IQ_SetColorToGray	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_IQ_SetColorToGray,MI_ISP_IQ_SetColorToGray	
+libmi_isp	call_MI_ISP_IQ_SetContrast	mi-capture.md §5	api-bin helper			calloc 0x4c, copy, -> MI_ISP_IQ_SetContrast,MI_ISP_IQ_SetContrast	
+libmi_isp	call_MI_ISP_IQ_SetCrossTalk	mi-capture.md §5	api-bin helper			calloc 0x15c, copy, -> MI_ISP_IQ_SetCrossTalk,MI_ISP_IQ_SetCrossTalk	
+libmi_isp	call_MI_ISP_IQ_SetDUMMY	mi-capture.md §5	api-bin helper			calloc 0x6650, copy, -> MI_ISP_IQ_SetDUMMY,MI_ISP_IQ_SetDUMMY	
+libmi_isp	call_MI_ISP_IQ_SetDUMMY_EX	mi-capture.md §5	api-bin helper			calloc 0x60c, copy, -> MI_ISP_IQ_SetDUMMY_EX,MI_ISP_IQ_SetDUMMY_EX	
+libmi_isp	call_MI_ISP_IQ_SetDayNightDetection	mi-capture.md §5	api-bin helper			calloc 0xc, copy, -> MI_ISP_IQ_SetDayNightDetection,MI_ISP_IQ_SetDayNightDetection	
+libmi_isp	call_MI_ISP_IQ_SetDeMosaic	mi-capture.md §5	api-bin helper			calloc 0x1a0, copy, -> MI_ISP_IQ_SetDeMosaic,MI_ISP_IQ_SetDEMOSAIC	
+libmi_isp	call_MI_ISP_IQ_SetDefog	mi-capture.md §5	api-bin helper			calloc 0x1c, copy, -> MI_ISP_IQ_SetDefog,MI_ISP_IQ_SetDefog	
+libmi_isp	call_MI_ISP_IQ_SetDynamicDP	mi-capture.md §5	api-bin helper			calloc 0x2f4, copy, -> MI_ISP_IQ_SetDynamicDP,MI_ISP_IQ_SetDynamicDP	
+libmi_isp	call_MI_ISP_IQ_SetDynamicDP_CLUSTER	mi-capture.md §5	api-bin helper			calloc 0x48c, copy, -> MI_ISP_IQ_SetDynamicDP_CLUSTER,MI_ISP_IQ_SetDynamicDP_CLUSTER	
+libmi_isp	call_MI_ISP_IQ_SetFPN	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_IQ_SetFPN,MI_ISP_IQ_SetFPN	
+libmi_isp	call_MI_ISP_IQ_SetFalseColor	mi-capture.md §5	api-bin helper			calloc 0x90, copy, -> MI_ISP_IQ_SetFalseColor,MI_ISP_IQ_SetFalseColor	
+libmi_isp	call_MI_ISP_IQ_SetHDR	mi-capture.md §5	api-bin helper			calloc 0x3c0, copy, -> MI_ISP_IQ_SetHDR,MI_ISP_IQ_SetHDR	
+libmi_isp	call_MI_ISP_IQ_SetHDR_EX	mi-capture.md §5	api-bin helper			calloc 0x1c, copy, -> MI_ISP_IQ_SetHDR_EX,MI_ISP_IQ_SetHDR_EX	
+libmi_isp	call_MI_ISP_IQ_SetHSV	mi-capture.md §5	api-bin helper			calloc 0x134c, copy, -> MI_ISP_IQ_SetHSV,MI_ISP_IQ_SetHSV	
+libmi_isp	call_MI_ISP_IQ_SetLSC	mi-capture.md §5	api-bin helper			calloc 0x250, copy, -> MI_ISP_IQ_SetLSC,MI_ISP_IQ_SetLSC	
+libmi_isp	call_MI_ISP_IQ_SetLSC_CTRL	mi-capture.md §5	api-bin helper			calloc 0x94, copy, -> MI_ISP_IQ_SetLSC_CTRL,MI_ISP_IQ_SetLSC_CTRL	
+libmi_isp	call_MI_ISP_IQ_SetLightness	mi-capture.md §5	api-bin helper			calloc 0x4c, copy, -> MI_ISP_IQ_SetLightness,MI_ISP_IQ_SetLightness	
+libmi_isp	call_MI_ISP_IQ_SetNR3D	mi-capture.md §5	api-bin helper			calloc 0x844, copy, -> MI_ISP_IQ_SetNR3D,MI_ISP_IQ_SetNR3D	
+libmi_isp	call_MI_ISP_IQ_SetNR3D_EX	mi-capture.md §5	api-bin helper			calloc 0x24, copy, -> MI_ISP_IQ_SetNR3D_EX	
+libmi_isp	call_MI_ISP_IQ_SetNR3D_P1	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_IQ_SetNR3D_P1,MI_ISP_IQ_SetNR3D_P1	
+libmi_isp	call_MI_ISP_IQ_SetNRChroma	mi-capture.md §5	api-bin helper			calloc 0x118, copy, -> MI_ISP_IQ_SetNRChroma,MI_ISP_IQ_SetNRChroma	
+libmi_isp	call_MI_ISP_IQ_SetNRChroma_Adv	mi-capture.md §5	api-bin helper			calloc 0x308, copy, -> MI_ISP_IQ_SetNRChroma_Adv,MI_ISP_IQ_SetNRChroma_Adv	
+libmi_isp	call_MI_ISP_IQ_SetNRChroma_Pre	mi-capture.md §5	api-bin helper			calloc 0x1a0, copy, -> MI_ISP_IQ_SetNRChroma_Pre,MI_ISP_IQ_SetNRChroma_Pre	
+libmi_isp	call_MI_ISP_IQ_SetNRDeSpike	mi-capture.md §5	api-bin helper			calloc 0x24c, copy, -> MI_ISP_IQ_SetNRDeSpike,MI_ISP_IQ_SetNRDeSpike	
+libmi_isp	call_MI_ISP_IQ_SetNRLuma	mi-capture.md §5	api-bin helper			calloc 0x24c, copy, -> MI_ISP_IQ_SetNRLuma,MI_ISP_IQ_SetNRLuma	
+libmi_isp	call_MI_ISP_IQ_SetNRLuma_Adv	mi-capture.md §5	api-bin helper			calloc 0x9bc, copy, -> MI_ISP_IQ_SetNRLuma_Adv,MI_ISP_IQ_SetNRLuma_Adv	
+libmi_isp	call_MI_ISP_IQ_SetOBC	mi-capture.md §5	api-bin helper			calloc 0x90, copy, -> MI_ISP_IQ_SetOBC,MI_ISP_IQ_SetOBC	
+libmi_isp	call_MI_ISP_IQ_SetOBC_P1	mi-capture.md §5	api-bin helper			calloc 0x90, copy, -> MI_ISP_IQ_SetOBC_P1,MI_ISP_IQ_SetOBC_P1	
+libmi_isp	call_MI_ISP_IQ_SetPFC	mi-capture.md §5	api-bin helper			calloc 400, copy, -> MI_ISP_IQ_SetPFC,MI_ISP_IQ_SetPFC	
+libmi_isp	call_MI_ISP_IQ_SetPFC_EX	mi-capture.md §5	api-bin helper			calloc 0x20, copy, -> MI_ISP_IQ_SetPFC_EX,MI_ISP_IQ_SetPFC_EX	
+libmi_isp	call_MI_ISP_IQ_SetR2Y	mi-capture.md §5	api-bin helper			calloc 0x18, copy, -> MI_ISP_IQ_SetR2Y,MI_ISP_IQ_SetR2Y	
+libmi_isp	call_MI_ISP_IQ_SetRGBGamma	mi-capture.md §5	api-bin helper			calloc 0x6608, copy, -> MI_ISP_IQ_SetRGBGamma,MI_ISP_IQ_SetRGBGamma	
+libmi_isp	call_MI_ISP_IQ_SetRGBIR	mi-capture.md §5	api-bin helper			calloc 0x2f4, copy, -> MI_ISP_IQ_SetRGBIR,MI_ISP_IQ_SetRGBIR	
+libmi_isp	call_MI_ISP_IQ_SetRGBMatrix	mi-capture.md §5	api-bin helper			calloc 0x1e8, copy, -> MI_ISP_IQ_SetRGBMatrix,MI_ISP_IQ_SetRGBMatrix	
+libmi_isp	call_MI_ISP_IQ_SetSHP_EX	mi-capture.md §5	api-bin helper			calloc 0x624, copy, -> MI_ISP_IQ_SetSHP_EX,MI_ISP_IQ_SetSHP_EX	
+libmi_isp	call_MI_ISP_IQ_SetSaturation	mi-capture.md §5	api-bin helper			calloc 0x1a0, copy, -> MI_ISP_IQ_SetSaturation,MI_ISP_IQ_SetSaturation	
+libmi_isp	call_MI_ISP_IQ_SetSharpness	mi-capture.md §5	api-bin helper			calloc 0x1328, copy, -> MI_ISP_IQ_SetSharpness,MI_ISP_IQ_SetSharpness	
+libmi_isp	call_MI_ISP_IQ_SetTEMP	mi-capture.md §5	api-bin helper			calloc 0x108, copy, -> MI_ISP_IQ_SetTEMP,MI_ISP_IQ_SetTEMP	
+libmi_isp	call_MI_ISP_IQ_SetVersionInfo	mi-capture.md §5	api-bin helper			calloc 0xc, copy, -> MI_ISP_IQ_SetVersionInfo,MI_ISP_IQ_SetVersionInfo	
+libmi_isp	call_MI_ISP_IQ_SetWDR	mi-capture.md §5	api-bin helper			calloc 0x668, copy, -> MI_ISP_IQ_SetWDR,MI_ISP_IQ_SetWDR	
+libmi_isp	call_MI_ISP_IQ_SetWDRCurveAdv	mi-capture.md §5	api-bin helper			calloc 4, copy, -> MI_ISP_IQ_SetWDRCurveAdv,MI_ISP_IQ_SetWDRCurveAdv	
+libmi_isp	call_MI_ISP_IQ_SetWDRCurveFull	mi-capture.md §5	api-bin helper			calloc 0xf3c, copy, -> MI_ISP_IQ_SetWDRCurveFull,MI_ISP_IQ_SetWDRCurveFull	
+libmi_isp	call_MI_ISP_IQ_SetYUVGamma	mi-capture.md §5	api-bin helper			calloc 0x4408, copy, -> MI_ISP_IQ_SetYUVGamma,MI_ISP_IQ_SetYUVGamma	
+libmi_isp	fpGetIspApiData	mi-user-abi.md §7	data				
+libmi_isp	fpSetIspApiData	mi-user-abi.md §7	data				
+libmi_scl	MI_SCL_CreateChannel	mi-user-abi.md §10	wrap	0x2:CreateChannel(0xc)			
+libmi_scl	MI_SCL_CreateDevice	mi-user-abi.md §10	wrap	0x0:CreateDevice(0x8)			
+libmi_scl	MI_SCL_DestroyChannel	mi-user-abi.md §10	wrap	0x3:DestroyChannel(0x8)			
+libmi_scl	MI_SCL_DestroyDevice	mi-user-abi.md §10	wrap	0x1:DestoryDevice(0x4)			
+libmi_scl	MI_SCL_DisableOutputPort	mi-user-abi.md §10	wrap	0xd:DisableOutputPort(0xc)			libmi_iqserver.so
+libmi_scl	MI_SCL_EnableOutputPort	mi-user-abi.md §10	wrap	0xc:EnableOutputPort(0xc)			libmi_iqserver.so
+libmi_scl	MI_SCL_GetChnParam	mi-capture.md §6.13	wrap	0x7:GetChnParam(0xc)	unless-1		
+libmi_scl	MI_SCL_GetInputPortCrop	mi-capture.md §6.13	wrap	0x5:GetInputPortCrop(0x10)	unless-1		
+libmi_scl	MI_SCL_GetOutputPortParam	mi-user-abi.md §10	wrap	0xb:GetOutputPortParam(0x24)			libmi_iqserver.so
+libmi_scl	MI_SCL_SetChnParam	mi-user-abi.md §10	wrap	0x6:SetChnParam(0xc)			
+libmi_scl	MI_SCL_SetInputPortCrop	mi-capture.md §6.13	wrap	0x4:SetInputPortCrop(0x10)			
+libmi_scl	MI_SCL_SetOutputPortParam	mi-user-abi.md §10	wrap	0xa:SetOutputPortParam(0x24)			libmi_iqserver.so
+libmi_scl	MI_SCL_StartChannel	mi-user-abi.md §10	wrap	0x8:StartChannel(0x8)			
+libmi_scl	MI_SCL_StopChannel	mi-user-abi.md §10	wrap	0x9:StopChannel(0x8)			
+libmi_scl	MI_SCL_StretchBuf	mi-capture.md §6.13	wrap	0xe:StretchBuf(0x70)			
+libmi_venc	MI_VENC_AllocCustomMap	mi_venc.md	logic	0x4a:AllocCustomMaps(0x20)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_ApplyCustomMap	mi_venc.md	multi	0x4b:GetAsyncCustomMap(0x10) 0x4c:ApplyCustomMap(0x10)			
+libmi_venc	MI_VENC_CloseFd	mi_venc.md	noioctl				libmi_iqserver.so
+libmi_venc	MI_VENC_CreateChn	mi-user-abi.md §10	logic	0x2:CreateChn(0x54)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_CreateDev	mi_venc.md	wrap	0x53:InitDev(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_DestroyChn	mi-user-abi.md §10	logic	0x3:DestroyChn(0x8)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_DestroyDev	mi_venc.md	logic	0x54:DeInitDev(0x4)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_DupChn	mi_venc.md	noioctl				
+libmi_venc	MI_VENC_EnableIdr	mi_venc.md	wrap	0x11:EnableIdr(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_FreeCustomMap	mi_venc.md	noioctl				
+libmi_venc	MI_VENC_GetChnAttr	mi_venc.md	wrap	0xa:GetChnAttr(0x54)		checks dev<10, chn<=32, NULL	libmi_iqserver.so,libmi_sed.so
+libmi_venc	MI_VENC_GetCrop	mi_venc.md	wrap	0x3a:GetCrop(0x1c)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetFd	mi-user-abi.md §10	multi	0x14:GetPollData(0xc) 0x0:type00(0x0)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_GetFrameLostStrategy	mi_venc.md	wrap	0x3d:GetFrameLostStrategy(0x18)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264Dblk	mi_venc.md	wrap	0x25:GetH264Dblk(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264Entropy	mi_venc.md	wrap	0x23:GetH264Entropy(0x10)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264IdrPicId	mi_venc.md	wrap	0x13:GetH264IdrPicId(0x10)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264InterPred	mi_venc.md	wrap	0x1d:GetH264InterPred(0x18)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264IntraPred	mi_venc.md	wrap	0x1f:GetH264IntraPred(0x18)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264SliceSplit	mi_venc.md §13.2	wrap	0x1b:GetH264SliceSplit(0x10)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264Trans	mi_venc.md	wrap	0x21:GetH264Trans(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH264Vui	mi_venc.md	wrap	0x27:GetH264Vui(0x24)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265Dblk	mi_venc.md	wrap	0x31:GetH265Dblk(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265InterPred	mi_venc.md	wrap	0x2b:GetH265InterPred(0x28)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265IntraPred	mi_venc.md	wrap	0x2d:GetH265IntraPred(0x18)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265SliceSplit	mi_venc.md	wrap	0x29:GetH265SliceSplit(0x10)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265Trans	mi_venc.md	wrap	0x2f:GetH265Trans(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetH265Vui	mi_venc.md	wrap	0x33:GetH265Vui(0x24)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetIntraRefresh	mi_venc.md	wrap	0x52:GetIntraRefresh(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetJpegParam	mi_venc.md §13.2	wrap	0x35:GetJpegParam(0x90)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetLastHistoStaticInfo	mi_venc.md	logic	0x4e:GetLastHistoStaticInfo(0x38)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetMaxStreamCnt	mi_venc.md	wrap	0xf:GetMaxStreamCnt(0xc)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetRcParam	mi_venc.md	wrap	0x37:GetRcParam(0x40)	on0	checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_GetRcPriority	mi_venc.md	wrap	0x41:GetRcPriority(0xc)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetRefParam	mi_venc.md	wrap	0x39:GetRefParam(0x14)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetRoiBgFrameRate	mi_venc.md	wrap	0x19:GetRoiBgFrameRate(0x10)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetRoiCfg	mi_venc.md	wrap	0x17:GetRoiCfg(0x28)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_GetStream	mi-user-abi.md §10	multi	0x42:GetRingPoolHandle(0xc) 0x43:RingPool_GetRingPoolInfo(0x18) 0x45:RingPool_GetHeadRecord(0x50) 0xb:GetStream(0x54) 0x48:RingPool_ReleaseHeadRecord(0xc) 0xc:ReleaseStream(0x50) 0x48:RingPool_ReleaseHeadRecord(0xc) 0xc:ReleaseStream(0x50)			libmi_iqserver.so
+libmi_venc	MI_VENC_GetSuperFrameCfg	mi_venc.md	wrap	0x3f:GetSuperFrameCfg(0x18)	on0	checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_InsertUserData	mi_venc.md	wrap	0xd:InsertUserData(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_Query	mi-user-abi.md §10	wrap	0x8:Query(0x30)	on0	checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_ReleaseHistoStaticInfo	mi_venc.md	noioctl				
+libmi_venc	MI_VENC_ReleaseStream	mi-user-abi.md §10	multi	0xc:ReleaseStream(0x50) 0x48:RingPool_ReleaseHeadRecord(0xc)			libmi_iqserver.so
+libmi_venc	MI_VENC_RequestIdr	mi-user-abi.md §10	logic	0x10:RequestIdr(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_ResetChn	mi_venc.md	wrap	0x4:ResetChn(0x8)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetAdvCustRcAttr	mi_venc.md	wrap	0x4d:SetAdvCustRcAttr(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetChnAttr	mi_venc.md	wrap	0x9:SetChnAttr(0x54)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_SetCrop	mi_venc.md	wrap	0x3b:SetCrop(0x1c)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetFrameLostStrategy	mi_venc.md	wrap	0x3c:SetFrameLostStrategy(0x18)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264Dblk	mi_venc.md	wrap	0x24:SetH264Dblk(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264Entropy	mi_venc.md	wrap	0x22:SetH264Entropy(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264IdrPicId	mi_venc.md	wrap	0x12:SetH264IdrPicId(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264InterPred	mi_venc.md	wrap	0x1c:SetH264InterPred(0x18)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264IntraPred	mi_venc.md	wrap	0x1e:SetH264IntraPred(0x18)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264SliceSplit	mi_venc.md §13.2	wrap	0x1a:SetH264SliceSplit(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264Trans	mi_venc.md	wrap	0x20:SetH264Trans(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH264Vui	mi_venc.md	wrap	0x26:SetH264Vui(0x24)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265Dblk	mi_venc.md	wrap	0x30:SetH265Dblk(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265InterPred	mi_venc.md	wrap	0x2a:SetH265InterPred(0x28)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265IntraPred	mi_venc.md	wrap	0x2c:SetH265IntraPred(0x18)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265SliceSplit	mi_venc.md §13.2	wrap	0x28:SetH265SliceSplit(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265Trans	mi_venc.md	wrap	0x2e:SetH265Trans(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetH265Vui	mi_venc.md	wrap	0x32:SetH265Vui(0x24)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetInputSourceConfig	mi_venc.md §13.2	wrap	0x49:SetInputSourceConfig(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetIntraRefresh	mi_venc.md	wrap	0x51:SetIntraRefresh(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetJpegParam	mi_venc.md §13.2	wrap	0x34:SetJpegParam(0x90)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetMaxStreamCnt	mi_venc.md §13.2	wrap	0xe:SetMaxStreamCnt(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetRcParam	mi_venc.md	wrap	0x36:SetRcParam(0x40)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_SetRcPriority	mi_venc.md	wrap	0x40:SetRcPriority(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetRefParam	mi_venc.md	wrap	0x38:SetRefParam(0x14)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetRoiBgFrameRate	mi_venc.md	wrap	0x18:SetRoiBgFrameRate(0x10)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_SetRoiCfg	mi_venc.md	wrap	0x16:SetRoiCfg(0x24)		checks dev<10, chn<=32, NULL	libmi_sed.so
+libmi_venc	MI_VENC_SetSmartDetInfo	mi_venc.md	wrap	0x50:SetSmartDetInfo(0x30)		checks dev<10, chn<=32, NULL	libmi_sed.so
+libmi_venc	MI_VENC_SetSuperFrameCfg	mi_venc.md	wrap	0x3e:SetSuperFrameCfg(0x18)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_StartRecvPic	mi-user-abi.md §10	wrap	0x5:StartRecvPic(0x8)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	MI_VENC_StartRecvPicEx	mi_venc.md	wrap	0x6:StartRecvPicEx(0xc)		checks dev<10, chn<=32, NULL	
+libmi_venc	MI_VENC_StopRecvPic	mi-user-abi.md §10	logic	0x7:StopRecvPic(0x8) 0x7:StopRecvPic(0x8)		checks dev<10, chn<=32, NULL	libmi_iqserver.so
+libmi_venc	_MI_VENC_ParseNalu	mi_venc.md	noioctl				
+libmi_disp	MI_DISP_BindVideoLayer	mi-user-abi.md §10	wrap	0xa:BindVideoLayer(0x8)			
+libmi_disp	MI_DISP_ClearInputPortBuffer	mi-user-abi.md §10	wrap	0x2a:ClearInputportBuffer(0xc)			
+libmi_disp	MI_DISP_DeInitDev	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	MI_DISP_DeviceAttach	mi_disp-mi_hdmi.md	wrap	0x4:DeviceAttach(0xc)			
+libmi_disp	MI_DISP_DeviceDetach	mi_disp-mi_hdmi.md	wrap	0x5:DeviceDetach(0x8)			
+libmi_disp	MI_DISP_DeviceGetColorTempeture	mi_disp-mi_hdmi.md	wrap	0x2d:DeviceGetColorTempeture(0x10)	on0		
+libmi_disp	MI_DISP_DeviceSetColorTempeture	mi_disp-mi_hdmi.md	wrap	0x2c:DeviceSetColorTempeture(0x10)			
+libmi_disp	MI_DISP_DeviceSetGammaParam	mi_disp-mi_hdmi.md	wrap	0x2e:DeviceSetGammaParam(0x14)			
+libmi_disp	MI_DISP_Disable	mi-user-abi.md §10	wrap	0x1:Disable(0x4)			
+libmi_disp	MI_DISP_DisableInputPort	mi-user-abi.md §10	wrap	0x17:DisableInputPort(0x8)			
+libmi_disp	MI_DISP_DisableVideoLayer	mi-user-abi.md §10	wrap	0x7:DisableVideoLayer(0x4)			
+libmi_disp	MI_DISP_DisableWBC	mi_disp-mi_hdmi.md	wrap	0x34:DisableWBC(0x4)			
+libmi_disp	MI_DISP_Enable	mi-user-abi.md §10	wrap	0x0:Enable(0x4)			
+libmi_disp	MI_DISP_EnableInputPort	mi-user-abi.md §10	wrap	0x16:EnableInputPort(0x8)			
+libmi_disp	MI_DISP_EnableVideoLayer	mi-user-abi.md §10	wrap	0x6:EnableVideoLayer(0x4)			
+libmi_disp	MI_DISP_EnableWBC	mi_disp-mi_hdmi.md	wrap	0x33:EnableWBC(0x4)			
+libmi_disp	MI_DISP_GetCvbsParam	mi_disp-mi_hdmi.md	wrap	0x28:GetCvbsParam(0x8)	on0		
+libmi_disp	MI_DISP_GetHdmiParam	mi_disp-mi_hdmi.md	wrap	0x24:GetHdmiParam(0x20)	on0		
+libmi_disp	MI_DISP_GetInputPortAttr	mi_disp-mi_hdmi.md	wrap	0x15:GetInputPortAttr(0x14)	on0		
+libmi_disp	MI_DISP_GetInputPortDispPos	mi_disp-mi_hdmi.md	wrap	0x19:GetInputPortDispPos(0xc)	on0		
+libmi_disp	MI_DISP_GetLcdParam	mi_disp-mi_hdmi.md	wrap	0x26:GetLcdParam(0x1c)	on0		
+libmi_disp	MI_DISP_GetPlayToleration	mi_disp-mi_hdmi.md	wrap	0xe:GetPlayToleration(0x8)	on0		
+libmi_disp	MI_DISP_GetPubAttr	mi_disp-mi_hdmi.md	wrap	0x3:GetPubAttr(0x38)	on0		
+libmi_disp	MI_DISP_GetScreenFrame	mi_disp-mi_hdmi.md					
+libmi_disp	MI_DISP_GetVgaParam	mi_disp-mi_hdmi.md	wrap	0x22:GetVgaParam(0x20)	on0		
+libmi_disp	MI_DISP_GetVideoLayerAttr	mi-user-abi.md §10	wrap	0x9:GetVideoLayerAttr(0x18)			
+libmi_disp	MI_DISP_GetWBCAttr	mi_disp-mi_hdmi.md	wrap	0x32:GetWBCAttr(0x10)	on0		
+libmi_disp	MI_DISP_GetWBCSource	mi_disp-mi_hdmi.md	wrap	0x30:GetWBCSource(0xc)	on0		
+libmi_disp	MI_DISP_HideInputPort	mi_disp-mi_hdmi.md	wrap	0x1e:HideInputPort(0x8)			
+libmi_disp	MI_DISP_InitDev	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	MI_DISP_PauseInputPort	mi-user-abi.md §10	wrap	0x1a:PauseInputPort(0x8)			
+libmi_disp	MI_DISP_QueryInputPortStat	mi_disp-mi_hdmi.md	wrap	0x20:QueryInputPortStat(0x10)	on0		
+libmi_disp	MI_DISP_ReleaseScreenFrame	mi_disp-mi_hdmi.md					
+libmi_disp	MI_DISP_ResumeInputPort	mi-user-abi.md §10	wrap	0x1b:ResumeInputPort(0x8)			
+libmi_disp	MI_DISP_SetCvbsParam	mi_disp-mi_hdmi.md	wrap	0x29:SetCvbsParam(0x8)			
+libmi_disp	MI_DISP_SetHdmiParam	mi_disp-mi_hdmi.md	wrap	0x25:SetHdmiParam(0x20)			
+libmi_disp	MI_DISP_SetInputPortAttr	mi-user-abi.md §10	wrap	0x14:SetInputPortAttr(0x14)			
+libmi_disp	MI_DISP_SetInputPortDispPos	mi_disp-mi_hdmi.md	wrap	0x18:SetInputPortDispPos(0xc)			
+libmi_disp	MI_DISP_SetInputPortSyncMode	mi-user-abi.md §10	wrap	0x1f:SetInputPortSyncMode(0xc)			
+libmi_disp	MI_DISP_SetLcdParam	mi_disp-mi_hdmi.md	wrap	0x27:SetLcdParam(0x1c)			
+libmi_disp	MI_DISP_SetPlayToleration	mi_disp-mi_hdmi.md	wrap	0xd:SetPlayToleration(0x8)			
+libmi_disp	MI_DISP_SetPubAttr	mi-user-abi.md §10	wrap	0x2:SetPubAttr(0x38)			
+libmi_disp	MI_DISP_SetVgaParam	mi_disp-mi_hdmi.md	wrap	0x23:SetVgaParam(0x20)			
+libmi_disp	MI_DISP_SetVideoLayerAttr	mi-user-abi.md §10	wrap	0x8:SetVideoLayerAttr(0x18)			
+libmi_disp	MI_DISP_SetVideoLayerAttrBegin	mi_disp-mi_hdmi.md	wrap	0x12:SetVideoLayerAttrBegin(0x4)			
+libmi_disp	MI_DISP_SetVideoLayerAttrEnd	mi_disp-mi_hdmi.md	wrap	0x13:SetVideoLayerAttrEnd(0x4)			
+libmi_disp	MI_DISP_SetVideoLayerRotateMode	mi_disp-mi_hdmi.md	wrap	0x2b:SetVideoLayerRotateMode(0x8)			
+libmi_disp	MI_DISP_SetWBCAttr	mi_disp-mi_hdmi.md	wrap	0x31:SetWBCAttr(0x10)			
+libmi_disp	MI_DISP_SetWBCSource	mi_disp-mi_hdmi.md	wrap	0x2f:SetWBCSource(0xc)			
+libmi_disp	MI_DISP_SetZoomInWindow	mi_disp-mi_hdmi.md	wrap	0x21:SetZoomInWindow(0x10)			
+libmi_disp	MI_DISP_ShowInputPort	mi_disp-mi_hdmi.md	wrap	0x1d:ShowInputPort(0x8)			
+libmi_disp	MI_DISP_StepInputPort	mi_disp-mi_hdmi.md	wrap	0x1c:StepInputPort(0x8)			
+libmi_disp	MI_DISP_UnBindVideoLayer	mi-user-abi.md §10	wrap	0xb:UnBindVideoLayer(0x8)			
+libmi_disp	_mi_disp_GetScreenFrame	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	_mi_disp_ReleaseScreenFrame	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	mi_disp_AdjustScreenFrameSize	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	mi_disp_GetOutputResolution	mi_disp-mi_hdmi.md	noioctl				
+libmi_disp	mi_disp_GetScreenFrameSize	mi_disp-mi_hdmi.md	logic	0xf:mi_disp_ioctl_GetOutputtiming(0x30)			
+libmi_hdmi	MI_HDMI_Close	mi-user-abi.md §10	wrap	0x3:Close(0x4)			
+libmi_hdmi	MI_HDMI_DeInit	mi-user-abi.md §10	wrap	0x1:DeInit(0x0)			
+libmi_hdmi	MI_HDMI_DeInitDev	mi_disp-mi_hdmi.md	wrap	0x1:DeInit(0x0)			
+libmi_hdmi	MI_HDMI_ForceGetEdid	mi-user-abi.md §10	logic	0x9:ForceGetEdid(0x20c)			
+libmi_hdmi	MI_HDMI_GetAttr	mi-user-abi.md §10	wrap	0x5:GetAttr(0x34)			
+libmi_hdmi	MI_HDMI_GetInfoFrame	mi_disp-mi_hdmi.md	wrap	0xb:GetInfoFrame(0x30)			
+libmi_hdmi	MI_HDMI_GetSinkInfo	mi-user-abi.md §10	noioctl				
+libmi_hdmi	MI_HDMI_Init	mi-user-abi.md §10	logic	0x0:Init(0x0)			
+libmi_hdmi	MI_HDMI_InitDev	mi_disp-mi_hdmi.md	logic	0x0:Init(0x0)			
+libmi_hdmi	MI_HDMI_Open	mi-user-abi.md §10	wrap	0x2:Open(0x4)			
+libmi_hdmi	MI_HDMI_SetAnalogDrvCurrent	mi_disp-mi_hdmi.md	wrap	0xc:SetAnaLogDrvCur(0x10)			
+libmi_hdmi	MI_HDMI_SetAttr	mi-user-abi.md §10	wrap	0x4:SetAttr(0x34)			
+libmi_hdmi	MI_HDMI_SetAvMute	mi_disp-mi_hdmi.md	wrap	0x8:SetAvMute(0x8)			
+libmi_hdmi	MI_HDMI_SetInfoFrame	mi_disp-mi_hdmi.md	wrap	0xa:SetInfoFrame(0x2c)			
+libmi_hdmi	MI_HDMI_Start	mi-user-abi.md §10	wrap	0x6:Start(0x4)			
+libmi_hdmi	MI_HDMI_Stop	mi-user-abi.md §10	wrap	0x7:Stop(0x4)			
+libmi_jpd	MI_JPD_CreateChn	mi-user-abi.md §10	logic	0x2:CreateChn(0x18)			
+libmi_jpd	MI_JPD_CreateDev	mi_jpd-mi_vdec.md	wrap	0x0:InitDev(0x8)			
+libmi_jpd	MI_JPD_DestroyChn	mi-user-abi.md §10	logic	0x3:DestroyChn(0x8)			
+libmi_jpd	MI_JPD_DestroyDev	mi_jpd-mi_vdec.md	wrap	0x1:DeInitDev(0x4)			
+libmi_jpd	MI_JPD_DirectBufDecode	mi_jpd-mi_vdec.md	wrap	0xd:DirectBufDecode(0x48)			
+libmi_jpd	MI_JPD_DropStreamBuf	mi-user-abi.md §10	wrap	0xb:DropStreamBuf(0x30)			
+libmi_jpd	MI_JPD_GetChnAttr	mi_jpd-mi_vdec.md	wrap	0x4:GetChnAttr(0x20)	on0		
+libmi_jpd	MI_JPD_GetChnStatus	mi_jpd-mi_vdec.md	wrap	0x7:GetChnStatus(0x24)	on0		
+libmi_jpd	MI_JPD_GetStreamBuf	mi-user-abi.md §10	multi	0xf:GetRingPoolHandle(0xc) 0x9:GetStreamBuf(0x40) 0xe:RingPool_GetRingPoolInfo(0x18)			
+libmi_jpd	MI_JPD_PutStreamBuf	mi-user-abi.md §10	wrap	0xa:PutStreamBuf(0x30)			
+libmi_jpd	MI_JPD_QueryStreamInfo	mi_jpd-mi_vdec.md	wrap	0xc:QueryStreamInfo(0x38)	on0		
+libmi_jpd	MI_JPD_ResetChn	mi_jpd-mi_vdec.md	wrap	0x8:ResetChn(0x8)			
+libmi_jpd	MI_JPD_StartChn	mi-user-abi.md §10	wrap	0x5:StartChn(0x8)			
+libmi_jpd	MI_JPD_StopChn	mi-user-abi.md §10	wrap	0x6:StopChn(0x8)			
+libmi_vdec	MI_VDEC_CreateChn	mi-user-abi.md §10	logic	0x2:CreateChn(0x28)			
+libmi_vdec	MI_VDEC_CreateDev	mi-user-abi.md §10	wrap	0x0:InitDev(0x4)			
+libmi_vdec	MI_VDEC_DestroyChn	mi_jpd-mi_vdec.md	wrap	0x3:DestroyChn(0x4)			
+libmi_vdec	MI_VDEC_DestroyDev	mi_jpd-mi_vdec.md	wrap	0x1:DeInitDev(0x2)			
+libmi_vdec	MI_VDEC_FlushChn	mi_jpd-mi_vdec.md	wrap	0x8:FlushChn(0x4)			
+libmi_vdec	MI_VDEC_GetChnAttr	mi_jpd-mi_vdec.md	wrap	0x4:GetChnAttr(0x28)	on0		
+libmi_vdec	MI_VDEC_GetChnParam	mi_jpd-mi_vdec.md	wrap	0xb:GetChnParam(0x10)	on0		
+libmi_vdec	MI_VDEC_GetChnStat	mi-user-abi.md §10	wrap	0x7:GetChnStat(0x24)			
+libmi_vdec	MI_VDEC_GetDestCrop	mi_jpd-mi_vdec.md	wrap	0x19:GetDestCrop(0x10)	on0		
+libmi_vdec	MI_VDEC_GetDestCropEx	mi_jpd-mi_vdec.md	noioctl				
+libmi_vdec	MI_VDEC_GetDisplayMode	mi_jpd-mi_vdec.md	wrap	0x13:GetDisplayMode(0x8)	on0		
+libmi_vdec	MI_VDEC_GetOutputPortAttr	mi-user-abi.md §10	wrap	0x15:GetOutputPortAttr(0x8)			
+libmi_vdec	MI_VDEC_GetOutputPortAttrEx	mi_jpd-mi_vdec.md	noioctl				
+libmi_vdec	MI_VDEC_GetOutputPortLayoutMode	mi_jpd-mi_vdec.md	wrap	0x17:GetOutputPortLayoutMode(0x4)	on0		
+libmi_vdec	MI_VDEC_GetUserData	mi_jpd-mi_vdec.md	logic	0x11:GetUserData(0x80c)	unless-1		
+libmi_vdec	MI_VDEC_PauseChn	mi_jpd-mi_vdec.md	wrap	0xd:PauseChn(0x4)			
+libmi_vdec	MI_VDEC_RefreshChn	mi_jpd-mi_vdec.md	wrap	0xe:RefreshChn(0x4)			
+libmi_vdec	MI_VDEC_ReleaseUserData	mi_jpd-mi_vdec.md	noioctl				
+libmi_vdec	MI_VDEC_ResetChn	mi_jpd-mi_vdec.md	wrap	0x9:ResetChn(0x4)			
+libmi_vdec	MI_VDEC_ResumeChn	mi_jpd-mi_vdec.md	wrap	0xf:ResumeChn(0x4)			
+libmi_vdec	MI_VDEC_SendStream	mi-user-abi.md §10	noioctl				
+libmi_vdec	MI_VDEC_SetChnErrHandlePolicy	mi_jpd-mi_vdec.md	wrap	0x1a:SetChnErrHandlePolicy(0x8)			
+libmi_vdec	MI_VDEC_SetChnParam	mi_jpd-mi_vdec.md	wrap	0xa:SetChnParam(0x10)			
+libmi_vdec	MI_VDEC_SetDestCrop	mi_jpd-mi_vdec.md	wrap	0x18:SetDestCrop(0x10)			
+libmi_vdec	MI_VDEC_SetDestCropEx	mi_jpd-mi_vdec.md	noioctl				
+libmi_vdec	MI_VDEC_SetDisplayMode	mi_jpd-mi_vdec.md	wrap	0x12:SetDisplayMode(0x8)			
+libmi_vdec	MI_VDEC_SetOutputPortAttr	mi-user-abi.md §10	wrap	0x14:SetOutputPortAttr(0x8)			
+libmi_vdec	MI_VDEC_SetOutputPortAttrEx	mi_jpd-mi_vdec.md	noioctl				
+libmi_vdec	MI_VDEC_SetOutputPortLayoutMode	mi_jpd-mi_vdec.md	wrap	0x16:SetOutputPortLayoutMode(0x4)			
+libmi_vdec	MI_VDEC_StartChn	mi-user-abi.md §10	wrap	0x5:StartChn(0x4)			
+libmi_vdec	MI_VDEC_StepChn	mi_jpd-mi_vdec.md	wrap	0x10:StepChn(0x4)			
+libmi_vdec	MI_VDEC_StopChn	mi_jpd-mi_vdec.md	wrap	0x6:StopChn(0x4)			
+libmi_vdec	get_next_frame_start_position	mi_jpd-mi_vdec.md	noioctl				

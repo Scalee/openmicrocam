@@ -1,0 +1,19 @@
+[package]
+name = "mi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "safe layer over mi-sys: typed ids, Result, explicit create/destroy, Hal trait"
+
+[dependencies]
+mi-sys = { path = "../mi-sys" }
+microcam-core = { path = "../microcam-core" }
+microcam-draw = { path = "../microcam-draw" }
+libc.workspace = true
+log.workspace = true
+thiserror.workspace = true
+# libjpeg-turbo for the picture windows (the hardware decoder hangs on some of our photos)
+mozjpeg-sys = { version = "2.2", default-features = false, features = ["with_simd"] }
+
+[build-dependencies]
+cc = "1"

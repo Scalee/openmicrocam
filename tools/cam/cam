@@ -1,0 +1,735 @@
+#!/usr/bin/env python3
+"""cam — the camera from the laptop, one entry point.
+
+  cam state [--json]                 what the camera is doing, anomalies first (≤ 8 lines, ≤ 4 s); exit 2 = camera off
+  cam wait up|microcamd|stream|idle [secs]
+                                     returns at the event; non-zero with the reason when the time runs out
+  cam sh '<command>' | cam sh -      the camera's shell: the output only and the command's exit code (- = a script on stdin)
+  cam log [--since N|mark | --last N] [--part a,b] [--level warn] [--grep RE] [--dedup]
+  cam log mark                       remember where microcamd's log is now (`--since mark` reads from there)
+  cam deploy [--ko FILE]... [--file MICROCAMD] [--menu MENU]
+                                     build microcamd and the menu, keep the way back, upload, reboot, wait until it
+                                     runs; --menu FILE a kept menu with --file; a --ko
+                                     sensor driver goes to /customer/fast, any other module to /customer/microcam
+  cam check [smoke|full]             the regression set, one line a case; exit code = failures
+  cam watch                          a line each time something turns worse; exits non-zero when the camera is gone
+
+Options: `sh -t SECS` (default 20). Settings and hooks: docs/TOOLS.md; the bench `cam check` needs: docs/BENCH.md.
+"""
+import argparse, json, os, re, subprocess, sys, threading, time
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import camlib  # noqa: E402
+import hostconf  # noqa: E402 — camlib put tools/ on the path
+from camlib import Gone, REPO, LOGS  # noqa: E402
+
+LOOK = os.path.join(LOGS, 'cam-look.json')  # what the last look saw: resets and crash dumps are told once
+MARK = os.path.join(LOGS, 'cam-logmark')
+LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR']
+SRC_S = 2.0  # every source of `state`
+
+
+def mib(x):
+    return f'{x:.1f}'
+
+
+# ---- state --------------------------------------------------------------------------------------------------------
+
+def gather():
+    """Every source at once, each bounded: {name: value or Exception}."""
+    out = {}
+
+    def src(name, fn):
+        def run():
+            try:
+                out[name] = fn()
+            except Exception as e:  # noqa: BLE001 — a source that fails is reported as such
+                out[name] = e
+        t = threading.Thread(target=run, daemon=True)
+        t.start()
+        return t
+
+    def two_status():
+        a = camlib.status(SRC_S)
+        t0 = time.time()
+        time.sleep(1.0)
+        b = camlib.status(SRC_S)
+        return a, b, time.time() - t0
+
+    def mem():
+        r = camlib.microcam({'cmd': 'mem', 'brief': True}, SRC_S)
+        return r.get('lines') or []
+
+    def log():
+        return camlib.microcam({'cmd': 'log', 'lines': 1500}, SRC_S).get('lines') or []
+
+    def shell():
+        rc, text = camlib.sh('date +%s; cut -d" " -f1 /proc/uptime; head -1 /customer/microcam-crash.log 2>/dev/null; '
+                             # a pool closes for a moment in every transition: one still closing a second later is stuck
+                             'echo --; grep "^pool" /proc/microcam_canvas 2>/dev/null; sleep 1; echo --; '
+                             'grep "^pool" /proc/microcam_canvas 2>/dev/null', SRC_S + 1.0, log=False)  # + its own sleep
+        if rc == 124:
+            raise TimeoutError(f'the camera\'s shell did not answer within {SRC_S + 1.0:.0f} s')
+        head, first, then = (text.split('--\n') + ['', ''])[:3]
+        lines = head.splitlines()
+        stuck = {p for p in first.splitlines() if 'closing' in p} & {p for p in then.splitlines() if 'closing' in p}
+        return {'date': int(lines[0]), 'uptime': float(lines[1]), 'crash': lines[2] if len(lines) > 2 else '',
+                'pools': [p for p in then.splitlines() if p.strip()], 'stuck': sorted(stuck)}
+
+    threads = [src('status', two_status), src('mem', mem), src('log', log), src('shell', shell),
+               src('holders', camlib.holders), src('extra', camlib.state_extra)]
+    end = time.time() + 4.0 - 0.3
+    for t in threads:
+        t.join(max(0.0, end - time.time()))
+    for name in ('status', 'mem', 'log', 'shell', 'holders', 'extra'):
+        out.setdefault(name, TimeoutError(f'{name}: no answer in time'))
+    return out
+
+
+def stamp_s(line):
+    m = re.match(r'(\d\d):(\d\d):(\d\d)\.(\d{3}) ', line)
+    return int(m[1]) * 3600 + int(m[2]) * 60 + int(m[3]) + int(m[4]) / 1000 if m else None
+
+
+def recent(lines, now_s, secs):
+    """The log lines of the last `secs` seconds; `now_s` the camera's time of day."""
+    out = []
+    for l in lines:
+        t = stamp_s(l)
+        if t is not None and (now_s - t) % 86400 <= secs:
+            out.append(l)
+    return out
+
+
+# transitions someone asked for (a host's stream, a control command); a loop is made of the others
+ASKED = {'stream on', 'stream off', 'hdmi', 'precedence', 'preset', 'nr3d', 'mjpeg-quality', 'picture', 'zoom', 'mirror',
+         'flip', 'aspect', 'standby', 'level-hdmi', 'level-usb', 'level-media', 'record-fps', 'record-codec', 'record',
+         'record stop', 'photo', 'photo done', 'camera picture', 'camera picture done', 'rebuild'}
+
+
+def anomalies(g, look, now):
+    """[(key, line)], worst first."""
+    out = []
+    st = g['status']
+    a, b, dt = st if not isinstance(st, Exception) else (None, None, 0)
+    sh = g['shell'] if not isinstance(g['shell'], Exception) else None
+    log = g['log'] if not isinstance(g['log'], Exception) else []
+    now_s = (sh['date'] % 86400) if sh else (stamp_s(log[-1]) if log else None)
+
+    extra = g['extra'] if not isinstance(g['extra'], Exception) else (set(), [f'⚠ state hook: {g["extra"]}'], [])
+    for i, l in enumerate(extra[1]):
+        out.append((f'hook-{i}', l))
+    microcamd_fails = [l for l in (recent(log, now_s, 600) if now_s is not None else [])
+                   if ' ERROR uvc ' in l and ('STREAMON' in l or 'no frame from the encoder' in l)]
+    if len(microcamd_fails) >= 2:  # one refusal is a host asking what no rule serves; a run of them is the fault
+        out.append(('stream-fails', f'⚠ USB stream starts failing: {len(microcamd_fails)} refused by microcamd in 10 min, '
+                                    f'last «{microcamd_fails[-1].split(" uvc ", 1)[1][:50]}»'))
+    if now_s is not None:
+        tr = [l for l in recent(log, now_s, 60) if ' pipeline transition (' in l
+              and re.search(r'transition \(([^)]*)\)', l)[1] not in ASKED]
+        failed = [l for l in recent(log, now_s, 60) if ' pipeline transition failed' in l]
+        if len(tr) >= 4 or len(failed) >= 3:
+            why = {}
+            for l in tr:
+                w = re.search(r'transition \(([^)]*)\)', l)[1]
+                why[w] = why.get(w, 0) + 1
+            out.append(('rebuild-loop', f'⚠ rebuild loop: {len(tr)} transitions in 60 s ('
+                        + ', '.join(f'{k} ×{v}' for k, v in why.items()) + f'), {len(failed)} failed'))
+    for l in (b or {}).get('lists') or []:
+        if l.get('anomaly'):
+            out.append((f'list-{l["table"]}', f'⚠ {l["table"]}: {l["anomaly"]}; in use: {l["used"]}'))
+    if b and b['state'] != 'running':
+        out.append(('degraded', f'⚠ microcamd {b["state"]}: {b.get("last_error") or "no error given"}'))
+    mem = g['mem'] if not isinstance(g['mem'], Exception) else []
+    menu = parse_mem(mem).get('menu')
+    if b is not None and 'scene' in b and not b['scene'] and menu and menu[0] > 0:
+        out.append(('menu-held', f'⚠ menu memory held with no menu scene: {mib(menu[0])} of {mib(menu[1])} MiB'))
+    if sh:
+        if sh['stuck']:
+            out.append(('pool-closing', '⚠ microcam_canvas pool closing for over 1 s: '
+                        + '; '.join(' '.join(p.split()[:3]) for p in sh['stuck'])))
+    if not isinstance(g['holders'], Exception):
+        stray = [(p, c) for p, c in g['holders'] if p not in extra[0]]
+        if stray:
+            out.append(('stray-holder', '⚠ video node held by ' + ', '.join(f'{p} {c[:40]}' for p, c in stray)))
+    if sh:
+        boot = now - sh['uptime']
+        if look.get('boot') and abs(boot - look['boot']) > 15:
+            out.append(('reset', f'⚠ camera reset since the last look ({time.strftime("%H:%M", time.localtime(look["seen"]))}), up {int(sh["uptime"])} s'))
+        elif b and look.get('microcamd') and abs((now - b['uptime_s']) - look['microcamd']) > 15:
+            out.append(('microcamd-restart', f'⚠ microcamd restarted since the last look, up {b["uptime_s"]} s'))
+        if sh['crash'] and sh['crash'] != look.get('crash'):
+            out.append(('crash', f'⚠ crash log new since the last look: «{sh["crash"][:70]}» (/customer/microcam-crash.log)'))
+    return out
+
+
+def parse_mem(lines):
+    """The brief line of `mem` (or the full report): heap free/size, canvases, menu held/limit, Linux available."""
+    text = '\n'.join(lines)
+    r = {}
+    if m := re.search(r'heap free ([\d.]+) of ([\d.]+)', text) or re.search(r'media heap ([\d.]+) MiB: free ([\d.]+)', text):
+        r['heap'] = (float(m[1]), float(m[2])) if 'heap free' in m[0] else (float(m[2]), float(m[1]))
+    if m := re.search(r'canvases ([\d.]+) ×(\d+)', text) or re.search(r'microcam_canvas\s+([\d.]+)\s+×(\d+)', text):
+        r['canvases'] = (float(m[1]), int(m[2]))
+    if m := re.search(r'menu ([\d.]+) of ([\d.]+)', text):
+        r['menu'] = (float(m[1]), float(m[2]))
+    if m := re.search(r'available ([\d.]+)', text):
+        r['linux'] = float(m[1])
+    return r
+
+
+def state_lines(g, now):
+    """The info lines in order of importance: [(rank, line)], printed in their own order."""
+    st = g['status']
+    lines = []
+    iface = camlib.link()
+    sh = g['shell'] if not isinstance(g['shell'], Exception) else None
+    up = f'up {fmt_dur(sh["uptime"])}' if sh else f'shell: {g["shell"]}'
+    if isinstance(st, Exception):
+        lines.append((0, f'link {iface} · camera {up} · microcamd: {st}'))
+        return lines
+    a, b, dt = st
+    lines.append((0, f'link {iface} · camera {up} · microcamd {b["state"]}, build {b.get("build") or "?"}, '
+                     f'up {fmt_dur(b["uptime_s"])}, {b["transitions"]} transitions'))
+    d = b.get('desired') or {}
+    sensor = d.get('sensor') or {}
+    hdmi = d.get('hdmi')
+    hd = hdmi['timing'] if hdmi and isinstance(hdmi.get('timing'), str) else (json.dumps(hdmi['timing']) if hdmi else 'off')
+    lines.append((3, f'sensor {sensor.get("mode", "?")} @{sensor.get("fps", "?")} · HDMI {hd} · monitor {b["monitor"][:50]}'))
+    for l in b.get('lists') or []:
+        if not l.get('anomaly'):
+            lines.append((1, f'{l["table"]}: {l["used"]}'))
+    usb = d.get('usb')
+    if b.get('host_stream') and usb:
+        pa, pb = a.get('pump'), b.get('pump')
+        fps = f'{(pb[0] - pa[0]) / dt:.1f} fps' if pa and pb and pb[0] >= pa[0] else 'fps ?'
+        joined = {'Hdmi': ', joined HDMI', 'Ring': ', ring'}.get(usb.get('frame_of'), '')
+        delay = f' · delay {b["usb_delay"][0]:.0f}/{b["usb_delay"][1]:.0f} ms' if b.get('usb_delay') else ''
+        lines.append((1, f'USB {usb["codec"]} {size(usb["size"])}@{usb["fps"]}{joined} · {fps} over 1 s · '
+                         f'dropped {pb[1] if pb else "?"}{delay}'))
+    else:
+        lines.append((1, 'USB: no host stream'))
+    if not isinstance(g['extra'], Exception):
+        lines += [(4, l) for l in g['extra'][2]]
+    mem = g['mem']
+    if isinstance(mem, Exception):
+        lines.append((2, f'heap: {mem}'))
+    else:
+        m = parse_mem(mem)
+        parts = []
+        if 'heap' in m:
+            parts.append(f'heap free {mib(m["heap"][0])} of {mib(m["heap"][1])} MiB')
+        if 'canvases' in m:
+            parts.append(f'canvases {mib(m["canvases"][0])} ×{m["canvases"][1]}')
+        if 'menu' in m:
+            parts.append(f'menu {mib(m["menu"][0])} of {mib(m["menu"][1])}')
+        if 'linux' in m:
+            parts.append(f'Linux available {mib(m["linux"])}')
+        lines.append((2, ' · '.join(parts) or 'heap: ?'))
+    lines.append((5, f'last: {b.get("last_transition") or "—"} · error: {b.get("last_error") or "—"}'))
+    return lines
+
+
+def size(s):
+    return f'{s["w"]}x{s["h"]}' if isinstance(s, dict) else str(s)
+
+
+def fmt_dur(s):
+    s = int(s)
+    return f'{s} s' if s < 120 else f'{s // 60} min' if s < 7200 else f'{s // 3600} h {s % 3600 // 60} min'
+
+
+def load_look():
+    try:
+        return json.load(open(LOOK))
+    except (OSError, ValueError):
+        return {}
+
+
+def save_look(g, now):
+    look = load_look()
+    sh = g['shell'] if not isinstance(g['shell'], Exception) else None
+    st = g['status'] if not isinstance(g['status'], Exception) else None
+    if sh:
+        look.update(boot=now - sh['uptime'], crash=sh['crash'])
+    if st:
+        look['microcamd'] = now - st[1]['uptime_s']
+    look['seen'] = now
+    os.makedirs(LOGS, exist_ok=True)
+    json.dump(look, open(LOOK, 'w'))
+
+
+def camera_off():
+    """Why the camera cannot be asked, or None."""
+    iface = camlib.link()
+    if not iface:
+        return 'camera off: no USB link'
+    if not camlib.ping(1):
+        addr = subprocess.run(['ip', '-4', 'addr', 'show', iface], capture_output=True, text=True).stdout
+        if f'{camlib.HOST}/' not in addr:
+            return f'camera on USB ({iface}) but the laptop has no address on it: cam wait up'
+        return f'camera on USB ({iface}) but not answering'
+    return None
+
+
+def cmd_state(args):
+    off = camera_off()
+    if off:
+        print(off, file=sys.stderr)
+        return 2
+    now = time.time()
+    g = gather()
+    look = load_look()
+    an = anomalies(g, look, now)
+    info = state_lines(g, now)
+    save_look(g, now)
+    if args.json:
+        def plain(v):
+            return repr(v) if isinstance(v, Exception) else v
+        st = g['status']
+        print(json.dumps({'anomalies': [{'key': k, 'text': t} for k, t in an], 'lines': [t for _, t in info],
+                          'status': plain(st if isinstance(st, Exception) else st[1]),
+                          'mem': plain(g['mem']), 'shell': plain(g['shell']), 'extra': plain(g['extra']),
+                          'holders': plain(g['holders'])}, default=str, indent=1))
+        return 1 if an else 0
+    room = max(0, 8 - len(an[:8]))
+    keep = sorted(sorted(info, key=lambda x: x[0])[:room], key=lambda x: info.index(x))
+    for _, t in an[:8]:
+        print(t)
+    for _, t in keep:
+        print(t)
+    return 1 if an else 0
+
+
+# ---- wait ---------------------------------------------------------------------------------------------------------
+
+def check_up():
+    iface = camlib.link()
+    if not iface:
+        return 'no USB link'
+    if not camlib.ping(1):
+        addr = subprocess.run(['ip', '-4', 'addr', 'show', iface], capture_output=True, text=True).stdout
+        if f'{camlib.HOST}/' not in addr:
+            camlib.net_up()
+            return None if camlib.ping(1) else f'{iface}: no answer after cam-net'
+        return f'{iface}: no answer from {camlib.CAM}'
+    return None
+
+
+def check_microcamd():
+    if (r := check_up()):
+        return r
+    try:
+        s = camlib.status(2)
+    except Gone as e:
+        return str(e)
+    return None if s['state'] == 'running' else f'microcamd {s["state"]}: {s.get("last_error") or ""}'
+
+
+def check_stream():
+    if (r := check_microcamd()):
+        return r
+    a = camlib.status(2)
+    if not a.get('host_stream'):
+        return 'no host stream'
+    time.sleep(1)
+    b = camlib.status(2)
+    if not (a.get('pump') and b.get('pump')) or b['pump'][0] <= a['pump'][0]:
+        return f'host stream {b.get("host_stream")}, no frames queued in 1 s'
+    return None
+
+
+def check_idle():
+    if (r := check_microcamd()):
+        return r
+    a = camlib.status(2)
+    time.sleep(2)
+    b = camlib.status(2)
+    if b['transitions'] != a['transitions']:
+        return f'transitions {a["transitions"]} → {b["transitions"]} in 2 s'
+    return None
+
+
+WAITS = {'up': (check_up, 90), 'microcamd': (check_microcamd, 60), 'stream': (check_stream, 30),
+         'idle': (check_idle, 30)}
+
+
+def wait(what, secs=None, quiet=False):
+    """None when `what` holds, else the last reason it did not when the time ran out."""
+    fn, default = WAITS[what]
+    end = time.time() + (secs or default)
+    why = '?'
+    while True:
+        try:
+            why = fn()
+        except Gone as e:
+            why = str(e)
+        if why is None:
+            return None
+        if time.time() >= end:
+            return why
+        time.sleep(0.5)
+
+
+def cmd_wait(args):
+    t0 = time.time()
+    why = wait(args.what, args.secs)
+    if why is None:
+        print(f'{args.what} after {time.time() - t0:.1f} s')
+        return 0
+    print(f'{args.what}: not after {time.time() - t0:.0f} s — {why}', file=sys.stderr)
+    return 1
+
+
+# ---- sh -----------------------------------------------------------------------------------------------------------
+
+def cmd_sh(args):
+    if args.cmd == ['-']:
+        rc, out = camlib.sh(None, args.t, script=sys.stdin.read())
+    else:
+        rc, out = camlib.sh(' '.join(args.cmd), args.t)
+    sys.stdout.write(out)
+    if rc == 124:
+        print(f'cam sh: no end within {args.t} s', file=sys.stderr)
+    return rc
+
+
+# ---- log ----------------------------------------------------------------------------------------------------------
+
+LINE = re.compile(r'^(\d\d:\d\d:\d\d\.\d{3}) (\w+)\s+(\S+) (.*)$')
+
+
+def cmd_log(args):
+    if args.mark == 'mark':
+        r = camlib.microcam({'cmd': 'log-since', 'from': 2 ** 64 - 1})
+        n = r.get('message')
+        open(MARK, 'w').write(str(n))
+        print(n)
+        return 0
+    if args.since is not None:
+        frm = int(open(MARK).read()) if args.since == 'mark' else int(args.since)
+        lines = camlib.microcam({'cmd': 'log-since', 'from': frm}, 5).get('lines') or []
+    else:
+        lines = camlib.microcam({'cmd': 'log', 'lines': args.last}, 5).get('lines') or []
+    parts = set(args.part.split(',')) if args.part else None
+    floor = LEVELS.index(args.level.upper()) if args.level else 0
+    rx = re.compile(args.grep) if args.grep else None
+    keep = []
+    for l in lines:
+        m = LINE.match(l)
+        if m:
+            if parts and m[3] not in parts:
+                continue
+            if m[2] in LEVELS and LEVELS.index(m[2]) < floor:
+                continue
+        elif parts or floor:
+            continue
+        if rx and not rx.search(l):
+            continue
+        keep.append(l)
+    if not args.dedup:
+        print('\n'.join(keep))
+        return 0
+    groups = {}  # key: the line without its time and with numbers as #
+    for l in keep:
+        m = LINE.match(l)
+        body = f'{m[2]} {m[3]} {m[4]}' if m else l
+        key = re.sub(r'0x[0-9a-fA-F]+|\d+(\.\d+)?', '#', body)
+        g = groups.setdefault(key, [0, m[1][:8] if m else '', l])
+        g[0] += 1
+        g[2] = l
+    for n, first, last in sorted(groups.values(), key=lambda g: keep.index(g[2])):
+        print(last if n == 1 else f'{last}   [×{n} since {first}]')
+    return 0
+
+
+# ---- deploy -------------------------------------------------------------------------------------------------------
+
+STAGE = hostconf.get('MICROCAM_STAGE')
+TARGET = 'armv7-unknown-linux-gnueabihf'
+BIN = os.path.join(REPO, 'target', TARGET, 'release', 'microcamd')
+MENU = os.path.join(REPO, 'target', TARGET, 'release', 'microcam-menu')
+KEEP = 3
+# what the build prints every time: neon / d32 are unstable features of the armv7 target; zigbuild's compiler wrapper
+# reports its aeabi_unaligned.c at every build of `mi`'s C shim, which builds
+KNOWN = [re.compile(p) for p in (
+    r"^warning: unstable feature specified for `-Ctarget-feature`: `(neon|d32)`",
+    r"^warning: mi@[\d.]+: \S+/cargo-zigbuild/\S+/aeabi_unaligned\.c:1:1: error: FileNotFound$",
+    r"^\s*\|?\s*$", r"^\s*= note: this feature is not stably supported; its behavior can change in the future",
+    r"^warning: `\S+` \((lib|bin \"\S+\")\) generated [23] warnings( \(2 duplicates\))?$",
+    # a binary linked without microcamd's build script (the menu): zig ignores the flag cargo passes
+    r"^warning: linker stderr: zig: argument unused during compilation: '-fuse-ld=lld'", r"^\s*= note: `#\[warn\(linker_messages\)\]` on by default$",
+    r"^\s*(Compiling|Finished|Building|Blocking|Fresh|Updating|Locking|Downloaded|Downloading|Checking)\b")]
+
+
+def show(msg):
+    """A progress line; `@show` lines when MICROCAM_PROGRESS=at (docs/TOOLS.md)."""
+    print(f'@show {msg}' if hostconf.get('MICROCAM_PROGRESS') == 'at' else f'deploy: {msg}', flush=True)
+
+
+def build():
+    """cargo zigbuild of microcamd and the menu with the host's build settings (README «Building»); (ok, the lines worth
+    showing)."""
+    p = subprocess.run(['cargo', 'zigbuild', '--release', '--target', f'{TARGET}.2.30', '-p', 'microcamd', '-p', 'microcam-menu'],
+                       cwd=REPO, env=hostconf.environ(), capture_output=True, text=True)
+    news = [l for l in p.stderr.splitlines() if not any(k.search(l) for k in KNOWN)]
+    bad = p.returncode != 0 or any(re.match(r'^(warning|error)', l) for l in news)
+    return not bad, news
+
+
+def build_id(path):
+    """The id microcamd's build.rs stamps into the binary (`microcam-build <commit[-dirty]> <time>`), or None."""
+    data = open(path, 'rb').read()
+    if path.endswith('.xz'):
+        data = subprocess.run(['xz', '-dc', path], capture_output=True).stdout
+    m = re.search(rb'microcam-build ([0-9a-f]{7,}(?:-dirty)?) ', data)
+    return m[1].decode() if m else None
+
+
+def prune(prefix, suffix):
+    kept = sorted((f for f in os.listdir(STAGE) if f.startswith(prefix) and f.endswith(suffix)),
+                  key=lambda f: os.path.getmtime(os.path.join(STAGE, f)), reverse=True)
+    for f in kept[KEEP:]:
+        os.remove(os.path.join(STAGE, f))
+
+
+def pull(path, dest):
+    """A file from the camera (busybox httpd on it, curl here)."""
+    d, f = os.path.split(path)
+    camlib.sh(f'killall httpd 2>/dev/null; httpd -p 8090 -h {d}', 10)
+    try:
+        p = subprocess.run(['curl', '-fsS', '--max-time', '30', '-o', dest, f'http://{camlib.CAM}:8090/{f}'])
+        return p.returncode == 0
+    finally:
+        camlib.sh('killall httpd', 10)
+
+
+def md5(path):
+    return subprocess.run(['md5sum', path], capture_output=True, text=True).stdout[:32]
+
+
+def cmd_deploy(args):
+    if hostconf.get('MICROCAM_PROGRESS') == 'at':
+        print('@stall 120', flush=True)
+    t0 = time.time()
+    import fcntl
+    os.makedirs(LOGS, exist_ok=True)
+    lock = open(os.path.join(LOGS, 'cam-deploy.lock'), 'w')
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        print('deploy: another deploy runs')
+        return 1
+    if (off := camera_off()):
+        print(f'deploy: {off}')
+        return 1
+    # 1. the build
+    if args.file:
+        src = os.path.abspath(args.file)
+    else:
+        show('building microcamd')
+        ok, news = build()
+        for l in news:
+            print(l)
+        if not ok:
+            print('deploy: the build failed or warned (above)')
+            return 1
+        src = BIN
+    bid = build_id(src) or f'nobuild-{md5(src)[:8]}'
+    # builds of an uncommitted tree share their commit's id: the content tells them apart, or the way back below
+    # would be kept over the new build under the same name
+    if bid.endswith('-dirty'):
+        bid += f'-{md5(src)[:8]}'
+    os.makedirs(STAGE, exist_ok=True)
+
+    new = camlib.pack_xz(src, os.path.join(STAGE, f'microcamd-{bid}.xz'))
+    # the menu goes with a build (named by it), or as given; a microcamd given alone leaves the camera's menu
+    menu_src = os.path.abspath(args.menu) if args.menu else None if args.file else MENU
+    menu = camlib.pack_xz(menu_src, os.path.join(STAGE, f'microcam-menu-{bid}.xz' if not args.menu else os.path.basename(menu_src))) if menu_src else None
+    # 2. the way back: the camera's microcamd (and modules about to be replaced) kept here by the build that runs now
+    show('keeping the way back')
+    try:
+        running = camlib.status(2).get('build')
+    except Gone:
+        running = None
+    rid = running.split()[0] if running else None
+    if rid and rid.endswith('-dirty'):
+        rid = None  # its name says nothing about its content: named by the camera's file below
+    rc, out = camlib.sh('md5sum /customer/microcam/microcamd.xz', 10, log=False)
+    cam_md5 = out[:32]
+    have = [f for f in os.listdir(STAGE) if f.startswith('microcamd-') and f.endswith('.xz')]
+    back = next((f for f in have if md5(os.path.join(STAGE, f)) == cam_md5), None)
+    if not back:
+        back = f'microcamd-{rid or "was-" + cam_md5[:8]}.xz'
+        if not pull('/customer/microcam/microcamd.xz', os.path.join(STAGE, back)):
+            print('deploy: could not keep the camera\'s microcamd as the way back')
+            return 1
+    os.utime(os.path.join(STAGE, back))
+    os.utime(new)  # the new one is the newest
+    if menu:
+        # the camera's menu kept too (none there yet: the way back is removing it)
+        rc, out = camlib.sh('md5sum /customer/microcam/microcam-menu.xz 2>/dev/null', 10, log=False)
+        if rc == 0 and out[:32]:
+            if not any(md5(os.path.join(STAGE, f)) == out[:32] for f in os.listdir(STAGE) if f.startswith('microcam-menu-')):
+                if not pull('/customer/microcam/microcam-menu.xz', os.path.join(STAGE, f'microcam-menu-was-{out[:8]}.xz')):
+                    print('deploy: could not keep the camera\'s menu as the way back')
+                    return 1
+        else:
+            print('deploy: the menu is new on the camera; the way back is `rm /customer/microcam/microcam-menu.xz`')
+        os.utime(menu)
+    kos = []  # (local file, name, its directory on the camera)
+    for ko in args.ko or []:
+        # a sensor driver to /customer/fast, where the boot loads it; any other module to /customer/microcam
+        name = os.path.basename(ko)
+        there = '/customer/fast' if name.startswith('drv_ms_cus_') else '/customer/microcam'
+        keep = os.path.join(STAGE, f'{name[:-3]}-{rid or "was"}.ko')
+        # a module the camera does not have yet: nothing to keep, the way back is removing it
+        if camlib.sh(f'[ -f {there}/{name} ]', 10, log=False)[0] != 0:
+            print(f'deploy: {name} is new on the camera; the way back is `rm {there}/{name}`')
+        elif not os.path.exists(keep) and not pull(f'{there}/{name}', keep):
+            print(f'deploy: could not keep the camera\'s {name}')
+            return 1
+        kos.append((os.path.abspath(ko), name, there))
+    # 3. upload with the host's USB stream off: uploads beside a running stream hung the camera on the vendor's USB driver
+    show('uploading')
+    released = camlib.stream_release()
+    mc = '/customer/microcam'
+    files = [(new, 'microcamd.xz', mc), (os.path.join(REPO, 'camera/policy.toml'), 'policy.toml', mc),
+             (os.path.join(REPO, 'camera/config.toml'), 'config.toml', mc),
+             (os.path.join(REPO, 'camera/app-start.sh'), 'app-start.sh', mc)] + ([(menu, 'microcam-menu.xz', mc)] if menu else []) + kos
+    up = os.path.join(os.environ.get('TMPDIR', '/tmp'), f'cam-deploy-{os.getpid()}')
+    os.makedirs(up, exist_ok=True)
+    for path, name, _ in files:
+        subprocess.run(['cp', path, os.path.join(up, name)], check=True)
+    want = {f'{d}/{n}': md5(os.path.join(up, n)) for _, n, d in files}  # of what goes up: the tree may change meanwhile
+    server = subprocess.Popen([sys.executable, '-m', 'http.server', '8003', '--bind', camlib.HOST, '-d', up],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        time.sleep(0.5)
+        names = ' '.join(n for _, n, _ in files)
+        dests = ' '.join(f'{d}/{n}' for _, n, d in files)
+        script = (f'cd /tmp && for f in {names}; do wget -q -O /tmp/$f http://{camlib.HOST}:8003/$f || exit 3; done\n'
+                  f'need=0; for d in {dests}; do s=$(wc -c < /tmp/${{d##*/}}); o=$(wc -c < $d 2>/dev/null || echo 0); '
+                  f'need=$((need + s - o)); done\n'
+                  f'free=$(df /customer | tail -1 | awk \'{{print $4 * 1024}}\'); [ $need -lt $free ] || {{ echo "no room: need $need, free $free"; exit 4; }}\n'
+                  f'for d in {dests}; do cp /tmp/${{d##*/}} $d || exit 5; done; sync\n'
+                  f'md5sum {dests}')
+        rc, out = camlib.sh(None, 90, script=script)
+    finally:
+        server.terminate()
+        subprocess.run(['rm', '-rf', up])
+    got = {l.split()[1]: l.split()[0] for l in out.splitlines() if re.match(r'^[0-9a-f]{32}  ', l)}
+    if rc != 0 or got != want:
+        print(f'deploy: upload failed (exit {rc}): {out.strip()[-200:]}')
+        print(f'deploy: the camera still runs {running or "?"}; flash may hold a mix — check `cam sh "md5sum /customer/microcam/*"`')
+        camlib.stream_restore(released)
+        return 1
+    # 4. reboot and wait
+    show('rebooting')
+    camlib.sh('sync; (sleep 1; reboot) >/dev/null 2>&1 & true', 10)
+    t1 = time.time()
+    while time.time() - t1 < 20 and camlib.ping(1):  # until it is gone
+        time.sleep(0.5)
+    for what, secs in (('up', 90), ('microcamd', 60)):
+        show(f'waiting: {what}')
+        why = wait(what, secs)
+        if why:
+            print(f'deploy: {bid} on flash, {what} not reached in {secs} s: {why}')
+            camlib.stream_restore(released)
+            return 1
+    if released:
+        show('stream back')
+    back_ok = camlib.stream_restore(released)
+    prune('microcamd-', '.xz')
+    prune('microcam-menu-', '.xz')
+    for _, name, _ in kos:
+        prune(f'{name[:-3]}-', '.ko')
+    s = camlib.status(2)
+    usb = (s.get('desired') or {}).get('usb')
+    print(f'deployed {s.get("build") or bid} in {time.time() - t0:.0f} s: microcamd {s["state"]}, '
+          f'USB {"%s %s" % (size(usb["size"]), "joined" if usb.get("frame_of") == "Hdmi" else "") if usb else "none"}, '
+          f'host stream {"not released" if back_ok is None else "back" if back_ok else "NOT back (stream-restore hook failed)"}; '
+          f'way back {os.path.join(STAGE, back)}')
+    return 0 if back_ok is not False else 1
+
+
+# ---- watch --------------------------------------------------------------------------------------------------------
+
+def cmd_watch(args):
+    seen = {}
+    gone_since = None
+    while True:
+        now = time.time()
+        if camera_off():
+            gone_since = gone_since or now
+            if now - gone_since > args.gone:
+                print(f'{time.strftime("%T")} camera gone: {camera_off()}', flush=True)
+                return 2
+            time.sleep(2)
+            continue
+        gone_since = None
+        g = gather()
+        look = load_look()
+        an = dict(anomalies(g, look, now))
+        save_look(g, now)
+        for k, t in an.items():
+            if seen.get(k) != t:
+                print(f'{time.strftime("%T")} {t}', flush=True)
+        seen = an
+        time.sleep(args.every)
+
+
+# ---- check --------------------------------------------------------------------------------------------------------
+
+def cmd_check(args):
+    test = os.path.join(REPO, 'tools/cam/test/check.py')
+    return subprocess.run([sys.executable, test, args.set]).returncode
+
+
+def main():
+    ap = argparse.ArgumentParser(prog='cam', description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest='sub', required=True)
+    p = sub.add_parser('state')
+    p.add_argument('--json', action='store_true')
+    p.set_defaults(fn=cmd_state)
+    p = sub.add_parser('wait')
+    p.add_argument('what', choices=list(WAITS))
+    p.add_argument('secs', type=float, nargs='?')
+    p.set_defaults(fn=cmd_wait)
+    p = sub.add_parser('sh')
+    p.add_argument('-t', type=float, default=20)
+    p.add_argument('cmd', nargs=argparse.REMAINDER)
+    p.set_defaults(fn=cmd_sh)
+    p = sub.add_parser('log')
+    p.add_argument('mark', nargs='?', choices=['mark'])
+    p.add_argument('--since')
+    p.add_argument('--last', type=int, default=40)
+    p.add_argument('--part')
+    p.add_argument('--level')
+    p.add_argument('--grep')
+    p.add_argument('--dedup', action='store_true')
+    p.set_defaults(fn=cmd_log)
+    p = sub.add_parser('deploy')
+    p.add_argument('--ko', action='append')
+    p.add_argument('--file', help='a microcamd binary or a kept $MICROCAM_STAGE/microcamd-<id>.xz instead of a build (the way back)')
+    p.add_argument('--menu', help='a menu binary or a kept $MICROCAM_STAGE/microcam-menu-<id>.xz (with --file; a build brings its own)')
+    p.set_defaults(fn=cmd_deploy)
+    p = sub.add_parser('check')
+    p.add_argument('set', nargs='?', default='smoke', choices=['smoke', 'full'])
+    p.set_defaults(fn=cmd_check)
+    p = sub.add_parser('watch')
+    p.add_argument('--every', type=float, default=5)
+    p.add_argument('--gone', type=float, default=30, help='seconds without the camera before it counts as gone')
+    p.set_defaults(fn=cmd_watch)
+    args = ap.parse_args()
+    try:
+        sys.exit(args.fn(args))
+    except Gone as e:
+        print(f'cam: {e}', file=sys.stderr)
+        sys.exit(2)
+    except KeyboardInterrupt:
+        sys.exit(130)
+
+
+if __name__ == '__main__':
+    main()

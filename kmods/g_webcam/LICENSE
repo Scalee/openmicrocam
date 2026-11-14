@@ -1,0 +1,23 @@
+g_webcam — the UVC + RNDIS composite gadget of the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6), rebuilt
+
+Licence: GNU General Public License version 2, the text in ../COPYING (webcam.c, uvc.h and u_ether.h allow "any later
+version"; the module as a whole is GPL-2). The module is a modified copy of the Linux legacy webcam gadget as it
+stands in SigmaStar's kernel tree; our changes and additions are under the same licence.
+
+The Linux kernel's, as in SigmaStar's Infinity6E 4.9 tree (github.com/tipoman9/sigmastar-infinity6e) — the authors' notices
+stand in the files:
+- webcam.c: drivers/usb/gadget/legacy/webcam.c (Laurent Pinchart), with SigmaStar's additions for RNDIS and multiple streams;
+  uvc_ait_xu.h, SigmaStar's extension-unit header beside it.
+- u_uvc.h, uvc.h, f_mass_storage.h, storage_common.h, u_ether.h, u_gether.h, u_rndis.h, rndis.h, ndis.h:
+  the headers of drivers/usb/gadget/function/ the gadget includes, unchanged except u_uvc.h (below).
+- include/uapi/linux/usb/video.h: the kernel's UVC definitions of that tree, unchanged (a copyright line, no licence
+  statement of its own, as in the kernel).
+uvc_ait_xu.h, f_mass_storage.h and storage_common.h carry no notice in that tree either; ndis.h is marked not copyrighted.
+
+Ours (OpenMicroCam):
+- gen_desc.py and build.sh: build yz_desc.h, the gadget's UVC descriptors, from the stock g_webcam.ko of your own camera's
+  dump — the stock descriptors byte for byte, with our frame intervals, frame sizes and default format; the stock module
+  is not part of this repository.
+- Kbuild; in u_uvc.h, the include path of video.h and the stream name "4K Camera".
+- In webcam.c: the descriptors taken from yz_desc.h, the stock module's USB vendor and product ids, and the SD card as a
+  removable mass-storage function beside the webcam (built when Kbuild's MICROCAM_MSC is 1).

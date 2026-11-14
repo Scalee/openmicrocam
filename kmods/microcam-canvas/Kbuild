@@ -1,0 +1,3 @@
+# The frames an encoder reads, owned by us; build: ../build-ko.sh .
+obj-m := microcam_canvas.o
+ccflags-y += -march=armv7-a

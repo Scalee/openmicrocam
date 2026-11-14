@@ -1,0 +1,5 @@
+microcam-sys — small kernel helpers microcamd needs (the wait for a finished drawing operation), for the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6)
+
+Licence: MIT No Attribution (../../LICENSE) or, at your choice, the GNU General Public License version 2 (../COPYING).
+
+Ours (OpenMicroCam), written for this project; the stock firmware has no counterpart.

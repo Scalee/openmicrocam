@@ -1,0 +1,115 @@
+# Which sensor mode serves which configuration. Pure policy data read by microcamd; mode names are those of the sensor
+# driver's mode list.
+# Source of the numbers: measured ceilings per configuration:
+# two outputs share the scaler, its cost is output pixels per sensor line on every enabled port, so with a monitor on HDMI
+# the slower-line modes give more clean USB fps than the fastest ones.
+schema = 1
+
+[presets]
+# sensor mode with no host stream, by the user's boot preset (menu "Record Size" 4K / 1080P in the vendor menu); beside a
+# UHD monitor the 4K preset runs the `uhd` mode of the 3840x2160 row below at HDMI's rate (a 4K stream start adds a reader)
+boot_4k = "3840x2160@45 hts340"
+boot_1080 = "1920x1080@121 rk40 bin hts278"
+
+[hdmi]
+# camera-capable timings the EDID rule may pick, best first within a resolution; fractional rates and 2160p60 excluded
+# (2160p60 / 2160p29.97: no signal on the HDMI 1.4 TX)
+candidates = ["2160p30", "2160p25", "1440p60", "1440p50", "1440p30", "1080p60", "1080p50", "1080p30", "1080p25", "1080p24",
+              "720p60", "720p50", "576p50", "480p60"]
+no_edid = "1080p60"
+
+# USB format size → sensor mode per monitor class: `hd` = monitor up to 1440 rows, `none` = no monitor, `uhd` = 2160-row
+# monitor (HDMI keeps 4K, USB adapts: centre crop of the 4K45 frame to the format's aspect).
+[[usb]]
+size = [3840, 2160]
+hd = "3840x2160@43 hts360"
+none = "3840x2160@45 hts340"
+uhd = "3840x2160@45 hts340"    # SCL writes HDMI's 4K and USB's 4K at 45.6 fps with no drop (2026-11-11)
+
+[[usb]]
+size = [3840, 1600]
+hd = "3840x1600@52 hts3b4"
+none = "3840x1600@60 hts340"
+uhd = "3840x2160@45 hts340"
+
+[[usb]]
+size = [3840, 1440]
+hd = "3840x1440@58 hts3b4"
+none = "3840x1440@66 hts340"
+uhd = "3840x2160@45 hts340"
+
+[[usb]]
+size = [2848, 1600]
+hd = "2848x1600@60 crop"
+none = "2848x1600@60 crop"
+uhd = "3840x2160@45 hts340"
+
+[[usb]]
+size = [2560, 1440]
+hd = "2560x1440@92 crop h278"
+none = "2560x1440@92 crop h278"
+uhd = "3840x2160@45 hts340"
+
+[[usb]]
+size = [1920, 1080]
+hd = "1920x1080@121 rk40 bin hts278"
+none = "1920x1080@121 rk40 bin hts278"
+uhd = "3840x2160@45 hts340"
+
+# the 4:3 sizes of the gadget's H.264 / H.265 formats (and the stock gadget's MJPEG): a centre crop of the binned 1080p frame
+[[usb]]
+size = [640, 480]
+hd = "1920x1080@121 rk40 bin hts278"
+none = "1920x1080@121 rk40 bin hts278"
+uhd = "3840x2160@45 hts340"
+
+# sizes without a row of their own (1280x720, 424x240, 320x240) are served by the row with the same aspect (±1 %) and the
+# smallest larger size (720p → 1920x1080 binned, scaled down by the SCL)
+
+# Recording (H.264) has priority over both outputs: per record size, the sensor modes it may run on, best picture first,
+# and the frame rates it may run at — standard rates only (24 film; 25/50/100 for 50 Hz mains; 30/60/120), each measured
+# clean. The settings' rate is taken when listed, else the highest listed below it; 0 = the highest listed. The first
+# mode reaching the rate is used and the sensor runs at exactly that rate; HDMI and USB are served from that mode.
+# Full field of view first: 4K modes (a smaller recording scaled down from 4K is sharper than a binned one), then binned;
+# the crop modes (centre 1:1, a 1.5× narrower view on every output) only where no full-view mode reaches the rate.
+# Within that, the slowest line leaves the scaler the most time per line.
+[[record]]
+size = [3840, 2160]
+modes = ["3840x2160@30 stock"]
+rates = [24, 25]          # 30 lost ~10 % of frames: the H.264 encoder tops out near 29.5 fps at 4K (2026-10-25)
+
+[[record]]
+size = [2560, 1440]
+modes = ["3840x2160@30 stock", "2560x1440@66 crop"]
+rates = [24, 25, 30, 50]  # 60 is not recorded whole even alone: the encoder falls short of it (2026-11-14)
+
+[[record]]
+size = [1920, 1080]
+modes = ["3840x2160@30 stock", "1920x1080@59 2lane vts1142", "1920x1080@81 rk40 bin 2lane", "1920x1080@121 rk40 bin hts278"]
+rates = [24, 25, 30, 50, 60, 100]  # 120 is not recorded whole even alone: the encoder falls short of it (2026-11-14)
+
+# The H.26x encoder: one Wave5 core encodes USB's H.264 / H.265 stream and the recording (a third limit beside
+# the two written frames and the shared scaler). `frame`: the ms of its time a frame takes, by size (a size between rows takes the larger's;
+# H.264 and H.265 alike), the largest P frame seen with both channels encoding at microcamd's bitrates beside HDMI 4K
+# (`/proc/mhe/ctx_info`, 2026-11-14); `budget_ms`: what of each second the two may take together, below the saturation
+# measured, for the frames' spread. A recording and a stream that need more: the lower in the precedence gives way.
+# `mjpeg`: USB's MJPEG stream of more than `px_per_s` (its frames' pixels a second) slows the encoder's frames to
+# `frame` — the JPEG encoder and the stream's frames share the memory bus with it, which then runs near full; the
+# recording channel's 3-s average beside 4K at 25–45 fps; up to `px_per_s` the recordings measured were whole as alone,
+# 1080@100 beside 3840x1600 at the edge (`/proc/mhe/ctx_info`, `miu0/measure_all`, 2026-11-14). Where the recording does
+# not fit beside a faster stream, the stream gives way to the rate of `px_per_s`, or the recording when USB is above it.
+[h26x]
+budget_ms = 900
+frame = [
+  { size = [1920, 1080], ms = 7 },
+  { size = [2560, 1440], ms = 12 },
+  { size = [3840, 2160], ms = 28 },
+]
+
+[h26x.mjpeg]
+px_per_s = 207_360_000  # 3840x2160 at 25
+frame = [
+  { size = [1920, 1080], ms = 11 },
+  { size = [2560, 1440], ms = 23 },
+  { size = [3840, 2160], ms = 35 },
+]

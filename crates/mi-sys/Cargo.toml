@@ -1,0 +1,13 @@
+[package]
+name = "mi-sys"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "raw FFI bindings to the camera's SigmaStar MI user libraries, generated from our own declarations"
+
+
+[dependencies]
+libc.workspace = true
+
+[build-dependencies]
+bindgen = "0.70"

@@ -1,0 +1,44 @@
+{"version": 2, "nodes": [
+  {"kind": "group", "level": 1, "space": "live", "children": [
+    {"kind": "path", "d": "M0.47 0.5 H0.53", "stroke": {"paint": "#ededede6", "width": 2}},
+    {"kind": "path", "d": "M0.5 0.4467 V0.5533", "stroke": {"paint": "#ededede6", "width": 2}}
+  ]},
+  {"kind": "group", "level": 2, "anchor": "top-right", "children": [
+    {"kind": "rect", "x": -232, "y": 32, "w": 200, "h": 52, "r": 26, "fill": "#0c0e12bd"},
+    {"kind": "text", "x": -132, "y": 43, "size": 30, "text": "×2.0 · AE🔒", "fill": "#ededed", "align": "centre"}
+  ]},
+  {"kind": "group", "level": 3, "children": [
+    {"kind": "rect", "x": 32, "y": 32, "w": 560, "h": 704, "r": 18, "fill": "#0c0e12bd"},
+    {"kind": "text", "x": 64, "y": 56, "size": 34, "text": "Картинка", "fill": "#9aa0a6"},
+    {"kind": "rect", "x": 48, "y": 112, "w": 528, "h": 64, "r": 12, "fill": "#ffb30038"},
+    {"kind": "text", "x": 72, "y": 126, "size": 36, "text": "Яркость", "fill": "#ffb300"},
+    {"kind": "text", "x": 552, "y": 126, "size": 36, "text": "50", "fill": "#ffb300", "align": "right"},
+    {"kind": "text", "x": 72, "y": 190, "size": 36, "text": "Контраст", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 190, "size": 36, "text": "50", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "text", "x": 72, "y": 254, "size": 36, "text": "Насыщенность", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 254, "size": 36, "text": "107", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "text", "x": 72, "y": 318, "size": 36, "text": "Резкость", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 318, "size": 36, "text": "100", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "text", "x": 72, "y": 382, "size": 36, "text": "Цвет / ч-б", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 382, "size": 36, "text": "цвет", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "path", "d": "M64 452 H560", "stroke": {"paint": "#9aa0a680", "width": 1}},
+    {"kind": "text", "x": 64, "y": 476, "size": 34, "text": "Экспозиция", "fill": "#9aa0a6"},
+    {"kind": "text", "x": 72, "y": 532, "size": 36, "text": "Авто", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 532, "size": 36, "text": "вкл", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "text", "x": 72, "y": 596, "size": 36, "text": "Сдвиг EV", "fill": "#ededed"},
+    {"kind": "text", "x": 552, "y": 596, "size": 36, "text": "+0.3", "fill": "#9aa0a6", "align": "right"},
+    {"kind": "text", "x": 64, "y": 680, "size": 26, "text": "▲▼ выбор   OK изменить   ◀ назад", "fill": "#9aa0a6"}
+  ]},
+  {"kind": "group", "level": 3, "anchor": "bottom-left", "children": [
+    {"kind": "rect", "x": 32, "y": -168, "w": 560, "h": 136, "r": 18, "fill": "#0c0e12bd"},
+    {"kind": "text", "x": 64, "y": -152, "size": 34, "text": "Яркость", "fill": "#ededed"},
+    {"kind": "text", "x": 560, "y": -152, "size": 34, "text": "50", "fill": "#ffb300", "align": "right"},
+    {"kind": "rect", "x": 64, "y": -84, "w": 496, "h": 10, "r": 5, "fill": "#9aa0a666"},
+    {"kind": "rect", "x": 64, "y": -84, "w": 248, "h": 10, "r": 5, "fill": "#ffb300"},
+    {"kind": "rect", "x": 300, "y": -94, "w": 30, "h": 30, "r": 15, "fill": "#ededed"}
+  ]},
+  {"kind": "group", "level": 2, "anchor": "bottom", "children": [
+    {"kind": "rect", "x": -300, "y": -120, "w": 600, "h": 64, "r": 32, "fill": "#0c0e12cc"},
+    {"kind": "text", "x": 0, "y": -108, "size": 34, "text": "Снимок сохранён · P00007.jpg", "fill": "#ededed", "align": "centre"}
+  ]}
+]}

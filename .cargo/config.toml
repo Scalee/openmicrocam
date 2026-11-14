@@ -1,0 +1,15 @@
+# Cross build for the camera: `cargo zigbuild --release --target armv7-unknown-linux-gnueabihf.2.30`
+# (glibc pinned to the camera's 2.30 by zig). Host-side tests: `cargo test -p microcam-core`.
+[build]
+# default target stays the host so `cargo test` of the pure crates works without flags
+
+[target.armv7-unknown-linux-gnueabihf]
+rustflags = [
+  "-C", "target-cpu=cortex-a53",
+  # the armv7 target turns NEON off whatever the CPU; the camera's A53 has it (/proc/cpuinfo), and the ui's pixel loops
+  # need it to vectorize
+  "-C", "target-feature=+neon,+d32",
+  # the MI .so files have undefined symbols among themselves (no NEEDED entries) and live in /config/lib on the camera
+  "-C", "link-arg=-Wl,--allow-shlib-undefined",
+  "-C", "link-arg=-Wl,-rpath,/config/lib",
+]

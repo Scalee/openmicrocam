@@ -1,0 +1,8 @@
+# The GC8613 sensor driver; build: ../build-ko.sh . (the module keeps the name the camera's boot script loads)
+obj-m := drv_ms_cus_gc8613_MIPI.o
+drv_ms_cus_gc8613_MIPI-y := gc8613.o
+ccflags-y += -march=armv7-a
+$(obj)/gc8613.o: $(obj)/modes.h
+$(obj)/modes.h: $(src)/modes.py $(src)/tables/stock.txt $(src)/tables/rockchip.txt $(src)/tables/shenshu.txt
+	python3 $(src)/modes.py > $@
+clean-files := modes.h

@@ -1,0 +1,19 @@
+gc8613 — the GC8613 sensor driver of the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6), in place of its stock
+gc8613_MIPI.ko
+
+Licence: MIT No Attribution (../../LICENSE) or, at your choice, the GNU General Public License version 2 (../COPYING).
+
+Ours (OpenMicroCam): gc8613.c, mhal_sensor.h, modes.py and Kbuild, written for this project from the sensor's datasheet
+and register semantics and mhal's sensor-driver interface (docs/firmware/components/mhal-csi-snr.md and
+sensor-gc8613.md). The gain and the mirror / flip register procedures are the sensor maker's, as the public drivers for
+this sensor write them.
+
+The register values in tables/ are facts about the sensor, in our own form, each file with its origin:
+- tables/stock.txt: as the camera's stock sensor driver programs the sensor, read from that module of the camera's flash;
+  no text of its maker is carried.
+- tables/rockchip.txt: the sensor maker's 40 fps setting as drivers/media/i2c/gc8613.c of Rockchip's Linux kernel carries
+  it, in the maker's order (the same order stands in another vendor's driver of that setting family); the values only,
+  none of that file's text.
+- tables/shenshu.txt: from Shenshu's hi3516cv610 SDK sensor configuration, Copyright (c) 2001-2024 Shenshu Tech. Co., Ltd.;
+  that file states no licence. Only the values are taken, as facts about the sensor, none of the file's text.
+modes.py builds every mode's table from these and our changes to them; its output, modes.h, is made at build time.

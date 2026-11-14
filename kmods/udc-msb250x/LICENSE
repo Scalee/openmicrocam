@@ -1,0 +1,27 @@
+udc-msb250x — the USB 2.0 device-controller driver of the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6), rebuilt
+
+Licence: GNU General Public License version 2, the text in ../COPYING. The module is a modified copy of SigmaStar's GPL-2
+driver; our changes and additions are under the same licence.
+
+SigmaStar Technology's — their copyright and licence notices stand in the files:
+- src/msb250x_udc.c, msb250x_ep.c, msb250x_gadget.c, msb250x_dma.c and include/msb250x_*.h: the MSB250x driver
+  ("5 June 2019") of SigmaStar's Infinity6E 4.9 kernel source as published at github.com/tipoman9/sigmastar-infinity6e,
+  drivers/sstar/usb/gadget/udc/usb20. msb250x_ep.c, msb250x_gadget.c, msb250x_ep.h and msb250x_gadget.h carry no notice
+  there either; they are files of the same GPL-2 driver.
+- include/mercury6/msb250x_udc_common.h: the same driver's Mercury6 header of the Infinity6C 5.10 tree (OpenIPC/linux,
+  branch sigmastar-infinity6c).
+- include/sstar/: SigmaStar's GPIO and pad-mux headers of the Infinity6E 4.9 tree, unchanged.
+Several of these files open with a line "SigmaStar trade secret" above their GPL-2 notice. It stands so in SigmaStar's
+published source and is left as it is; the licence the files carry is the GPL-2 notice.
+
+Ours (OpenMicroCam):
+- src/microcam_trace.c, include/microcam_trace.h: an event ring of the endpoint and DMA paths, read and filtered through the
+  platform device's sysfs file `microcam_trace`.
+- Makefile.
+- Changes inside SigmaStar's files, explained by comments that start with "microcam:": hardware endpoint 5, the only one
+  with its own receive and transmit FIFOs, split into ep5in and ep5out (msb250x_udc_common.h, the endpoint lookups, the
+  interrupt dispatch, endpoint matching); DMA channels owned by the request they were programmed for and stopped before its
+  buffer is handed back; requests kept moving after a dequeue, a halt or a synchronous completion; the halt of an IN
+  endpoint cleared properly; halts taken under the driver's lock when a gadget function sets them from its own thread; a
+  bounded wait in the DMA interrupt; the cache flush before IN DMA and the PHY tuning the stock binary applies; the PHY left
+  as probe programmed it. msb250x_ep.h, msb250x_gadget.h, msb250x_udc_reg.h and include/sstar/ are unchanged.

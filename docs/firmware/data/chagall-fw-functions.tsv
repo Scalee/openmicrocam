@@ -1,0 +1,1555 @@
+addr	end	kind	name	tag	source	module	calls_in	evidence
+01040	010c2	vector	reset	R	hand	rt	0	vector 0; polls cmd 1/2, clears bss, paints stack, calls main
+010c2	010d0	called	zero_words_r0_r1	R	hand	rt	1	stores 0 to [r0..r1) word by word
+010d0	010e2	called	paint_stack_55aa	R	hand	rt	1	stores 0x55aa55aa to [r0..r1)
+010e2	01110	called	mpu_setup	R	hand	rt	1	writes cr3/cr4 pairs
+01110	0113e	called	log_vprintf_buf	R	hand	rt	14	vsnprintf 0x4aea6 into a 0x200 stack buffer, then log_printf("%s")
+0113e	011a6	called	fail_report	I	hand	rt	25	called right before every "%s(%d) - fail, LR" tail; formats, flushes the cache (0x16ae)
+011a6	011dc	called	log_printf	R	hand	rt	145	vsnprintf into a 0x200 buffer, out through 0x3af0 with "%s\r"
+011dc	011e8	called	log_puts	R	hand	rt	246	one call of uart_puts 0x3abe
+011e8	01224	called	dump_registers	R	hand	rt	445	loop over the 24 saved registers through trace_printf (an empty stub, 0xf464)
+01224	01228	called	atomic_add_u8	I	hand	rt	12	swi 12 -> vector 28 = 0x1270 ([r8] += r9, byte)
+01228	0122c	called	atomic_add_u16	I	hand	rt	2	swi 13 -> vector 29 = 0x127e
+0122c	01230	called	atomic_add_u32	I	hand	rt	8	swi 14 -> vector 30 = 0x128c
+01230	0124a	orphan	atomic_add_u64	I	hand	rt	0	swi 15 with r9:r10 from a 64-bit argument -> vector 31 = 0x129a
+0124a	0124e	orphan	atomic_add_u8_copy	I	hand	rt	0	second copy of 0x1224
+0124e	01252	orphan	atomic_add_u16_copy	I	hand	rt	0	second copy of 0x1228
+01252	01256	orphan	atomic_add_u32_copy	I	hand	rt	0	second copy of 0x122c
+01256	01270	called	atomic_add_u64_copy	I	hand	rt	1	second copy of 0x1230
+01270	0127e	vector	trap_atomic_add_u8	R	hand	rt	0	vector 28: ld.b/add/st.b at [r8], exception return
+0127e	0128c	vector	trap_atomic_add_u16	R	hand	rt	0	vector 29: halfword
+0128c	0129a	vector	trap_atomic_add_u32	R	hand	rt	0	vector 30: word
+0129a	012ae	vector	trap_atomic_add_u64	R	hand	rt	0	vector 31: add/adc on two words
+012ae	012d2	orphan	rt__unused_012ae	I	mechanical	rt	0	no call, no address reference, no branch from other code
+012d2	012f2	orphan	div_round_up@012d2	R	execution	rt	0	fits div_round_up(x,d) 150/150
+012f2	0131a	orphan	rt__unused_012f2	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0131a	01372	called	rt__shared_0131a	I	mechanical	rt	25	call paths lead to 17 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,avc_dec_sched_alloc_slice,
+01372	0139a	orphan	rt__unused_01372	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0139a	013b0	called	zero_bytes_words	R	hand	rt	4	(p, nbytes): stores 0 word by word
+013b0	0147c	orphan	copy_and_flush	R	hand	rt	0	byte/word copy then cache call 0x16ae; unreferenced
+0147c	01532	called	rt__shared_0147c	I	mechanical	rt	20	call paths lead to 6 named functions: enc_set_change_param_info,enc_set_seq_info,exec_codec_cmd,hevc_enc_end_pic_drop,hevc_enc_pic,sched_d
+01532	0155e	called	rt__shared_01532	I	mechanical	rt	1	call paths lead to 12 named functions: exec_codec_cmd,gen_ms_avail,hevc_activate_first_sps,hevc_add_pps,hevc_add_sps,hevc_decode_pic_header
+0155e	0157a	called	delay	R	hand	rt	31	busy loop of 8 nops per step of 8 up to r8
+0157a	015aa	called	cp0_set_cr8_cr5	R	hand	rt	2	writes (r8<<4)|0xb to cr8 and r9|arg to cr5
+015aa	015b8	orphan	rt__unused_015aa	I	mechanical	rt	0	no call, no address reference, no branch from other code
+015b8	015e0	called	cache_init	I	hand	rt	1	cr11 ops 8, 0x18, 9, 0x19; cr9 = 0x3333333; called by reset
+015e0	015f4	orphan	cache_line_op8	I	hand	rt	0	cr11 = (addr<<4)|8; unreferenced
+015f4	01608	orphan	cache_line_op9	I	hand	rt	0	cr11 = (addr<<4)|9; unreferenced
+01608	0161c	orphan	cache_line_op13	I	hand	rt	0	cr11 = (addr<<4)|13; unreferenced
+0161c	01630	orphan	cache_line_op_aligned	I	hand	rt	0	cr11 = addr & ~0xf; unreferenced
+01630	01648	called	cache_line_op	I	hand	rt	1	one line, called by cache_range_op
+01648	01660	orphan	rt__unused_01648	I	mechanical	rt	0	no call, no address reference, no branch from other code
+01660	01682	called	cache_enable	I	hand	rt	1	cr9 = 0, cr11 0xd/0x1d, cr9 = 0x3333337; called by reset
+01682	0169e	orphan	cache_flush_disable	I	hand	rt	0	cr9 = 0, cr11 0xd/0x1d; unreferenced
+0169e	016ae	orphan	cache_disable	I	hand	rt	0	cr9 = 0; unreferenced
+016ae	016c4	called	cache_flush_all	I	hand	rt	13	cr11 0xd then 0x1d with interrupts off
+016c4	016f0	called	cache_range_op	R	hand	rt	6	(addr, len): 16-byte lines from addr&~15 to (addr+len+15)&~15 through 0x1630
+016f0	0171c	called	irq_ctrl_init	I	hand	rt	1	clears flags 12/13, 0xffff1010 = 0, 0xffff1018 = ~0, cr12 = 0
+0171c	0175e	called	irq_enable_mask	I	hand	rt	4	ORs a mask into 0xffff1010 and 0xffff1008 with interrupts off
+0175e	0178c	called	irq_disable_mask	I	hand	rt	5	ANDs ~mask into 0xffff1010, writes the mask to 0xffff1018
+0178c	01798	vector	rt__vec1	I	mechanical	rt	0	vector-table slot(s) 1
+01798	017c6	vector	irq_entry	R	hand	rt	0	pending word 0xffff000c, lowest bit number to 0xffff0000
+017c6	017d2	vector	rt__vec3	I	mechanical	rt	0	vector-table slot(s) 3
+017d2	017de	vector	rt__vec4	I	mechanical	rt	0	vector-table slot(s) 4
+017de	01958	vector	exception_entry	R	hand	rt	0	CP0 cause texts, crash dump to window 0x190
+01958	01968	vector	rt__vec9	I	mechanical	rt	0	vector-table slot(s) 9
+01968	01978	vector	rt__vec10	I	mechanical	rt	0	vector-table slot(s) 10
+01978	01988	vector	rt__vec11	I	mechanical	rt	0	vector-table slot(s) 11
+01988	019b0	vector	rt__vec12	I	mechanical	rt	0	vector-table slot(s) 12
+019b0	019f8	vector	rt__vec13	I	mechanical	rt	0	vector-table slot(s) 13
+019f8	01a4e	vector	rt__vec43	I	mechanical	rt	0	vector-table slot(s) 43
+01a4e	01af8	vector	rt__vec45	I	mechanical	rt	0	vector-table slot(s) 45
+01af8	01b04	vector	default_handler	R	hand	rt	0	shared by 218 vector slots
+01b04	01b18	called	bitmap64_init	I	hand	rt	1	global 0x60380:0x60384 = all ones
+01b18	01c08	called	bitmap64_alloc	I	hand	rt	11	searches the 64-bit map 0x60380 for a run of n (<= 0x40) bits
+01c08	01c5c	called	rt__shared_01c08	I	mechanical	rt	11	call paths lead to 8 named functions: enc_set_change_param_info,enc_set_seq_info,hevc_enc_packer_done_pic,init_pic,sched_done_pic,sched_ru
+01c5c	01c5e	called	destroy_instance__h_01c5c	I	mechanical	rt	1	every call path leads to destroy_instance 05648
+01c5e	01c68	orphan	rt__unused_01c5e	I	mechanical	rt	0	no call, no address reference, no branch from other code
+01c68	01c8c	called	destroy_instance__h_01c68	I	mechanical	rt	3	every call path leads to destroy_instance 05648
+01c8c	01cf6	called	rt__shared_01c8c	I	mechanical	rt	19	call paths lead to 12 named functions: exec_codec_cmd,gen_ms_avail,hevc_activate_first_sps,hevc_add_pps,hevc_add_sps,hevc_decode_pic_header
+01cf6	01d3a	called	rt__shared_01cf6	I	mechanical	rt	10	call paths lead to 8 named functions: enc_set_change_param_info,enc_set_seq_info,hevc_enc_packer_done_pic,init_pic,sched_done_pic,sched_ru
+01d3a	01d68	called	rt__shared_01d3a	I	mechanical	rt	2	call paths lead to 2 named functions: encoder_empty,sched_irq
+01d68	01d6c	called	sys_dma_wait	I	hand	rt	21	swi 11 -> vector 27 = 0x1f44 (polls 0xffff2014 bit 0)
+01d6c	01d92	called	dma_wait_idle	R	hand	rt	1	polls 0xffff2014 bit 0 with delay(10)
+01d92	01e0a	called	rt__shared_01d92	I	mechanical	rt	3	call paths lead to 0 named functions: 
+01e0a	01e84	called	dma_queue_pop	I	hand	rt	1	string "%s is called w/ queue dma_que_empty condition"
+01e84	01edc	called	dma_start_entry	R	hand	rt	2	copies a 0x18-byte queue entry (0x603cc + i*0x18) to 0xffff2004..
+01edc	01f44	vector	rt__vec25	I	mechanical	rt	0	vector-table slot(s) 25
+01f44	01f80	vector	rt__vec27	I	mechanical	rt	0	vector-table slot(s) 27
+01f80	01ff0	vector	rt__vec26_41	I	mechanical	rt	0	vector-table slot(s) 26,41
+01ff0	01ffa	orphan	rt__unused_01ff0	I	mechanical	rt	0	no call, no address reference, no branch from other code
+01ffa	02004	orphan	rt__unused_01ffa	I	mechanical	rt	0	no call, no address reference, no branch from other code
+02004	02150	called	rt__shared_02004	I	mechanical	rt	4	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+02150	02202	orphan	rt__unused_02150	I	mechanical	rt	0	no call, no address reference, no branch from other code
+02202	023b0	called	rt__shared_02202	I	mechanical	rt	4	call paths lead to 6 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,exec_codec_cmd,hevc_dec_ge
+023b0	0240c	called	rt__shared_023b0	I	mechanical	rt	4	call paths lead to 4 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_init_rbsp
+0240c	0247e	called	rt__shared_0240c	I	mechanical	rt	4	call paths lead to 4 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_init_rbsp
+0247e	02522	orphan	rt__unused_0247e	I	mechanical	rt	0	no call, no address reference, no branch from other code
+02522	02572	called	rt__shared_02522	I	mechanical	rt	3	call paths lead to 4 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_init_rbsp
+02572	025a0	orphan	rt__unused_02572	I	mechanical	rt	0	no call, no address reference, no branch from other code
+025a0	025f8	called	bsu_read_reg	R	hand	rt	380	returns word 0xffff5900 + 4*idx for idx <= 0x20 and <= [0xffff5c38], else sets error flag 0x60554
+025f8	02674	called	rt__shared_025f8	I	mechanical	rt	1	call paths lead to 5 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_add_pps,hevc_dec_sei_
+02674	0267c	called	rt__shared_02674	I	mechanical	rt	7	call paths lead to 5 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_payload,exec_codec
+0267c	0269e	orphan	__eqsf2@0267c	R	execution	rt	0	fits __eqsf2/__nesf2 (0 iff ==) 150/150
+0269e	02756	called	rt__shared_0269e	I	mechanical	rt	9	call paths lead to 9 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,exec_codec_cmd,hevc_dec_ge
+02756	02776	called	rt__shared_02756	I	mechanical	rt	72	call paths lead to 12 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_chroma_resampling_
+02776	027ee	called	rt__shared_02776	I	mechanical	rt	55	call paths lead to 15 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_chroma_resampling_
+027ee	02814	called	rt__shared_027ee	I	mechanical	rt	16	call paths lead to 11 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_chroma_resampling_
+02814	02838	called	rt__shared_02814	I	mechanical	rt	16	call paths lead to 14 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_chroma_resampling_
+02838	0287c	orphan	rt__unused_02838	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0287c	02890	called	rt__shared_0287c	I	mechanical	rt	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+02890	028c2	called	rt__shared_02890	I	mechanical	rt	19	call paths lead to 11 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_activate_first_sps,he
+028c2	02912	called	rt__shared_028c2	I	mechanical	rt	4	call paths lead to 5 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_add_pps,hevc_dec_sei_
+02912	0291c	called	bsu_get_error	R	hand	rt	168	returns global 0x60554
+0291c	02928	called	bsu_set_flag_6056c	R	hand	rt	1	global 0x6056c = 1
+02928	02932	called	bsu_set_error	R	hand	rt	24	global 0x60554 = r8
+02932	0297e	called	rt__shared_02932	I	mechanical	rt	6	call paths lead to 6 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,hevc_activate_first_sps,he
+0297e	0299e	called	rt__shared_0297e	I	mechanical	rt	2	call paths lead to 2 named functions: avc_dec_activate_first_sps,hevc_activate_first_sps
+0299e	02a60	called	rt__shared_0299e	I	mechanical	rt	2	call paths lead to 0 named functions: 
+02a60	02b76	called	rt__shared_02a60	I	mechanical	rt	1	call paths lead to 0 named functions: 
+02b76	02ba6	orphan	rt__unused_02b76	I	mechanical	rt	0	no call, no address reference, no branch from other code
+02ba6	02bfc	called	rt__shared_02ba6	I	mechanical	rt	2	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+02bfc	02c40	orphan	rt__unused_02bfc	I	mechanical	rt	0	no call, no address reference, no branch from other code
+02c40	02d04	called	rt__shared_02c40	I	mechanical	rt	2	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+02d04	02d4a	called	rt__shared_02d04	I	mechanical	rt	2	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+02d4a	02d78	called	rt__shared_02d4a	I	mechanical	rt	6	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+02d78	02f08	vector	rt__vec34	I	mechanical	rt	0	vector-table slot(s) 34
+02f08	02f2a	vector	rt__vec21	I	mechanical	rt	0	vector-table slot(s) 21
+02f2a	02f74	called	rt__shared_02f2a	I	mechanical	rt	14	call paths lead to 6 named functions: hevc_activate_first_sps,hevc_add_pps,hevc_add_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+02f74	02fce	called	rt__shared_02f74	I	mechanical	rt	7	call paths lead to 6 named functions: hevc_activate_first_sps,hevc_add_pps,hevc_add_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+02fce	03036	called	rt__shared_02fce	I	mechanical	rt	1	call paths lead to 5 named functions: hevc_activate_first_sps,hevc_add_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+03036	030ae	orphan	rt__unused_03036	I	mechanical	rt	0	no call, no address reference, no branch from other code
+030ae	03118	called	rt__shared_030ae	I	mechanical	rt	7	call paths lead to 6 named functions: hevc_activate_first_sps,hevc_add_pps,hevc_add_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+03118	03144	orphan	rt__unused_03118	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03144	03154	orphan	rt__unused_03144	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03154	03162	called	packer_int_hander__h_03154	I	mechanical	rt	1	every call path leads to packer_int_hander 07022
+03162	031de	called	rt__shared_03162	I	mechanical	rt	4	call paths lead to 0 named functions: 
+031de	0336a	called	rt__shared_031de	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_encoder_init_pic,sched_init_pic
+0336a	0337c	called	rt__shared_0336a	I	mechanical	rt	13	call paths lead to 7 named functions: hevc_enc_encoder_init_pic,hevc_enc_encoder_run_task,hevc_enc_packer_done_pic,hevc_enc_slice_header,s
+0337c	0338e	called	rt__shared_0337c	I	mechanical	rt	62	call paths lead to 7 named functions: hevc_enc_encoder_run_task,hevc_enc_one_pic_vcore,hevc_enc_packer_done_pic,hevc_enc_slice_header,pred
+0338e	033d8	called	rt__shared_0338e	I	mechanical	rt	45	call paths lead to 3 named functions: hevc_enc_slice_header,pred_weight_table,sched_run_task
+033d8	03410	called	rt__shared_033d8	I	mechanical	rt	23	call paths lead to 3 named functions: hevc_enc_slice_header,pred_weight_table,sched_run_task
+03410	03442	called	rt__shared_03410	I	mechanical	rt	9	call paths lead to 7 named functions: hevc_enc_encoder_run_task,hevc_enc_one_pic_vcore,hevc_enc_packer_done_pic,hevc_enc_slice_header,pack
+03442	034f2	called	rt__shared_03442	I	mechanical	rt	5	call paths lead to 4 named functions: hevc_enc_encoder_run_task,hevc_enc_one_pic_vcore,packer_int_hander,sched_run_task
+034f2	03500	called	packer_int_hander__h_034f2	I	mechanical	rt	4	every call path leads to packer_int_hander 07022
+03500	03578	orphan	rt__unused_03500	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03578	0358a	orphan	rt__unused_03578	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0358a	035b2	called	rt__shared_0358a	I	mechanical	rt	7	call paths lead to 4 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic,sched_done_pic,sched_run_task
+035b2	035ba	called	rt__shared_035b2	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_packer_done_pic,sched_done_pic
+035ba	035c2	called	sched_run_task__h_035ba	I	mechanical	rt	1	every call path leads to sched_run_task 0c2da
+035c2	035ca	orphan	rt__unused_035c2	I	mechanical	rt	0	no call, no address reference, no branch from other code
+035ca	035d2	called	rt__shared_035ca	I	mechanical	rt	4	call paths lead to 2 named functions: hevc_enc_packer_done_pic,sched_done_pic
+035d2	035e2	orphan	rt__unused_035d2	I	mechanical	rt	0	no call, no address reference, no branch from other code
+035e2	0360a	orphan	rt__unused_035e2	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0360a	03634	called	rt__shared_0360a	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_encoder_run_task,sched_run_task
+03634	0363c	orphan	rt__unused_03634	I	mechanical	rt	0	no call, no address reference, no branch from other code
+0363c	036c6	called	rt__shared_0363c	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_packer_done_pic,sched_done_pic
+036c6	0371a	vector	rt__vec33	I	mechanical	rt	0	vector-table slot(s) 33
+0371a	0378c	vector	rt__vec42	I	mechanical	rt	0	vector-table slot(s) 42
+0378c	037e8	called	timer_setup	I	hand	rt	3	timer n at 0xffff0000 + 16n: control, load, callback table 0x60584
+037e8	0385c	called	timer_read	I	hand	rt	2	counter word 0xffff0008 + 16n plus the per-timer offset 0x60584[n]
+0385c	03870	called	timer_stop	R	hand	rt	2	0xffff0004 + 16n = 0
+03870	03888	called	timer_start	R	hand	rt	2	0xffff0004 + 16n = (mode << 1) | 1
+03888	038da	addr	timer_irq_callback	I	hand	rt	0	address passed to timer_setup by 0x38da
+038da	03906	called	timer0_init	R	hand	rt	1	timer_setup(0, 0x10, callback 0x3888)
+03906	0393c	called	rt__shared_03906	I	mechanical	rt	8	call paths lead to 5 named functions: init_pic,parser_generate_segment,parser_que_start,sched_irq,sched_run_task
+0393c	03952	called	rt__shared_0393c	I	mechanical	rt	10	call paths lead to 5 named functions: hevc_parser_done_pic,hevc_vcore_done_pic,parser_generate_segment,sched_done_pic,sched_irq
+03952	03972	orphan	rt__unused_03952	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03972	03980	orphan	rt__unused_03972	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03980	03990	orphan	rt__unused_03980	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03990	039a0	orphan	rt__unused_03990	I	mechanical	rt	0	no call, no address reference, no branch from other code
+039a0	039e2	called	timebase_init	R	hand	rt	1	W5 0x309c bit 27 -> global 0x605b0; enables 0xffff0080
+039e2	03a00	orphan	rt__unused_039e2	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03a00	03a20	orphan	rt__unused_03a00	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03a20	03a44	called	get_time	R	hand	rt	28	reads 0xffff0088 when global 0x605b0 is set, else timer_read(3)
+03a44	03a68	orphan	rt__unused_03a44	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03a68	03ab6	called	uart_init	I	hand	rt	1	16550-style: 0xffff400c = 0x83 (DLAB), divisor, 0x03; from host register 0x12c
+03ab6	03abe	orphan	rt__unused_03ab6	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03abe	03ad8	called	uart_puts	R	hand	rt	8	bytes to 0xffff4100 until NUL
+03ad8	03ae0	orphan	uart_put8	R	hand	rt	0	unreferenced
+03ae0	03ae8	orphan	uart_put16	R	hand	rt	0	unreferenced
+03ae8	03af0	orphan	uart_put32	R	hand	rt	0	unreferenced
+03af0	03b1a	called	log_out	R	hand	rt	1	formats with 0x4adfe and sends through uart_puts
+03b1a	03b7e	called	rt__shared_03b1a	I	mechanical	rt	1	call paths lead to 0 named functions: 
+03b7e	03bc6	called	rt__shared_03b7e	I	mechanical	rt	1	call paths lead to 0 named functions: 
+03bc6	03bfe	orphan	rt__unused_03bc6	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03bfe	03c36	orphan	rt__unused_03bfe	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03c36	03c8a	orphan	rt__unused_03c36	I	mechanical	rt	0	no call, no address reference, no branch from other code
+03c8a	03ce6	called	vcpu_init__h_03c8a	I	mechanical	rt	2	every call path leads to vcpu_init 03f54
+03ce6	03d8e	called	vcpu_init__h_03ce6	I	mechanical	rt	1	every call path leads to vcpu_init 03f54
+03d8e	03e20	called	vcpu_init__h_03d8e	I	mechanical	rt	1	every call path leads to vcpu_init 03f54
+03e20	03e5e	called	vcpu_init__h_03e20	I	mechanical	rt	1	every call path leads to vcpu_init 03f54
+03e5e	03efa	called	rt__shared_03e5e	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_vcore_run_task,sched_run_task
+03efa	03f54	called	rt__shared_03efa	I	mechanical	rt	2	call paths lead to 2 named functions: hevc_enc_vcore_run_task,sched_run_task
+03f54	0435c	called	vcpu_init	R	func_string	vcpu	1	__func__ string(s): vcpu_init
+0435c	043ee	called	vcpu__shared_0435c	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+043ee	04412	orphan	vcpu__unused_043ee	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+04412	0443e	called	vcpu__shared_04412	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0443e	04486	orphan	vcpu__unused_0443e	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+04486	0457c	orphan	vcpu__unused_04486	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+0457c	04580	orphan	vcpu__unused_0457c	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+04580	04606	called	get_instance	R	func_string	vcpu	19	__func__ string(s): get_instance
+04606	0462c	called	vcpu__shared_04606	I	mechanical	vcpu	5	call paths lead to 3 named functions: dump_inst_and_cmd_status,main,vpu_trigger_intrpt
+0462c	04656	called	destroy_instance__h_0462c	I	mechanical	vcpu	1	every call path leads to destroy_instance 05648
+04656	04664	called	vcpu__shared_04656	I	mechanical	vcpu	6	call paths lead to 5 named functions: init_pic,memcmp,sched_run_task
+04664	0466e	called	vcpu__shared_04664	I	mechanical	vcpu	1	call paths lead to 2 named functions: sched_irq,sched_run_task
+0466e	0467c	called	vcpu__shared_0466e	I	mechanical	vcpu	2	call paths lead to 2 named functions: init_pic,sched_init_pic
+0467c	0468a	called	vcpu__shared_0467c	I	mechanical	vcpu	4	call paths lead to 4 named functions: init_pic,memcmp,sched_run_task
+0468a	04694	called	vcpu__shared_0468a	I	mechanical	vcpu	4	call paths lead to 4 named functions: init_pic,memcmp,sched_run_task
+04694	0469e	called	vcpu__shared_04694	I	mechanical	vcpu	1	call paths lead to 2 named functions: sched_irq,sched_run_task
+0469e	046ac	orphan	vcpu__unused_0469e	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+046ac	046b6	called	vcpu__shared_046ac	I	mechanical	vcpu	4	call paths lead to 4 named functions: init_pic,memcmp,sched_run_task
+046b6	04704	called	vcpu__shared_046b6	I	mechanical	vcpu	2	call paths lead to 2 named functions: destroy_instance,vpu_trigger_intrpt
+04704	047cc	called	vpu_trigger_intrpt__h_04704	I	mechanical	vcpu	2	every call path leads to vpu_trigger_intrpt 0482c
+047cc	0482c	called	vpu_trigger_intrpt__h_047cc	I	mechanical	vcpu	1	every call path leads to vpu_trigger_intrpt 0482c
+0482c	04998	called	vpu_trigger_intrpt	R	func_string	vcpu	23	__func__ string(s): vpu_trigger_intrpt
+04998	049a8	called	sched_done_pic__h_04998	I	mechanical	vcpu	2	every call path leads to sched_done_pic 0baaa
+049a8	049ea	called	main__h_049a8	I	mechanical	vcpu	1	every call path leads to main 04a3a
+049ea	04a3a	called	main__h_049ea	I	mechanical	vcpu	1	every call path leads to main 04a3a
+04a3a	04c24	called	main	R	func_string	vcpu	1	__func__ string(s): main
+04c24	04c66	vector	vcpu__vec35	I	mechanical	vcpu	0	vector-table slot(s) 35
+04c66	04c6c	orphan	vcpu__unused_04c66	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+04c6c	04c72	orphan	vcpu__unused_04c6c	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+04c72	04cae	vector	vcpu__vec24	I	mechanical	vcpu	0	vector-table slot(s) 24
+04cae	04cc2	vector	vcpu__vec16	I	mechanical	vcpu	0	vector-table slot(s) 16
+04cc2	04cd6	vector	vcpu__vec17	I	mechanical	vcpu	0	vector-table slot(s) 17
+04cd6	04ce2	vector	vcpu__vec18	I	mechanical	vcpu	0	vector-table slot(s) 18
+04ce2	04cee	vector	vcpu__vec19	I	mechanical	vcpu	0	vector-table slot(s) 19
+04cee	04e08	called	exec_codec_cmd	R	func_string	vcpu	4	__func__ string(s): exec_codec_cmd
+04e08	04e7e	called	exec_queue_cmd	R	func_string	vcpu	1	__func__ string(s): exec_queue_cmd
+04e7e	04eb0	called	main__h_04e7e	I	mechanical	vcpu	1	every call path leads to main 04a3a
+04eb0	051fe	called	create_instance@04eb0	R	func_string	vcpu	1	__func__ string(s): create_instance
+051fe	052fc	called	vcpu__shared_051fe	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+052fc	053d4	called	vcpu__shared_052fc	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+053d4	05520	called	vcpu__shared_053d4	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05520	055a0	called	vcpu__shared_05520	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+055a0	05648	called	vcpu__shared_055a0	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05648	05804	called	destroy_instance@05648	R	func_string	vcpu	1	__func__ string(s): destroy_instance
+05804	05af8	called	enqueue_cmd	R	func_string	vcpu	1	__func__ string(s): enqueue_cmd
+05af8	05bd0	called	vcpu__shared_05af8	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05bd0	05c4e	called	vcpu__shared_05bd0	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05c4e	05cf6	called	vcpu__shared_05c4e	I	mechanical	vcpu	2	call paths lead to 0 named functions: 
+05cf6	05d8a	called	vcpu__shared_05cf6	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05d8a	05dc4	called	vcpu__shared_05d8a	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05dc4	05e7c	called	vcpu__shared_05dc4	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05e7c	05e96	called	vcpu__shared_05e7c	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+05e96	06026	called	dump_inst_and_cmd_status	R	func_string	vcpu	1	__func__ string(s): dump_inst_and_cmd_status
+06026	060c2	called	query_vcpu_status	R	func_string	vcpu	2	__func__ string(s): query_vcpu_status
+060c2	061c8	called	vcpu__shared_060c2	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+061c8	06268	called	vcpu__shared_061c8	I	mechanical	vcpu	2	call paths lead to 0 named functions: 
+06268	062d6	called	vcpu__shared_06268	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+062d6	0633c	called	vcpu__shared_062d6	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0633c	06356	called	vcpu__shared_0633c	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+06356	06372	called	vcpu__shared_06356	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+06372	0638c	called	vcpu__shared_06372	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0638c	06406	called	vcpu__shared_0638c	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+06406	0641e	called	vcpu__shared_06406	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0641e	0644a	called	vcpu__shared_0641e	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0644a	0646e	called	query_flush_cache	R	func_string	vcpu	1	__func__ string(s): query_flush_cache
+0646e	067ae	called	vcpu__shared_0646e	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+067ae	067ce	called	vcpu__shared_067ae	I	mechanical	vcpu	13	call paths lead to 4 named functions: create_instance,destroy_instance,enqueue_cmd,exec_codec_cmd
+067ce	067fc	called	vcpu__shared_067ce	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+067fc	06878	called	vcpu_get_codec_resource_size	R	func_string	vcpu	1	__func__ string(s): vcpu_get_codec_resource_size
+06878	0687a	orphan	vcpu__unused_06878	I	mechanical	vcpu	0	no call, no address reference, no branch from other code
+0687a	0689e	called	vcpu__shared_0687a	I	mechanical	vcpu	6	call paths lead to 4 named functions: parser_generate_segment,parser_que_start,sched_irq,vcpu_init
+0689e	068b2	called	vcpu__shared_0689e	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+068b2	0699a	called	vcpu__shared_068b2	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+0699a	069ae	called	vcpu__shared_0699a	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+069ae	06a8a	called	vcpu__shared_069ae	I	mechanical	vcpu	1	call paths lead to 0 named functions: 
+06a8a	06b9c	called	vcore_init	R	func_string	vcore	3	__func__ string(s): vcore_init
+06b9c	06c9c	called	vcore_reset	R	func_string	vcore	3	__func__ string(s): vcore_reset
+06c9c	06d1e	called	vcore_soft_reset	R	hand	vcore	3	W5 RESET_REQ 0x151515 / RESET_STATUS, interrupt ack, vcore_init(0)
+06d1e	06d6e	vector	vcore_irq	R	hand	vcore	0	vectors 46/47/49/50/51: ack, time stamp, sched_irq(2, 0)
+06d6e	06e18	vector	vcore__vec38	I	mechanical	vcore	0	vector-table slot(s) 38
+06e18	06e5a	called	vcore__shared_06e18	I	mechanical	vcore	2	call paths lead to 0 named functions: 
+06e5a	06e5c	called	vcore__shared_06e5a	I	mechanical	vcore	3	call paths lead to 3 named functions: init_pic,sched_run_task
+06e5c	06e94	called	vcore_wait_idle	R	hand	vcore	3	(core, n): polls VCORE +0x30 n times with delay(1000)
+06e94	06ebe	orphan	vcore_wait_idle_forever	R	hand	vcore	0	polls VCORE +0x30 of core 0; unreferenced
+06ebe	06f9e	called	vcore__shared_06ebe	I	mechanical	vcore	4	call paths lead to 2 named functions: sched_run_task,set_core_param
+06f9e	06fc6	called	vcore__shared_06f9e	I	mechanical	vcore	138	call paths lead to 9 named functions: encoder_empty,hevc_enc_vcore_done_pic,init_pic,sched_done_pic,sched_irq,sched_run_task,set_core_para
+06fc6	06ffa	called	vcore__shared_06fc6	I	mechanical	vcore	45	call paths lead to 4 named functions: hevc_enc_packer_done_pic,hevc_enc_vcore_done_pic,hevc_vcore_done_pic,sched_done_pic
+06ffa	0700e	called	vcore__shared_06ffa	I	mechanical	vcore	1	call paths lead to 0 named functions: 
+0700e	07022	called	vcore__shared_0700e	I	mechanical	vcore	2	call paths lead to 0 named functions: 
+07022	07228	called	packer_int_hander	R	func_string	packer_irq	1	__func__ string(s): packer_int_hander
+07228	0723a	called	packer_low_lat_int_handler__h_07228	I	mechanical	packer_irq	3	every call path leads to packer_low_lat_int_handler 0723a
+0723a	07360	called	packer_low_lat_int_handler	R	func_string	packer_irq	1	__func__ string(s): packer_low_lat_int_handler
+07360	0736a	orphan	abs_s32@07360	R	execution	util	0	fits abs_s32 150/150
+0736a	0737a	called	min_s32@0736a	R	execution	util	2	fits min_s32 150/150
+0737a	0738a	called	max_s32@0737a	R	execution	util	2	fits max_s32 150/150
+0738a	073a0	orphan	clip3@0738a	R	execution	util	0	fits clip3(lo,hi,v) 150/150
+073a0	073f0	orphan	util__unused_073a0	I	mechanical	util	0	no call, no address reference, no branch from other code
+073f0	07424	orphan	util__unused_073f0	I	mechanical	util	0	no call, no address reference, no branch from other code
+07424	07430	orphan	util__unused_07424	I	mechanical	util	0	no call, no address reference, no branch from other code
+07430	07440	orphan	util__unused_07430	I	mechanical	util	0	no call, no address reference, no branch from other code
+07440	07454	orphan	sign_s32	R	execution	util	0	fits sign_s32 150/150
+07454	07462	orphan	util__unused_07454	I	mechanical	util	0	no call, no address reference, no branch from other code
+07462	074a0	orphan	clip3@07462	R	execution	util	0	fits clip3(lo,hi,v) 150/150; clip3(v,lo,hi)? 150/150
+074a0	074de	orphan	util__unused_074a0	I	mechanical	util	0	no call, no address reference, no branch from other code
+074de	0753c	called	align_up__h_074de	I	mechanical	util	1	every call path leads to align_up 0753c
+0753c	0754a	orphan	align_up@0753c	R	execution	util	0	fits align_up(x,a) 150/150
+0754a	075b0	orphan	div_round_up@0754a	R	execution	util	0	fits div_round_up(x,d) 150/150
+075b0	075dc	orphan	util__unused_075b0	I	mechanical	util	0	no call, no address reference, no branch from other code
+075dc	0761c	orphan	util__unused_075dc	I	mechanical	util	0	no call, no address reference, no branch from other code
+0761c	07630	orphan	util__unused_0761c	I	mechanical	util	0	no call, no address reference, no branch from other code
+07630	0765c	called	util__shared_07630	I	mechanical	util	1	call paths lead to 0 named functions: 
+0765c	07698	called	util__shared_0765c	I	mechanical	util	2	call paths lead to 0 named functions: 
+07698	076c8	orphan	util__unused_07698	I	mechanical	util	0	no call, no address reference, no branch from other code
+076c8	076f4	called	util__shared_076c8	I	mechanical	util	2	call paths lead to 0 named functions: 
+076f4	0773c	orphan	util__unused_076f4	I	mechanical	util	0	no call, no address reference, no branch from other code
+0773c	07766	orphan	util__unused_0773c	I	mechanical	util	0	no call, no address reference, no branch from other code
+07766	079b0	orphan	util__unused_07766	I	mechanical	util	0	no call, no address reference, no branch from other code
+079b0	079f6	orphan	util__unused_079b0	I	mechanical	util	0	no call, no address reference, no branch from other code
+079f6	07a42	orphan	util__unused_079f6	I	mechanical	util	0	no call, no address reference, no branch from other code
+07a42	07a86	orphan	util__unused_07a42	I	mechanical	util	0	no call, no address reference, no branch from other code
+07a86	07ac6	orphan	util__unused_07a86	I	mechanical	util	0	no call, no address reference, no branch from other code
+07ac6	07ad4	called	util__shared_07ac6	I	mechanical	util	10	call paths lead to 3 named functions: create_instance,exec_codec_cmd,hevc_enc_pic
+07ad4	07afa	called	util__shared_07ad4	I	mechanical	util	2	call paths lead to 8 named functions: create_instance,exec_codec_cmd,hevc_enc_end_pic,hevc_enc_gen_sh_param,hevc_enc_packer_done_pic,hevc_
+07afa	07b20	called	util__shared_07afa	I	mechanical	util	1	call paths lead to 2 named functions: hevc_enc_vcore_done_pic,sched_done_pic
+07b20	07b42	called	util__shared_07b20	I	mechanical	util	14	call paths lead to 6 named functions: create_instance,exec_codec_cmd,hevc_enc_gen_sh_param,hevc_enc_packer_done_pic,hevc_enc_pic,sched_don
+07b42	07b64	called	util__shared_07b42	I	mechanical	util	8	call paths lead to 3 named functions: hevc_enc_end_pic,hevc_enc_vcore_done_pic,sched_done_pic
+07b64	07b8a	called	util__shared_07b64	I	mechanical	util	2	call paths lead to 2 named functions: hevc_enc_vcore_done_pic,sched_done_pic
+07b8a	07ba8	called	util__shared_07b8a	I	mechanical	util	2	call paths lead to 2 named functions: hevc_enc_vcore_done_pic,sched_done_pic
+07ba8	07bc8	called	util__shared_07ba8	I	mechanical	util	6	call paths lead to 4 named functions: hevc_enc_end_pic,hevc_enc_vcore_prepare_pic,sched_check_rdy,sched_done_pic
+07bc8	07bec	orphan	util__unused_07bc8	I	mechanical	util	0	no call, no address reference, no branch from other code
+07bec	07c00	orphan	util__unused_07bec	I	mechanical	util	0	no call, no address reference, no branch from other code
+07c00	07c0a	called	abs_s32@07c00	R	execution	util	5	fits abs_s32 150/150
+07c0a	07c1a	called	min_s32@07c0a	R	execution	util	21	fits min_s32 150/150
+07c1a	07c2a	called	max_s32@07c1a	R	execution	util	32	fits max_s32 150/150
+07c2a	07c40	called	clip3@07c2a	R	execution	util	30	fits clip3(lo,hi,v) 150/150
+07c40	07c58	called	round_div@07c40	R	execution	util	3	fits round_div(x,d) 150/150
+07c58	07c6e	orphan	util__unused_07c58	I	mechanical	util	0	no call, no address reference, no branch from other code
+07c6e	07cbe	orphan	util__unused_07c6e	I	mechanical	util	0	no call, no address reference, no branch from other code
+07cbe	07cce	called	div_round_up@07cbe	R	execution	util	6	fits div_round_up(x,d) 150/150
+07cce	07d04	called	util__shared_07cce	I	mechanical	util	1	call paths lead to 2 named functions: GradIQP_calc_qp_from_bpp,sched_done_pic
+07d04	07d30	orphan	util__unused_07d04	I	mechanical	util	0	no call, no address reference, no branch from other code
+07d30	07d40	called	ceil_log2	R	execution	util	2	fits ceil_log2_u32 (a!=0) 150/150
+07d40	07d54	called	align_up__h_07d40	I	mechanical	util	1	every call path leads to align_up 07d54
+07d54	07d62	called	align_up@07d54	R	execution	util	4	fits align_up(x,a) 150/150
+07d62	07d6e	called	exec_codec_cmd__h_07d62	I	mechanical	util	2	every call path leads to exec_codec_cmd 04cee
+07d6e	07d7e	called	min_s32@07d6e	R	execution	util	7	fits min_s32 150/150
+07d7e	07d94	called	clip3@07d7e	R	execution	util	1	fits clip3(lo,hi,v) 150/150
+07d94	07dde	called	norm_s32	R	hand	util	1	count of redundant sign bits + 1, emulated
+07dde	07e1c	called	fx_pack	R	hand	util	15	stores {int16 mantissa, int16 exponent} at +0/+2
+07e1c	07e34	called	fx_make	R	hand	util	458	fixed-point constructor over fx_pack, 458 calls
+07e34	07e96	called	util__shared_07e34	I	mechanical	util	59	call paths lead to 14 named functions: GradIQP_calc_bpp_from_qp,GradIQP_calc_qp_from_bpp,alloc_gop_bit,calc_bpp_from_qp,calc_qp_from_bpp,ex
+07e96	07efc	called	util__shared_07e96	I	mechanical	util	58	call paths lead to 16 named functions: GradIQP_calc_bpp_from_qp,GradIQP_calc_qp_from_bpp,GradIQP_lookup_qp,GradIQP_update_cond,alloc_gop_bi
+07efc	07f2e	called	util__shared_07efc	I	mechanical	util	120	call paths lead to 17 named functions: GradIQP_calc_bpp_from_qp,alloc_gop_bit,alloc_pic_bit,calc_bpp_from_qp,calc_qp_from_bpp,estimate_bit_
+07f2e	07f80	called	util__shared_07f2e	I	mechanical	util	72	call paths lead to 15 named functions: GradIQP_calc_qp_from_bpp,alloc_gop_bit,alloc_pic_bit,calc_bpp_from_qp,exec_codec_cmd,hevc_enc_rc_pic
+07f80	08014	called	util__shared_07f80	I	mechanical	util	4	call paths lead to 3 named functions: calc_qp_from_bpp,sched_done_pic,update_rq_model
+08014	08102	called	util__shared_08014	I	mechanical	util	2	call paths lead to 3 named functions: calc_bpp_from_qp,exec_codec_cmd,sched_done_pic
+08102	0814c	called	util__shared_08102	I	mechanical	util	44	call paths lead to 12 named functions: GradIQP_calc_qp_from_bpp,GradIQP_update_cond,alloc_pic_bit,estimate_bit_from_bin,exec_codec_cmd,hevc
+0814c	08196	called	util__shared_0814c	I	mechanical	util	7	call paths lead to 9 named functions: GradIQP_calc_bpp_from_qp,alloc_pic_bit,exec_codec_cmd,hevc_enc_rc_pic_init,hevc_enc_vcore_done_pic,i
+08196	081e0	called	util__shared_08196	I	mechanical	util	5	call paths lead to 9 named functions: GradIQP_calc_bpp_from_qp,alloc_pic_bit,exec_codec_cmd,hevc_enc_rc_pic_init,hevc_enc_vcore_done_pic,s
+081e0	08218	called	util__shared_081e0	I	mechanical	util	16	call paths lead to 8 named functions: GradIQP_calc_bpp_from_qp,alloc_pic_bit,exec_codec_cmd,hevc_enc_rc_pic_init,hevc_enc_vcore_done_pic,s
+08218	08274	called	GradIQP_calc_bpp_from_qp__h_08218	I	mechanical	util	1	every call path leads to GradIQP_calc_bpp_from_qp 2de32
+08274	0829c	called	util__shared_08274	I	mechanical	util	14	call paths lead to 6 named functions: GradIQP_calc_qp_from_bpp,GradIQP_lookup_qp,exec_codec_cmd,hevc_enc_rc_pic_init,sched_done_pic,update
+0829c	082d2	called	util__shared_0829c	I	mechanical	util	13	call paths lead to 6 named functions: GradIQP_calc_qp_from_bpp,GradIQP_update_cond,exec_codec_cmd,hevc_enc_rc_pic_init,sched_done_pic,upda
+082d2	08306	called	util__shared_082d2	I	mechanical	util	3	call paths lead to 3 named functions: GradIQP_update_cond,exec_codec_cmd,sched_done_pic
+08306	083a6	called	util__shared_08306	I	mechanical	util	2	call paths lead to 2 named functions: GradIQP_calc_qp_from_bpp,sched_done_pic
+083a6	083aa	called	enqueue_cmd__h_083a6	I	mechanical	util	1	every call path leads to enqueue_cmd 05804
+083aa	083c6	called	enqueue_cmd__h_083aa	I	mechanical	util	1	every call path leads to enqueue_cmd 05804
+083c6	083f0	called	exec_codec_cmd__h_083c6	I	mechanical	util	3	every call path leads to exec_codec_cmd 04cee
+083f0	08418	called	util__shared_083f0	I	mechanical	util	2	call paths lead to 0 named functions: 
+08418	08426	called	util__shared_08418	I	mechanical	util	4	call paths lead to 3 named functions: hevc_enc_packer_done_pic,hevc_enc_vcore_done_pic,sched_done_pic
+08426	0844c	called	util__shared_08426	I	mechanical	util	4	call paths lead to 7 named functions: create_instance,exec_codec_cmd,hevc_vcore_prepare_pic,sched_check_rdy,sched_run_report
+0844c	0850a	called	util__shared_0844c	I	mechanical	util	3	call paths lead to 0 named functions: 
+0850a	08548	orphan	util__unused_0850a	I	mechanical	util	0	no call, no address reference, no branch from other code
+08548	08594	called	util__shared_08548	I	mechanical	util	3	call paths lead to 0 named functions: 
+08594	0859a	called	util__shared_08594	I	mechanical	util	2	call paths lead to 0 named functions: 
+0859a	085b6	called	util__shared_0859a	I	mechanical	util	1	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_enc_pic
+085b6	0860a	called	util__shared_085b6	I	mechanical	util	2	call paths lead to 6 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_enc_one_pic_vcpu,hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_
+0860a	0865e	called	util__shared_0860a	I	mechanical	util	3	call paths lead to 0 named functions: 
+0865e	08684	called	util__shared_0865e	I	mechanical	util	4	call paths lead to 3 named functions: hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_pic,sched_check_rdy
+08684	08716	called	util__shared_08684	I	mechanical	util	1	call paths lead to 0 named functions: 
+08716	08748	called	util__shared_08716	I	mechanical	util	3	call paths lead to 0 named functions: 
+08748	0875e	called	util__shared_08748	I	mechanical	util	7	call paths lead to 12 named functions: avc_dec_activate_first_sps,exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_enc_ref_flush,
+0875e	0877c	orphan	util__unused_0875e	I	mechanical	util	0	no call, no address reference, no branch from other code
+0877c	08792	called	util__shared_0877c	I	mechanical	util	6	call paths lead to 11 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_dec_pic,hevc_enc_ref_flush,hevc_enc_ref_r
+08792	087a8	called	util__shared_08792	I	mechanical	util	1	call paths lead to 0 named functions: 
+087a8	087be	called	util__shared_087a8	I	mechanical	util	6	call paths lead to 10 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_dec_pic,hevc_enc_ref_flush,hevc_enc_ref_r
+087be	087f2	called	util__shared_087be	I	mechanical	util	2	call paths lead to 0 named functions: 
+087f2	08826	called	util__shared_087f2	I	mechanical	util	2	call paths lead to 0 named functions: 
+08826	08852	called	sched_run_report__h_08826	I	mechanical	util	2	every call path leads to sched_run_report 0b3f4
+08852	08876	called	util__shared_08852	I	mechanical	util	3	call paths lead to 2 named functions: exec_codec_cmd,hevc_dec_one_pic
+08876	0889a	called	util__shared_08876	I	mechanical	util	1	call paths lead to 2 named functions: exec_codec_cmd,hevc_dec_one_pic
+0889a	088c4	orphan	util__unused_0889a	I	mechanical	util	0	no call, no address reference, no branch from other code
+088c4	0893a	called	util__shared_088c4	I	mechanical	util	5	call paths lead to 0 named functions: 
+0893a	08970	called	util__shared_0893a	I	mechanical	util	3	call paths lead to 3 named functions: hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_pic,sched_check_rdy
+08970	089ba	called	sched_run_report__h_08970	I	mechanical	util	1	every call path leads to sched_run_report 0b3f4
+089ba	089cc	orphan	util__unused_089ba	I	mechanical	util	0	no call, no address reference, no branch from other code
+089cc	089de	called	util__shared_089cc	I	mechanical	util	1	call paths lead to 0 named functions: 
+089de	089ee	called	util__shared_089de	I	mechanical	util	2	call paths lead to 0 named functions: 
+089ee	08a06	orphan	util__unused_089ee	I	mechanical	util	0	no call, no address reference, no branch from other code
+08a06	08a44	called	util__shared_08a06	I	mechanical	util	4	call paths lead to 3 named functions: create_instance,exec_codec_cmd
+08a44	08a62	called	util__shared_08a44	I	mechanical	util	4	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_enc_pic
+08a62	08a72	called	util__shared_08a62	I	mechanical	util	3	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_enc_one_pic_vcpu
+08a72	08a82	orphan	util__unused_08a72	I	mechanical	util	0	no call, no address reference, no branch from other code
+08a82	08a92	called	util__shared_08a82	I	mechanical	util	14	call paths lead to 8 named functions: avc_dec_activate_first_sps,exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_enc_ref_flush,
+08a92	08aa2	orphan	util__unused_08a92	I	mechanical	util	0	no call, no address reference, no branch from other code
+08aa2	08ab2	called	util__shared_08aa2	I	mechanical	util	8	call paths lead to 4 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_enc_ref_flush,hevc_enc_ref_remove
+08ab2	08ac2	called	util__shared_08ab2	I	mechanical	util	14	call paths lead to 7 named functions: exec_codec_cmd,hevc_dec_one_pic,hevc_dec_pic,hevc_enc_ref_flush,hevc_enc_ref_remove,hevc_flush_insta
+08ac2	08b16	called	util__shared_08ac2	I	mechanical	util	3	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_pic
+08b16	08b32	called	util__shared_08b16	I	mechanical	util	13	call paths lead to 6 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_dec_pic,hevc_flush_instance,hevc_init_seq
+08b32	08b78	called	util__shared_08b32	I	mechanical	util	2	call paths lead to 2 named functions: exec_codec_cmd,hevc_dec_one_pic
+08b78	08b88	called	util__shared_08b78	I	mechanical	util	4	call paths lead to 4 named functions: exec_codec_cmd,hevc_dec_pic,hevc_flush_instance,hevc_init_seq
+08b88	08b98	called	util__shared_08b88	I	mechanical	util	2	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+08b98	08bc2	called	util__shared_08b98	I	mechanical	util	2	call paths lead to 2 named functions: exec_codec_cmd,hevc_dec_one_pic
+08bc2	08c58	called	util__shared_08bc2	I	mechanical	util	3	call paths lead to 6 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_dec_pic,hevc_flush_instance,hevc_init_seq
+08c58	08c78	called	util__shared_08c58	I	mechanical	util	6	call paths lead to 4 named functions: create_instance,exec_codec_cmd
+08c78	08cec	called	util__shared_08c78	I	mechanical	util	3	call paths lead to 6 named functions: create_instance,exec_codec_cmd,hevc_vcore_prepare_pic,sched_run_report
+08cec	08cf8	called	util__shared_08cec	I	mechanical	util	8	call paths lead to 8 named functions: create_instance,enc_pic_cmd,exec_codec_cmd,hevc_vcore_prepare_pic,sched_run_report,set_param
+08cf8	08e6e	called	util__shared_08cf8	I	mechanical	util	1	call paths lead to 0 named functions: 
+08e6e	0921a	called	util__shared_08e6e	I	mechanical	util	1	call paths lead to 0 named functions: 
+0921a	09220	called	util__shared_0921a	I	mechanical	util	5	call paths lead to 2 named functions: hevc_vcore_prepare_pic,sched_check_rdy
+09220	09264	orphan	util__unused_09220	I	mechanical	util	0	no call, no address reference, no branch from other code
+09264	0929c	orphan	util__unused_09264	I	mechanical	util	0	no call, no address reference, no branch from other code
+0929c	092be	orphan	util__unused_0929c	I	mechanical	util	0	no call, no address reference, no branch from other code
+092be	092e0	orphan	util__unused_092be	I	mechanical	util	0	no call, no address reference, no branch from other code
+092e0	092f6	called	sched_check_rdy__h_092e0	I	mechanical	util	1	every call path leads to sched_check_rdy 0acc2
+092f6	0932a	called	util__shared_092f6	I	mechanical	util	4	call paths lead to 3 named functions: hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_pic,sched_check_rdy
+0932a	0938e	called	sched_run_report__h_0932a	I	mechanical	util	2	every call path leads to sched_run_report 0b3f4
+0938e	093c6	called	sched_check_rdy__h_0938e	I	mechanical	util	1	every call path leads to sched_check_rdy 0acc2
+093c6	0944a	called	util__shared_093c6	I	mechanical	util	4	call paths lead to 3 named functions: hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_pic,sched_check_rdy
+0944a	094be	called	util__shared_0944a	I	mechanical	util	2	call paths lead to 2 named functions: hevc_vcore_prepare_pic,sched_check_rdy
+094be	094d8	orphan	util__unused_094be	I	mechanical	util	0	no call, no address reference, no branch from other code
+094d8	094f2	orphan	util__unused_094d8	I	mechanical	util	0	no call, no address reference, no branch from other code
+094f2	0953a	orphan	util__unused_094f2	I	mechanical	util	0	no call, no address reference, no branch from other code
+0953a	0957e	orphan	util__unused_0953a	I	mechanical	util	0	no call, no address reference, no branch from other code
+0957e	095fe	orphan	util__unused_0957e	I	mechanical	util	0	no call, no address reference, no branch from other code
+095fe	09680	orphan	util__unused_095fe	I	mechanical	util	0	no call, no address reference, no branch from other code
+09680	0972c	called	util__shared_09680	I	mechanical	util	1	call paths lead to 0 named functions: 
+0972c	09740	called	util__shared_0972c	I	mechanical	util	10	call paths lead to 6 named functions: hevc_enc_vcore_done_pic,hevc_enc_vcpu_report,init_pic,sched_done_pic,sched_run_report
+09740	09754	orphan	util__unused_09740	I	mechanical	util	0	no call, no address reference, no branch from other code
+09754	0978c	called	util__shared_09754	I	mechanical	util	2	call paths lead to 2 named functions: hevc_vcore_prepare_pic,sched_check_rdy
+0978c	0980e	called	wtl_put_pic	R	func_string	util	2	__func__ string(s): wtl_put_pic
+0980e	0985a	called	sched_run_report__h_0980e	I	mechanical	util	2	every call path leads to sched_run_report 0b3f4
+0985a	09876	called	sched_run_report__h_0985a	I	mechanical	util	2	every call path leads to sched_run_report 0b3f4
+09876	098d2	called	util__shared_09876	I	mechanical	util	4	call paths lead to 3 named functions: hevc_enc_vcore_prepare_pic,hevc_vcore_prepare_pic,sched_check_rdy
+098d2	09928	called	sched_done_pic__h_098d2	I	mechanical	util	1	every call path leads to sched_done_pic 0baaa
+09928	0997e	orphan	util__unused_09928	I	mechanical	util	0	no call, no address reference, no branch from other code
+0997e	099ae	called	util__shared_0997e	I	mechanical	util	2	call paths lead to 0 named functions: 
+099ae	099de	called	util__shared_099ae	I	mechanical	util	1	call paths lead to 0 named functions: 
+099de	099f2	orphan	util__unused_099de	I	mechanical	util	0	no call, no address reference, no branch from other code
+099f2	09a1c	called	util__shared_099f2	I	mechanical	util	2	call paths lead to 3 named functions: hevc_vcore_prepare_pic,sched_check_rdy,wtl_put_pic
+09a1c	09a46	called	util__shared_09a1c	I	mechanical	util	1	call paths lead to 2 named functions: hevc_vcore_prepare_pic,sched_check_rdy
+09a46	09a70	orphan	util__unused_09a46	I	mechanical	util	0	no call, no address reference, no branch from other code
+09a70	09ab2	orphan	util__unused_09a70	I	mechanical	util	0	no call, no address reference, no branch from other code
+09ab2	09ab8	called	sched_check_rdy__h_09ab2	I	mechanical	util	1	every call path leads to sched_check_rdy 0acc2
+09ab8	09abe	called	util__shared_09ab8	I	mechanical	util	13	call paths lead to 6 named functions: hevc_vcore_prepare_pic,init_pic,sched_check_rdy,sched_run_task
+09abe	09ac4	called	util__shared_09abe	I	mechanical	util	6	call paths lead to 5 named functions: hevc_vcore_prepare_pic,init_pic,sched_check_rdy,sched_run_task,set_core_param
+09ac4	09ad8	called	sched_check_rdy__h_09ac4	I	mechanical	util	1	every call path leads to sched_check_rdy 0acc2
+09ad8	09aec	called	util__shared_09ad8	I	mechanical	util	14	call paths lead to 6 named functions: hevc_vcore_prepare_pic,init_pic,sched_check_rdy,sched_run_task
+09aec	09b00	called	util__shared_09aec	I	mechanical	util	4	call paths lead to 2 named functions: hevc_vcore_prepare_pic,sched_check_rdy
+09b00	09b2e	called	util__shared_09b00	I	mechanical	util	10	call paths lead to 2 named functions: sched_run_task,set_core_param
+09b2e	09b34	called	util__shared_09b2e	I	mechanical	util	5	call paths lead to 2 named functions: sched_run_task,set_core_param
+09b34	09b5c	called	util__shared_09b34	I	mechanical	util	8	call paths lead to 2 named functions: init_pic,sched_run_task
+09b5c	09b64	called	util__shared_09b5c	I	mechanical	util	6	call paths lead to 4 named functions: init_pic,sched_run_task
+09b64	09b70	called	util__shared_09b64	I	mechanical	util	2	call paths lead to 2 named functions: init_pic,sched_run_task
+09b70	09b90	called	sched_check_rdy__h_09b70	I	mechanical	util	2	every call path leads to sched_check_rdy 0acc2
+09b90	09bb0	called	util__shared_09b90	I	mechanical	util	6	call paths lead to 3 named functions: init_pic
+09bb0	09bb6	called	util__shared_09bb0	I	mechanical	util	4	call paths lead to 2 named functions: init_pic
+09bb6	09be0	called	sched_run_report__h_09bb6	I	mechanical	util	4	every call path leads to sched_run_report 0b3f4
+09be0	09bfe	called	util__shared_09be0	I	mechanical	util	1	call paths lead to 0 named functions: 
+09bfe	09c20	called	util__shared_09bfe	I	mechanical	util	4	call paths lead to 2 named functions: init_pic
+09c20	09c36	called	util__shared_09c20	I	mechanical	util	2	call paths lead to 2 named functions: init_pic
+09c36	09c3c	called	util__shared_09c36	I	mechanical	util	2	call paths lead to 2 named functions: init_pic
+09c3c	09c42	called	util__shared_09c3c	I	mechanical	util	7	call paths lead to 4 named functions: init_pic,sched_run_task
+09c42	09c48	called	util__shared_09c42	I	mechanical	util	2	call paths lead to 2 named functions: init_pic
+09c48	09c4e	called	util__shared_09c48	I	mechanical	util	4	call paths lead to 4 named functions: init_pic,sched_run_task
+09c4e	09c6e	orphan	util__unused_09c4e	I	mechanical	util	0	no call, no address reference, no branch from other code
+09c6e	09ce4	called	util__shared_09c6e	I	mechanical	util	1	call paths lead to 0 named functions: 
+09ce4	09d52	called	util__shared_09ce4	I	mechanical	util	2	call paths lead to 6 named functions: create_instance,exec_codec_cmd,hevc_vcore_prepare_pic,sched_run_report
+09d52	09d6a	called	util__shared_09d52	I	mechanical	util	9	call paths lead to 4 named functions: init_pic,sched_run_task
+09d6a	09d82	called	util__shared_09d6a	I	mechanical	util	9	call paths lead to 4 named functions: init_pic,sched_run_task
+09d82	09dae	called	util__shared_09d82	I	mechanical	util	8	call paths lead to 4 named functions: init_pic,sched_run_task
+09dae	09df8	called	util__shared_09dae	I	mechanical	util	8	call paths lead to 4 named functions: init_pic,sched_run_task
+09df8	09e0c	called	util__shared_09df8	I	mechanical	util	12	call paths lead to 5 named functions: init_pic,sched_run_report,sched_run_task
+09e0c	09e14	called	util__shared_09e0c	I	mechanical	util	6	call paths lead to 5 named functions: init_pic,sched_run_report,sched_run_task
+09e14	09e2a	called	util__shared_09e14	I	mechanical	util	8	call paths lead to 4 named functions: init_pic,sched_run_task
+09e2a	0a090	called	util__shared_09e2a	I	mechanical	util	4	call paths lead to 4 named functions: init_pic,sched_run_task
+0a090	0a09e	called	util__shared_0a090	I	mechanical	util	4	call paths lead to 4 named functions: init_pic,sched_run_task
+0a09e	0a0a6	called	util__shared_0a09e	I	mechanical	util	3	call paths lead to 4 named functions: create_instance,exec_codec_cmd
+0a0a6	0a0bc	called	util__shared_0a0a6	I	mechanical	util	3	call paths lead to 7 named functions: exec_codec_cmd,hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_dec_pic,hevc_flush_instance,hevc_init_seq
+0a0bc	0a0e6	called	util__shared_0a0bc	I	mechanical	util	3	call paths lead to 0 named functions: 
+0a0e6	0a120	called	util__shared_0a0e6	I	mechanical	util	4	call paths lead to 4 named functions: exec_codec_cmd,hevc_dec_pic,hevc_flush_instance,hevc_init_seq
+0a120	0a136	called	util__shared_0a120	I	mechanical	util	2	call paths lead to 0 named functions: 
+0a136	0a1be	called	vcpu_init__h_0a136	I	mechanical	util	1	every call path leads to vcpu_init 03f54
+0a1be	0a1d6	called	sched_alloc_pic__h_0a1be	I	mechanical	util	1	every call path leads to sched_alloc_pic 0a704
+0a1d6	0a262	called	sched_alloc_pic__h_0a1d6	I	mechanical	util	1	every call path leads to sched_alloc_pic 0a704
+0a262	0a294	called	sched_release_pic__h_0a262	I	mechanical	util	2	every call path leads to sched_release_pic 0ab90
+0a294	0a2a0	called	util__shared_0a294	I	mechanical	util	22	call paths lead to 14 named functions: _sched_run_pic,dump_sched_check_rdy,enqueue_cmd,hevc_vcore_prepare_pic,sched_alloc_core,sched_alloc_
+0a2a0	0a34c	called	vcpu_init__h_0a2a0	I	mechanical	util	1	every call path leads to vcpu_init 03f54
+0a34c	0a506	called	sched_init	R	func_string	sched	2	__func__ string(s): sched_init
+0a506	0a57a	called	sched_destroy	R	func_string	sched	1	__func__ string(s): sched_destroy
+0a57a	0a58a	called	ctx_get	R	hand	sched	99	returns word 0x5fe40 + ((a*4 + b) * 4): the context-pointer table
+0a58a	0a5be	called	main__h_0a58a	I	mechanical	sched	3	every call path leads to main 04a3a
+0a5be	0a704	called	sched_alloc_cmd	R	func_string	sched	1	__func__ string(s): sched_alloc_cmd
+0a704	0a8d8	called	sched_alloc_pic	R	func_string	sched	2	__func__ string(s): sched_alloc_pic
+0a8d8	0a8f4	called	sched_irq__h_0a8d8	I	mechanical	sched	7	every call path leads to sched_irq 0c526
+0a8f4	0aa32	called	sched_dup_pic	R	func_string	sched	4	__func__ string(s): sched_dup_pic
+0aa32	0ab90	called	sched_queue_pic	R	func_string	sched	13	__func__ string(s): sched_queue_pic
+0ab90	0acc2	called	sched_release_pic	R	func_string	sched	3	__func__ string(s): sched_release_pic
+0acc2	0b1f2	called	sched_check_rdy	R	func_string	sched	2	__func__ string(s): sched_check_rdy
+0b1f2	0b1f6	called	sched__shared_0b1f2	I	mechanical	sched	15	call paths lead to 6 named functions: hevc_enc_vcore_done_pic,hevc_enc_vcore_run_task,main,sched_done_pic,sched_run_task,sched_wakeup_inst
+0b1f6	0b218	vector	sched__vec20	I	mechanical	sched	0	vector-table slot(s) 20
+0b218	0b3f4	called	sched_run_report__h_0b218	I	mechanical	sched	1	every call path leads to sched_run_report 0b3f4
+0b3f4	0b61e	called	sched_run_report	R	func_string	sched	1	__func__ string(s): sched_run_report
+0b61e	0b7be	called	_sched_run_pic	R	func_string	sched	1	__func__ string(s): _sched_run_pic
+0b7be	0b940	called	sched_init_pic	R	func_string	sched	2	__func__ string(s): sched_init_pic
+0b940	0baaa	called	sched_mark_err	R	func_string	sched	6	__func__ string(s): sched_mark_err
+0baaa	0c082	called	sched_done_pic	R	func_string	sched	10	__func__ string(s): sched_done_pic
+0c082	0c0e6	called	sched_show_pic	R	func_string	sched	6	__func__ string(s): sched_show_pic
+0c0e6	0c1f2	called	sched_fetch_pic	R	func_string	sched	4	__func__ string(s): sched_fetch_pic
+0c1f2	0c2da	orphan	sched_unfetch_pic	R	func_string	sched	0	__func__ string(s): sched_unfetch_pic
+0c2da	0c496	called	sched_run_task	R	func_string	sched	10	__func__ string(s): sched_run_task
+0c496	0c526	called	sched_done_task	R	func_string	sched	4	__func__ string(s): sched_done_task
+0c526	0c6ea	called	sched_irq	R	func_string	sched	15	__func__ string(s): sched_irq
+0c6ea	0c896	called	sched_avail_core	R	func_string	sched	3	__func__ string(s): sched_avail_core
+0c896	0ca5a	called	sched_alloc_core	R	func_string	sched	1	__func__ string(s): sched_alloc_core
+0ca5a	0cada	called	sched_release_core	R	func_string	sched	1	__func__ string(s): sched_release_core
+0cada	0cbda	called	sched__shared_0cada	I	mechanical	sched	2	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+0cbda	0cc82	called	sched_check_task_buf	R	func_string	sched	4	__func__ string(s): sched_check_task_buf
+0cc82	0cd66	called	sched_check_report_queue	R	func_string	sched	1	__func__ string(s): sched_check_report_queue
+0cd66	0cfe4	called	sched_check_resource	R	func_string	sched	2	__func__ string(s): sched_check_resource
+0cfe4	0d0b8	called	sched_release_resource	R	func_string	sched	3	__func__ string(s): sched_release_resource
+0d0b8	0d16e	called	sched_release_resource_reencode	R	func_string	sched	2	__func__ string(s): sched_release_resource_reencode
+0d16e	0d380	called	sched_avail_hw_env	R	func_string	sched	3	__func__ string(s): sched_avail_hw_env
+0d380	0d45e	called	sched_wakeup_instance	R	func_string	sched	2	__func__ string(s): sched_wakeup_instance
+0d45e	0d5b2	called	sched_flush_instance	R	func_string	sched	4	__func__ string(s): sched_flush_instance
+0d5b2	0d82a	called	solve_hang_status	R	func_string	sched	2	__func__ string(s): solve_hang_status
+0d82a	0d9c6	called	sched__shared_0d82a	I	mechanical	sched	1	call paths lead to 0 named functions: 
+0d9c6	0da7a	called	sched__shared_0d9c6	I	mechanical	sched	1	call paths lead to 0 named functions: 
+0da7a	0db58	called	notify_host_state	R	func_string	sched	1	__func__ string(s): notify_host_state
+0db58	0dbaa	orphan	sched__unused_0db58	I	mechanical	sched	0	no call, no address reference, no branch from other code
+0dbaa	0dc50	called	sched__shared_0dbaa	I	mechanical	sched	4	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+0dc50	0dcd2	called	sched__shared_0dc50	I	mechanical	sched	4	call paths lead to 4 named functions: dump_sched_check_rdy,sched_check_rdy,sched_release_resource,sched_release_resource_reencode
+0dcd2	0dd1c	called	sched__shared_0dcd2	I	mechanical	sched	6	call paths lead to 5 named functions: hevc_enc_vcore_done_pic,hevc_enc_vcore_run_task,run_tile,sched_done_pic,sched_run_task
+0dd1c	0dd64	called	sched__shared_0dd1c	I	mechanical	sched	5	call paths lead to 3 named functions: dump_sched_check_rdy,main,sched_check_rdy
+0dd64	0de56	called	setEncCmdDrop	R	func_string	sched	1	__func__ string(s): setEncCmdDrop
+0de56	0deb8	called	sched__shared_0de56	I	mechanical	sched	1	call paths lead to 0 named functions: 
+0deb8	0ded8	called	sched__shared_0deb8	I	mechanical	sched	1	call paths lead to 0 named functions: 
+0ded8	0df82	called	sched__shared_0ded8	I	mechanical	sched	1	call paths lead to 0 named functions: 
+0df82	0df84	orphan	sched__unused_0df82	I	mechanical	sched	0	no call, no address reference, no branch from other code
+0df84	0df9e	called	sched__shared_0df84	I	mechanical	sched	12	call paths lead to 7 named functions: encoder_done,hevc_parser_done_pic,hevc_vcore_prepare_pic,main,sched_check_rdy,sched_irq,solve_hang_s
+0df9e	0dfaa	called	sched__shared_0df9e	I	mechanical	sched	31	call paths lead to 16 named functions: dump_inst_and_cmd_status,dump_sched_check_rdy,encoder_done,enqueue_cmd,hevc_enc_encoder_run_task,hev
+0dfaa	0dfb4	called	sched__shared_0dfaa	I	mechanical	sched	4	call paths lead to 3 named functions: dump_inst_and_cmd_status,dump_sched_check_rdy,sched_check_rdy
+0dfb4	0e1a6	called	sched_avail_core_dbg	R	func_string	sched	1	__func__ string(s): sched_avail_core_dbg
+0e1a6	0e6f0	called	dump_sched_check_rdy	R	func_string	sched	1	__func__ string(s): dump_sched_check_rdy
+0e6f0	0e762	called	vcpu_init__h_0e6f0	I	mechanical	sched	5	every call path leads to vcpu_init 03f54
+0e762	0e81c	called	resrc_alloc_seg_buf	R	func_string	resrc	3	__func__ string(s): resrc_alloc_seg_buf
+0e81c	0e83a	called	resrc__shared_0e81c	I	mechanical	resrc	5	call paths lead to 3 named functions: sched_done_pic,sched_release_resource,sched_run_report
+0e83a	0e926	called	resrc_check_avail	R	func_string	resrc	1	__func__ string(s): resrc_check_avail
+0e926	0e9e4	called	resrc_get_buf_end	R	func_string	resrc	2	__func__ string(s): resrc_get_buf_end
+0e9e4	0ea38	called	resrc_get_seg_start	R	func_string	resrc	14	__func__ string(s): resrc_get_seg_start
+0ea38	0ea8c	called	resrc_get_seg_end	R	func_string	resrc	4	__func__ string(s): resrc_get_seg_end
+0ea8c	0eb2c	called	resrc_update_rd_ptr	R	func_string	resrc	4	__func__ string(s): resrc_update_rd_ptr
+0eb2c	0eb88	called	resrc_backup	R	func_string	resrc	1	__func__ string(s): resrc_backup
+0eb88	0ebea	called	resrc_restore	R	func_string	resrc	2	__func__ string(s): resrc_restore
+0ebea	0ecae	called	resrc_update_seg_info	R	func_string	resrc	12	__func__ string(s): resrc_update_seg_info
+0ecae	0ecf6	called	report_queue_init	R	func_string	report_queue	2	__func__ string(s): report_queue_init
+0ecf6	0ed6c	called	report_queue_count	R	func_string	report_queue	5	__func__ string(s): report_queue_count
+0ed6c	0edd4	called	report_queue_is_full	R	func_string	report_queue	1	__func__ string(s): report_queue_is_full
+0edd4	0ee34	called	report_queue_is_empty	R	func_string	report_queue	3	__func__ string(s): report_queue_is_empty
+0ee34	0eed2	called	report_queue_get_buffer	R	func_string	report_queue	1	__func__ string(s): report_queue_get_buffer
+0eed2	0ef48	called	report_queue_read	R	func_string	report_queue	2	__func__ string(s): report_queue_read
+0ef48	0efa8	called	report_queue_get_start	R	func_string	report_queue	2	__func__ string(s): report_queue_get_start
+0efa8	0f016	called	report_queue_get_start_idx	R	func_string	report_queue	1	__func__ string(s): report_queue_get_start_idx
+0f016	0f06e	called	report_queue_write	R	func_string	report_queue	1	__func__ string(s): report_queue_write
+0f06e	0f07a	called	report_queue__shared_0f06e	I	mechanical	report_queue	2	call paths lead to 2 named functions: report_queue_read,report_queue_write
+0f07a	0f09c	called	sched_init_pic__h_0f07a	I	mechanical	report_queue	2	every call path leads to sched_init_pic 0b7be
+0f09c	0f0c2	called	report_queue__shared_0f09c	I	mechanical	report_queue	19	call paths lead to 7 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_payload,exec_codec
+0f0c2	0f0fe	called	report_queue__shared_0f0c2	I	mechanical	report_queue	22	call paths lead to 14 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_chroma_resampling_
+0f0fe	0f140	called	report_queue__shared_0f0fe	I	mechanical	report_queue	19	call paths lead to 7 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_payload,exec_codec
+0f140	0f15a	called	report_queue__shared_0f140	I	mechanical	report_queue	2	call paths lead to 7 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal,dec_sei_payload,exec_codec
+0f15a	0f170	called	report_queue__shared_0f15a	I	mechanical	report_queue	2	call paths lead to 3 named functions: exec_codec_cmd,hevc_dec_pic,hevc_init_seq
+0f170	0f236	called	report_queue__shared_0f170	I	mechanical	report_queue	2	call paths lead to 0 named functions: 
+0f236	0f296	called	vcpu_init__h_0f236	I	mechanical	report_queue	1	every call path leads to vcpu_init 03f54
+0f296	0f2c8	called	report_queue__shared_0f296	I	mechanical	report_queue	1	call paths lead to 0 named functions: 
+0f2c8	0f2dc	called	report_queue__shared_0f2c8	I	mechanical	report_queue	1	call paths lead to 0 named functions: 
+0f2dc	0f2fe	called	report_queue__shared_0f2dc	I	mechanical	report_queue	1	call paths lead to 0 named functions: 
+0f2fe	0f36c	called	report_queue__shared_0f2fe	I	mechanical	report_queue	1	call paths lead to 0 named functions: 
+0f36c	0f3b2	called	report_queue__shared_0f36c	I	mechanical	report_queue	2	call paths lead to 0 named functions: 
+0f3b2	0f414	orphan	report_queue__unused_0f3b2	I	mechanical	report_queue	0	no call, no address reference, no branch from other code
+0f414	0f464	orphan	report_queue__unused_0f414	I	mechanical	report_queue	0	no call, no address reference, no branch from other code
+0f464	0f466	called	trace_printf	R	hand	trace	479	empty: a single ret; every "%s:%d LR:..." trace call goes nowhere
+0f466	0f468	orphan	trace_stub2	R	hand	trace	0	a single ret; unreferenced
+0f468	0f524	called	create_instance__h_0f468	I	mechanical	hevc_dec	1	every call path leads to create_instance 1895e
+0f524	0f5d6	called	hevc_flush_instance	R	func_string	hevc_dec	1	__func__ string(s): hevc_flush_instance
+0f5d6	0f65a	called	hevc_init_seq	R	func_string	hevc_dec	1	__func__ string(s): hevc_init_seq
+0f65a	0f794	called	hevc_dec_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_pic
+0f794	0f9e6	called	hevc_dec_one_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_one_pic
+0f9e6	0fb12	called	init_seq@0f9e6	R	func_string	hevc_dec	1	__func__ string(s): init_seq
+0fb12	0fd64	called	init_pic@0fb12	R	func_string	hevc_dec	1	__func__ string(s): init_pic
+0fd64	0ffbe	called	hevc_dec_check_skip	R	func_string	hevc_dec	2	__func__ string(s): hevc_dec_check_skip
+0ffbe	0fffc	called	init_err_param_out	R	func_string	hevc_dec	1	__func__ string(s): init_err_param_out
+0fffc	1005e	called	hevc_get_user_buf	R	func_string	hevc_dec	1	__func__ string(s): hevc_get_user_buf
+1005e	10062	orphan	hevc_dec__unused_1005e	I	mechanical	hevc_dec	0	no call, no address reference, no branch from other code
+10062	100ec	called	hevc_add_sps__h_10062	I	mechanical	hevc_dec	1	every call path leads to hevc_add_sps 1660c
+100ec	10bb4	called	hevc_add_sps__h_100ec	I	mechanical	hevc_dec	1	every call path leads to hevc_add_sps 1660c
+10bb4	11054	called	hevc_add_pps__h_10bb4	I	mechanical	hevc_dec	1	every call path leads to hevc_add_pps 1693c
+11054	11ca6	called	hevc_dec__shared_11054	I	mechanical	hevc_dec	4	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+11ca6	11d48	called	hevc_dec__shared_11ca6	I	mechanical	hevc_dec	1	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+11d48	11fe6	called	hevc_dec__shared_11d48	I	mechanical	hevc_dec	1	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+11fe6	122d8	called	hevc_dec__shared_11fe6	I	mechanical	hevc_dec	1	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+122d8	124ac	called	hevc_dec__shared_122d8	I	mechanical	hevc_dec	2	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+124ac	1264c	called	hevc_dec__shared_124ac	I	mechanical	hevc_dec	2	call paths lead to 0 named functions: 
+1264c	12a4a	called	hevc_dec__shared_1264c	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12a4a	12b18	called	hevc_dec__shared_12a4a	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12b18	12be6	called	hevc_dec__shared_12b18	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12be6	12dbe	called	hevc_dec__shared_12be6	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12dbe	12e04	called	hevc_dec__shared_12dbe	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12e04	12f30	called	hevc_dec__shared_12e04	I	mechanical	hevc_dec	2	call paths lead to 0 named functions: 
+12f30	12fa6	called	hevc_dec__shared_12f30	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+12fa6	12fc0	called	hevc_dec__shared_12fa6	I	mechanical	hevc_dec	2	call paths lead to 0 named functions: 
+12fc0	13152	called	hevc_dec_init_pic_hdr	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_init_pic_hdr
+13152	13230	called	hevc_decode_pic_header	R	func_string	hevc_dec	1	__func__ string(s): hevc_decode_pic_header
+13230	13328	called	hevc_seek_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_seek_pic
+13328	133a4	called	hevc_skip_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_skip_pic
+133a4	1347e	called	hevc_calc_poc	R	func_string	hevc_dec	2	__func__ string(s): hevc_calc_poc
+1347e	13a0e	called	hevc_dec_gen_pic_param	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_gen_pic_param
+13a0e	13d6e	called	hevc_dec_gen_tile_table	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_gen_tile_table
+13d6e	13dba	called	hevc_dec_get_tile_idx	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_get_tile_idx
+13dba	13e42	called	hevc_dec_gen_tile_param	R	func_string	hevc_dec	3	__func__ string(s): hevc_dec_gen_tile_param
+13e42	13fd0	called	hevc_dec_gen_sub_stream	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_gen_sub_stream
+13fd0	14006	called	hevc_seek_pic__h_13fd0	I	mechanical	hevc_dec	2	every call path leads to hevc_seek_pic 13230
+14006	145b4	called	hevc_dec_gen_slice_param	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_gen_slice_param
+145b4	147c4	called	hevc_dec_gen_sub_param	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_gen_sub_param
+147c4	148c8	called	hevc_dec_gen_sub_stream__h_147c4	I	mechanical	hevc_dec	2	every call path leads to hevc_dec_gen_sub_stream 13e42
+148c8	14b14	called	hevc_rps_init	R	func_string	hevc_dec	1	__func__ string(s): hevc_rps_init
+14b14	14bc4	called	hevc_ref_add	R	func_string	hevc_dec	1	__func__ string(s): hevc_ref_add
+14bc4	14c7c	called	hevc_dec_init_pic_hdr__h_14bc4	I	mechanical	hevc_dec	1	every call path leads to hevc_dec_init_pic_hdr 12fc0
+14c7c	14d50	called	hevc_ref_get_ref_idc	R	func_string	hevc_dec	1	__func__ string(s): hevc_ref_get_ref_idc
+14d50	14da0	called	hevc_dec__shared_14d50	I	mechanical	hevc_dec	3	call paths lead to 3 named functions: hevc_dec_init_pic_hdr,hevc_dec_one_pic,hevc_flush_instance
+14da0	14fb8	called	hevc_ref_list_init	R	func_string	hevc_dec	1	__func__ string(s): hevc_ref_list_init
+14fb8	1508c	called	hevc_ref_remove	R	func_string	hevc_dec	2	__func__ string(s): hevc_ref_remove
+1508c	1512c	called	hevc_ref_find_idx	R	func_string	hevc_dec	3	__func__ string(s): hevc_ref_find_idx
+1512c	151dc	called	hevc_ref_find_poc_lsb	R	func_string	hevc_dec	1	__func__ string(s): hevc_ref_find_poc_lsb
+151dc	15276	called	seek_last_decoded_idx	R	func_string	hevc_dec	1	__func__ string(s): seek_last_decoded_idx
+15276	156fe	called	hevc_dec__shared_15276	I	mechanical	hevc_dec	3	call paths lead to 2 named functions: hevc_dec_pic,hevc_init_seq
+156fe	157f6	called	hevc_dec__shared_156fe	I	mechanical	hevc_dec	1	call paths lead to 2 named functions: hevc_dec_pic,hevc_init_seq
+157f6	159b6	called	hevc_dec_report_vui_info	R	func_string	hevc_dec	1	__func__ string(s): hevc_dec_report_vui_info
+159b6	15ca0	called	hevc_activate_first_sps	R	func_string	hevc_dec	1	__func__ string(s): hevc_activate_first_sps
+15ca0	15f7c	called	hevc_find_more_au	R	func_string	hevc_dec	1	__func__ string(s): hevc_find_more_au
+15f7c	1615a	called	hevc_find_more_vcl_nal	R	func_string	hevc_dec	2	__func__ string(s): hevc_find_more_vcl_nal
+1615a	161cc	called	hevc_seek_next_nal	R	func_string	hevc_dec	3	__func__ string(s): hevc_seek_next_nal
+161cc	16288	called	hevc_init_rbsp	R	func_string	hevc_dec	3	__func__ string(s): hevc_init_rbsp
+16288	162f6	called	hevc_get_rd_ptr	R	func_string	hevc_dec	1	__func__ string(s): hevc_get_rd_ptr
+162f6	1635e	called	hevc_rewind_rd_ptr	R	func_string	hevc_dec	7	__func__ string(s): hevc_rewind_rd_ptr
+1635e	163da	called	hevc_mark_au_start_pos	R	func_string	hevc_dec	10	__func__ string(s): hevc_mark_au_start_pos
+163da	16454	called	hevc_mark_au_end_pos	R	func_string	hevc_dec	6	__func__ string(s): hevc_mark_au_end_pos
+16454	164c2	called	hevc_init_au_pos	R	func_string	hevc_dec	7	__func__ string(s): hevc_init_au_pos
+164c2	16526	orphan	hevc_clear_au_end_pos	R	func_string	hevc_dec	0	__func__ string(s): hevc_clear_au_end_pos
+16526	165b8	called	ps_init	R	func_string	hevc_dec	2	__func__ string(s): ps_init
+165b8	1660c	called	hevc_add_vps	R	func_string	hevc_dec	3	__func__ string(s): hevc_add_vps
+1660c	1674c	called	hevc_add_sps	R	func_string	hevc_dec	3	__func__ string(s): hevc_add_sps
+1674c	16828	called	hevc_activate_sps	R	func_string	hevc_dec	2	__func__ string(s): hevc_activate_sps
+16828	168ca	called	hevc_touch_sps	R	func_string	hevc_dec	1	__func__ string(s): hevc_touch_sps
+168ca	1693c	called	hevc_release_sps	R	func_string	hevc_dec	4	__func__ string(s): hevc_release_sps
+1693c	16a34	called	hevc_add_pps	R	func_string	hevc_dec	3	__func__ string(s): hevc_add_pps
+16a34	16b1e	called	hevc_activate_pps	R	func_string	hevc_dec	1	__func__ string(s): hevc_activate_pps
+16b1e	16b98	called	hevc_touch_pps	R	func_string	hevc_dec	1	__func__ string(s): hevc_touch_pps
+16b98	16c0a	called	hevc_release_pps	R	func_string	hevc_dec	3	__func__ string(s): hevc_release_pps
+16c0a	16f56	called	detect_seq_change	R	func_string	hevc_dec	1	__func__ string(s): detect_seq_change
+16f56	16fc0	called	hevc_init_sei	R	func_string	hevc_dec	7	__func__ string(s): hevc_init_sei
+16fc0	17034	called	hevc_backup_sei_status	R	func_string	hevc_dec	2	__func__ string(s): hevc_backup_sei_status
+17034	170aa	called	hevc_restore_sei_status	R	func_string	hevc_dec	2	__func__ string(s): hevc_restore_sei_status
+170aa	1715c	called	hevc_dec_sei_rbsp	R	func_string	hevc_dec	3	__func__ string(s): hevc_dec_sei_rbsp
+1715c	17606	called	dec_sei_payload	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_payload
+17606	176c4	called	dec_sei_pic_timing	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_pic_timing
+176c4	17750	called	hevc_dec__shared_176c4	I	mechanical	hevc_dec	1	call paths lead to 4 named functions: hevc_activate_first_sps,hevc_decode_pic_header,hevc_seek_pic,hevc_skip_pic
+17750	17818	called	dec_sei_user_data_registered_itu_t_t35	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_user_data_registered_itu_t_t35
+17818	178c0	called	dec_sei_user_data_unregistered	R	func_string	hevc_dec	2	__func__ string(s): dec_sei_user_data_unregistered
+178c0	17acc	called	dec_sei_color_remapping_info	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_color_remapping_info
+17acc	17b46	called	dec_sei_content_light_level_info	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_content_light_level_info
+17b46	17c4e	called	dec_sei_knee_function_info	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_knee_function_info
+17c4e	17e0c	called	dec_sei_chroma_resampling_filter_hint	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_chroma_resampling_filter_hint
+17e0c	17ef6	called	dec_sei_user_data_mastering_display_colour_volume	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_user_data_mastering_display_colour_volume
+17ef6	17fa6	called	dec_sei_recovery_point	R	func_string	hevc_dec	1	__func__ string(s): dec_sei_recovery_point
+17fa6	18108	called	dec_sei_payload__h_17fa6	I	mechanical	hevc_dec	1	every call path leads to dec_sei_payload 1715c
+18108	182f6	called	dec_sei_payload__h_18108	I	mechanical	hevc_dec	1	every call path leads to dec_sei_payload 1715c
+182f6	183aa	called	dec_sei_payload__h_182f6	I	mechanical	hevc_dec	1	every call path leads to dec_sei_payload 1715c
+183aa	183f0	called	hevc_dec__shared_183aa	I	mechanical	hevc_dec	2	call paths lead to 2 named functions: dec_sei_payload,dec_sei_pic_timing
+183f0	18402	called	dec_sei_payload__h_183f0	I	mechanical	hevc_dec	1	every call path leads to dec_sei_payload 1715c
+18402	1844a	called	exec_codec_cmd__h_18402	I	mechanical	hevc_dec	1	every call path leads to exec_codec_cmd 04cee
+1844a	187ca	called	hevc_dec__shared_1844a	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+187ca	18864	called	hevc_dec__shared_187ca	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+18864	188b2	called	sched_init_pic__h_18864	I	mechanical	hevc_dec	1	every call path leads to sched_init_pic 0b7be
+188b2	1895e	called	sched_done_pic__h_188b2	I	mechanical	hevc_dec	1	every call path leads to sched_done_pic 0baaa
+1895e	18a7c	called	create_instance@1895e	R	func_string	hevc_dec	1	__func__ string(s): create_instance
+18a7c	18bec	called	init_seq@18a7c	R	func_string	hevc_dec	1	__func__ string(s): init_seq
+18bec	18d94	called	dec_pic	R	func_string	hevc_dec	1	__func__ string(s): dec_pic
+18d94	18ea6	called	flush_instance	R	func_string	hevc_dec	1	__func__ string(s): flush_instance
+18ea6	18f6e	called	destroy_instance@18ea6	R	func_string	hevc_dec	1	__func__ string(s): destroy_instance
+18f6e	18f86	called	create_instance__h_18f6e	I	mechanical	hevc_dec	1	every call path leads to create_instance 1895e
+18f86	18fb4	called	init_seq__h_18f86	I	mechanical	hevc_dec	1	every call path leads to init_seq 18a7c
+18fb4	190b4	called	dec_pic_in@18fb4	R	func_string	hevc_dec	1	__func__ string(s): dec_pic_in
+190b4	190d6	called	hevc_dec__shared_190b4	I	mechanical	hevc_dec	3	call paths lead to 3 named functions: create_instance,destroy_instance,flush_instance
+190d6	190e8	called	init_seq__h_190d6	I	mechanical	hevc_dec	1	every call path leads to init_seq 18a7c
+190e8	1929a	called	dec_pic__h_190e8	I	mechanical	hevc_dec	2	every call path leads to dec_pic 18bec
+1929a	192ee	called	create_instance__h_1929a	I	mechanical	hevc_dec	1	every call path leads to create_instance 1895e
+192ee	19440	called	hevc_parser_init_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_parser_init_pic
+19440	19674	called	hevc_parser_done_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_parser_done_pic
+19674	19804	called	hevc_parser_run_task	R	func_string	hevc_dec	2	__func__ string(s): hevc_parser_run_task
+19804	1985e	called	sched_irq__h_19804	I	mechanical	hevc_dec	1	every call path leads to sched_irq 0c526
+1985e	1986a	called	hevc_dec__shared_1985e	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+1986a	19a42	called	parser_que_start	R	func_string	hevc_dec	1	__func__ string(s): parser_que_start
+19a42	19aac	called	hevc_parser_run_task__h_19a42	I	mechanical	hevc_dec	1	every call path leads to hevc_parser_run_task 19674
+19aac	19e0e	called	parser_generate_segment	R	func_string	hevc_dec	2	__func__ string(s): parser_generate_segment
+19e0e	1a07e	called	parser_write_segment	R	func_string	hevc_dec	2	__func__ string(s): parser_write_segment
+1a07e	1a1c8	called	parser_write_err_segment	R	func_string	hevc_dec	2	__func__ string(s): parser_write_err_segment
+1a1c8	1a23a	called	hevc_dec__shared_1a1c8	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+1a23a	1a334	addr	hevc_dec__ptr_1a23a	I	mechanical	hevc_dec	0	address taken at 19a30,1a31c,1a38e
+1a334	1a46c	called	parser_generate_segment__h_1a334	I	mechanical	hevc_dec	1	every call path leads to parser_generate_segment 19aac
+1a46c	1a4b0	called	hevc_parser_done_pic__h_1a46c	I	mechanical	hevc_dec	2	every call path leads to hevc_parser_done_pic 19440
+1a4b0	1a830	called	hevc_vcore_prepare_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_vcore_prepare_pic
+1a830	1a930	called	hevc_vcore_init_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_vcore_init_pic
+1a930	1aa68	called	hevc_vcore_run_task	R	func_string	hevc_dec	1	__func__ string(s): hevc_vcore_run_task
+1aa68	1ac62	called	hevc_vcore_done_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_vcore_done_pic
+1ac62	1ad92	called	hevc_vcore_irq	R	func_string	hevc_dec	1	__func__ string(s): hevc_vcore_irq
+1ad92	1b10a	called	init_pic@1ad92	R	func_string	hevc_dec	1	__func__ string(s): init_pic
+1b10a	1b138	called	hevc_vcore_run_task__h_1b10a	I	mechanical	hevc_dec	1	every call path leads to hevc_vcore_run_task 1a930
+1b138	1b36c	called	init_pic__h_1b138	I	mechanical	hevc_dec	1	every call path leads to init_pic 1ad92
+1b36c	1b3a4	called	init_pic__h_1b36c	I	mechanical	hevc_dec	1	every call path leads to init_pic 1ad92
+1b3a4	1b44c	called	init_pic__h_1b3a4	I	mechanical	hevc_dec	2	every call path leads to init_pic 1ad92
+1b44c	1b646	called	set_pic_param	R	func_string	hevc_dec	1	__func__ string(s): set_pic_param
+1b646	1bb4a	called	set_core_param	R	func_string	hevc_dec	1	__func__ string(s): set_core_param
+1bb4a	1bc50	called	init_pic__h_1bb4a	I	mechanical	hevc_dec	1	every call path leads to init_pic 1ad92
+1bc50	1be68	called	hevc_dec__shared_1bc50	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+1be68	1bec8	called	hevc_vcore_done_pic__h_1be68	I	mechanical	hevc_dec	1	every call path leads to hevc_vcore_done_pic 1aa68
+1bec8	1bef8	called	hevc_vcore_done_pic__h_1bec8	I	mechanical	hevc_dec	1	every call path leads to hevc_vcore_done_pic 1aa68
+1bef8	1bf12	addr	hevc_dec__ptr_1bef8	I	mechanical	hevc_dec	0	address taken at 1b0ae
+1bf12	1bf88	called	hevc_sched_check_rdy	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_check_rdy
+1bf88	1c03a	called	hevc_sched_mark_err	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_mark_err
+1c03a	1c06c	called	sched_init_pic__h_1c03a	I	mechanical	hevc_dec	1	every call path leads to sched_init_pic 0b7be
+1c06c	1c092	called	sched_run_task__h_1c06c	I	mechanical	hevc_dec	1	every call path leads to sched_run_task 0c2da
+1c092	1c0d0	called	sched_done_pic__h_1c092	I	mechanical	hevc_dec	1	every call path leads to sched_done_pic 0baaa
+1c0d0	1c0dc	called	hevc_dec__shared_1c0d0	I	mechanical	hevc_dec	1	call paths lead to 0 named functions: 
+1c0dc	1c10c	called	sched_irq__h_1c0dc	I	mechanical	hevc_dec	1	every call path leads to sched_irq 0c526
+1c10c	1c16e	called	hevc_sched_alloc_pic	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_alloc_pic
+1c16e	1c204	called	hevc_sched_alloc_tile	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_alloc_tile
+1c204	1c2ae	called	hevc_sched_alloc_slice	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_alloc_slice
+1c2ae	1c37a	called	hevc_sched_alloc_wp	R	func_string	hevc_dec	1	__func__ string(s): hevc_sched_alloc_wp
+1c37a	1c418	called	hevc_sched_alloc_substream	R	func_string	hevc_dec	2	__func__ string(s): hevc_sched_alloc_substream
+1c418	1c41e	called	hevc_dec_gen_sub_param__h_1c418	I	mechanical	hevc_dec	1	every call path leads to hevc_dec_gen_sub_param 145b4
+1c41e	1c424	called	hevc_dec_gen_sub_param__h_1c41e	I	mechanical	hevc_dec	2	every call path leads to hevc_dec_gen_sub_param 145b4
+1c424	1c42a	called	hevc_dec_gen_sub_param__h_1c424	I	mechanical	hevc_dec	2	every call path leads to hevc_dec_gen_sub_param 145b4
+1c42a	1c430	called	hevc_dec__shared_1c42a	I	mechanical	hevc_dec	8	call paths lead to 8 named functions: hevc_dec_pic,hevc_init_seq,hevc_parser_done_pic,hevc_parser_init_pic,parser_generate_segment,parser_
+1c430	1c4ce	called	hevc_sched_get_tile	R	func_string	hevc_dec	4	__func__ string(s): hevc_sched_get_tile
+1c4ce	1c528	called	hevc_sched_get_slice	R	func_string	hevc_dec	5	__func__ string(s): hevc_sched_get_slice
+1c528	1c584	called	hevc_sched_get_substream	R	func_string	hevc_dec	3	__func__ string(s): hevc_sched_get_substream
+1c584	1c622	called	hevc_sched_get_segment	R	func_string	hevc_dec	2	__func__ string(s): hevc_sched_get_segment
+1c622	1c6a4	called	pool_init	R	func_string	hevc_dec	1	__func__ string(s): pool_init
+1c6a4	1c6f2	called	pool_sps_reset	R	func_string	hevc_dec	1	__func__ string(s): pool_sps_reset
+1c6f2	1c7b6	called	pool_alloc_sps	R	func_string	hevc_dec	1	__func__ string(s): pool_alloc_sps
+1c7b6	1c804	called	pool_pps_reset	R	func_string	hevc_dec	1	__func__ string(s): pool_pps_reset
+1c804	1c8cc	called	pool_alloc_pps	R	func_string	hevc_dec	1	__func__ string(s): pool_alloc_pps
+1c8cc	1c91c	called	pool_slist_reset	R	func_string	hevc_dec	1	__func__ string(s): pool_slist_reset
+1c91c	1c9be	called	pool_alloc_slist	R	func_string	hevc_dec	2	__func__ string(s): pool_alloc_slist
+1c9be	1ca3e	called	pool_touch_sps	R	func_string	hevc_dec	2	__func__ string(s): pool_touch_sps
+1ca3e	1ca6a	called	hevc_touch_pps__h_1ca3e	I	mechanical	hevc_dec	2	every call path leads to hevc_touch_pps 16b1e
+1ca6a	1ca86	called	hevc_dec__shared_1ca6a	I	mechanical	hevc_dec	4	call paths lead to 3 named functions: hevc_dec_gen_pic_param,hevc_touch_pps,hevc_touch_sps
+1ca86	1cb02	called	pool_release_sps	R	func_string	hevc_dec	1	__func__ string(s): pool_release_sps
+1cb02	1cb80	called	pool_release_pps	R	func_string	hevc_dec	1	__func__ string(s): pool_release_pps
+1cb80	1cbf2	called	pool_release_slist	R	func_string	avc_dec	5	__func__ string(s): pool_release_slist
+1cbf2	1cc60	called	exec_codec_cmd__h_1cbf2	I	mechanical	avc_dec	1	every call path leads to exec_codec_cmd 04cee
+1cc60	1cc98	called	exec_codec_cmd__h_1cc60	I	mechanical	avc_dec	1	every call path leads to exec_codec_cmd 04cee
+1cc98	1cd60	called	exec_codec_cmd__h_1cc98	I	mechanical	avc_dec	1	every call path leads to exec_codec_cmd 04cee
+1cd60	1cfae	called	avc_dec__shared_1cd60	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1cfae	1d024	called	exec_codec_cmd__h_1cfae	I	mechanical	avc_dec	1	every call path leads to exec_codec_cmd 04cee
+1d024	1d0fc	called	avc_dec__shared_1d024	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1d0fc	1d25e	called	avc_dec__shared_1d0fc	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1d25e	1d268	called	avc_dec__shared_1d25e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1d268	1d2ca	called	avc_dec_activate_first_sps__h_1d268	I	mechanical	avc_dec	2	every call path leads to avc_dec_activate_first_sps 231c4
+1d2ca	1d2e0	called	sched_init_pic__h_1d2ca	I	mechanical	avc_dec	1	every call path leads to sched_init_pic 0b7be
+1d2e0	1d91a	called	avc_dec__shared_1d2e0	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1d91a	1d9a0	called	avc_dec__shared_1d91a	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1d9a0	1da54	called	avc_dec__shared_1d9a0	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1da54	1dd78	called	avc_dec__shared_1da54	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1dd78	1dde0	called	avc_dec__shared_1dd78	I	mechanical	avc_dec	2	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1dde0	1e20e	called	avc_dec__shared_1dde0	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1e20e	1ec4c	called	avc_dec_activate_first_sps__h_1e20e	I	mechanical	avc_dec	4	every call path leads to avc_dec_activate_first_sps 231c4
+1ec4c	1ee84	called	avc_dec__shared_1ec4c	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+1ee84	1ef48	called	avc_dec__shared_1ee84	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1ef48	1efc0	called	avc_dec__shared_1ef48	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1efc0	1f088	called	avc_dec__shared_1efc0	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+1f088	1f0dc	called	avc_dec__shared_1f088	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f0dc	1f1bc	called	avc_dec__shared_1f0dc	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1f1bc	1f210	called	avc_dec__shared_1f1bc	I	mechanical	avc_dec	2	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1f210	1f2ca	called	avc_dec__shared_1f210	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+1f2ca	1f346	called	avc_dec__shared_1f2ca	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f346	1f45c	called	avc_dec__shared_1f346	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f45c	1f48c	called	avc_dec__shared_1f45c	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+1f48c	1f4f4	called	avc_dec__shared_1f48c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f4f4	1f54a	called	avc_dec__shared_1f4f4	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f54a	1f5d0	called	avc_dec__shared_1f54a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f5d0	1f65c	called	avc_dec__shared_1f5d0	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f65c	1f6a8	called	avc_dec__shared_1f65c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f6a8	1f6ee	called	avc_dec__shared_1f6a8	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f6ee	1f738	called	avc_dec__shared_1f6ee	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f738	1f780	called	avc_dec__shared_1f738	I	mechanical	avc_dec	4	call paths lead to 0 named functions: 
+1f780	1f812	called	avc_dec__shared_1f780	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f812	1f8ac	called	avc_dec__shared_1f812	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f8ac	1f964	called	avc_dec__shared_1f8ac	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1f964	1fa00	called	avc_dec__shared_1f964	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1fa00	1faea	called	avc_dec__shared_1fa00	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1faea	1fb20	called	avc_dec__shared_1faea	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1fb20	1fe50	called	avc_dec__shared_1fb20	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+1fe50	20168	called	avc_dec__shared_1fe50	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20168	201b4	called	avc_dec__shared_20168	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+201b4	20270	called	avc_dec__shared_201b4	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20270	20310	called	avc_dec__shared_20270	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20310	203dc	called	avc_dec__shared_20310	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+203dc	2043a	called	avc_dec__shared_203dc	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2043a	20480	called	avc_dec__shared_2043a	I	mechanical	avc_dec	3	call paths lead to 0 named functions: 
+20480	204d6	called	avc_dec__shared_20480	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+204d6	204f8	called	avc_dec__shared_204d6	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+204f8	20584	called	avc_dec__shared_204f8	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20584	205c2	called	avc_dec__shared_20584	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+205c2	205ee	called	avc_dec_activate_first_sps__h_205c2	I	mechanical	avc_dec	1	every call path leads to avc_dec_activate_first_sps 231c4
+205ee	20610	called	avc_dec__shared_205ee	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20610	20690	called	avc_dec__shared_20610	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20690	206ce	called	avc_dec__shared_20690	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+206ce	206fa	called	avc_dec__shared_206ce	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+206fa	2071c	called	avc_dec__shared_206fa	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2071c	20782	called	avc_dec__shared_2071c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20782	207be	called	sched_done_pic__h_20782	I	mechanical	avc_dec	3	every call path leads to sched_done_pic 0baaa
+207be	207e6	orphan	avc_dec__unused_207be	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+207e6	2082e	called	avc_dec__shared_207e6	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+2082e	20926	called	avc_dec__shared_2082e	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20926	20936	called	avc_dec__shared_20926	I	mechanical	avc_dec	4	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20936	209b8	called	avc_dec_activate_first_sps__h_20936	I	mechanical	avc_dec	2	every call path leads to avc_dec_activate_first_sps 231c4
+209b8	20a3e	called	avc_dec_find_more_vcl_nal__h_209b8	I	mechanical	avc_dec	1	every call path leads to avc_dec_find_more_vcl_nal 235e2
+20a3e	20a4a	called	avc_dec__shared_20a3e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20a4a	20b0a	called	avc_dec__shared_20a4a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20b0a	20b78	called	avc_dec__shared_20b0a	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20b78	20b88	called	avc_dec__shared_20b78	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+20b88	20c00	called	avc_dec__shared_20b88	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20c00	20c0c	called	avc_dec__shared_20c00	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20c0c	20cd2	called	avc_dec__shared_20c0c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20cd2	20dc4	called	avc_dec__shared_20cd2	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+20dc4	20e1a	called	avc_dec__shared_20dc4	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20e1a	20e4e	called	avc_dec__shared_20e1a	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+20e4e	20e8a	called	avc_dec__shared_20e4e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20e8a	20eb0	called	avc_dec__shared_20e8a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20eb0	20ef4	called	avc_dec__shared_20eb0	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+20ef4	20f14	called	avc_dec__shared_20ef4	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20f14	20f60	called	avc_dec__shared_20f14	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+20f60	20f8e	called	avc_dec__shared_20f60	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+20f8e	2100e	called	avc_dec__shared_20f8e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2100e	210ea	called	avc_dec__shared_2100e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+210ea	21258	called	avc_dec__shared_210ea	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+21258	2131e	called	avc_dec__shared_21258	I	mechanical	avc_dec	3	call paths lead to 0 named functions: 
+2131e	21374	called	avc_dec__shared_2131e	I	mechanical	avc_dec	4	call paths lead to 0 named functions: 
+21374	213b6	called	avc_dec__shared_21374	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+213b6	2142c	called	avc_dec__shared_213b6	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2142c	2144e	called	avc_dec__shared_2142c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2144e	21834	called	avc_dec__shared_2144e	I	mechanical	avc_dec	3	call paths lead to 0 named functions: 
+21834	21934	called	avc_dec__shared_21834	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+21934	21944	called	avc_dec__shared_21934	I	mechanical	avc_dec	6	call paths lead to 2 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au
+21944	21a54	called	avc_dec__shared_21944	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+21a54	21ab4	called	avc_dec__shared_21a54	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21ab4	21d38	called	avc_dec__shared_21ab4	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21d38	21d7e	called	avc_dec__shared_21d38	I	mechanical	avc_dec	2	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21d7e	21d90	called	avc_dec__shared_21d7e	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21d90	21ddc	called	avc_dec__shared_21d90	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21ddc	21e04	called	avc_dec__shared_21ddc	I	mechanical	avc_dec	5	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21e04	21f24	called	avc_dec__shared_21e04	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21f24	21f7a	called	avc_dec__shared_21f24	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21f7a	21ffa	called	avc_dec__shared_21f7a	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+21ffa	2205a	called	avc_dec__shared_21ffa	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+2205a	221be	called	avc_dec__shared_2205a	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+221be	223ae	called	avc_dec__shared_221be	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+223ae	22560	called	avc_dec__shared_223ae	I	mechanical	avc_dec	1	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+22560	2259c	called	avc_dec__shared_22560	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2259c	22664	called	avc_dec__shared_2259c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+22664	22972	called	avc_dec__shared_22664	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+22972	22c08	called	avc_dec__shared_22972	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+22c08	22c58	called	avc_dec__shared_22c08	I	mechanical	avc_dec	4	call paths lead to 0 named functions: 
+22c58	22cca	called	avc_dec__shared_22c58	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+22cca	22d60	called	avc_dec__shared_22cca	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+22d60	231c4	called	avc_dec__shared_22d60	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+231c4	23408	called	avc_dec_activate_first_sps	R	func_string	avc_dec	1	__func__ string(s): avc_dec_activate_first_sps
+23408	235e2	called	avc_dec_find_more_au	R	func_string	avc_dec	1	__func__ string(s): avc_dec_find_more_au
+235e2	2377c	called	avc_dec_find_more_vcl_nal	R	func_string	avc_dec	3	__func__ string(s): avc_dec_find_more_vcl_nal
+2377c	2379e	called	avc_dec__shared_2377c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2379e	237b4	called	avc_dec__shared_2379e	I	mechanical	avc_dec	6	call paths lead to 2 named functions: avc_dec_activate_first_sps,avc_dec_find_more_vcl_nal
+237b4	237e0	called	avc_dec__shared_237b4	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+237e0	2383e	called	avc_dec__shared_237e0	I	mechanical	avc_dec	3	call paths lead to 3 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+2383e	2385c	called	avc_dec__shared_2383e	I	mechanical	avc_dec	6	call paths lead to 2 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au
+2385c	2388c	called	avc_dec__shared_2385c	I	mechanical	avc_dec	8	call paths lead to 2 named functions: avc_dec_activate_first_sps,avc_dec_find_more_au
+2388c	238ba	called	avc_dec__shared_2388c	I	mechanical	avc_dec	5	call paths lead to 2 named functions: avc_dec_find_more_au,avc_dec_find_more_vcl_nal
+238ba	23a04	called	sched_check_rdy__h_238ba	I	mechanical	avc_dec	1	every call path leads to sched_check_rdy 0acc2
+23a04	23aa6	called	sched_init_pic__h_23a04	I	mechanical	avc_dec	1	every call path leads to sched_init_pic 0b7be
+23aa6	23b8c	called	avc_dec__shared_23aa6	I	mechanical	avc_dec	2	call paths lead to 2 named functions: sched_irq,sched_run_task
+23b8c	23c12	called	sched_done_pic__h_23b8c	I	mechanical	avc_dec	1	every call path leads to sched_done_pic 0baaa
+23c12	23c78	called	sched_irq__h_23c12	I	mechanical	avc_dec	1	every call path leads to sched_irq 0c526
+23c78	23c84	called	avc_dec__shared_23c78	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+23c84	23eba	called	avc_dec__shared_23c84	I	mechanical	avc_dec	1	call paths lead to 2 named functions: sched_irq,sched_run_task
+23eba	23f78	called	avc_dec__shared_23eba	I	mechanical	avc_dec	1	call paths lead to 2 named functions: sched_irq,sched_run_task
+23f78	24736	called	avc_dec__shared_23f78	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+24736	248e2	called	avc_dec__shared_24736	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+248e2	2495e	called	avc_dec__shared_248e2	I	mechanical	avc_dec	4	call paths lead to 0 named functions: 
+2495e	24a06	called	avc_dec__shared_2495e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24a06	24a5e	called	avc_dec__shared_24a06	I	mechanical	avc_dec	4	call paths lead to 0 named functions: 
+24a5e	24ac6	called	avc_dec__shared_24a5e	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+24ac6	24b3a	called	avc_dec__shared_24ac6	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24b3a	24bf4	addr	avc_dec__ptr_24b3a	I	mechanical	avc_dec	0	address taken at 23e9c,24bbc,24c54
+24bf4	24d32	called	avc_dec__shared_24bf4	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24d32	24d74	called	sched_check_rdy__h_24d32	I	mechanical	avc_dec	1	every call path leads to sched_check_rdy 0acc2
+24d74	24da6	called	sched_init_pic__h_24d74	I	mechanical	avc_dec	1	every call path leads to sched_init_pic 0b7be
+24da6	24dcc	called	sched_run_task__h_24da6	I	mechanical	avc_dec	1	every call path leads to sched_run_task 0c2da
+24dcc	24e0a	called	sched_done_pic__h_24dcc	I	mechanical	avc_dec	1	every call path leads to sched_done_pic 0baaa
+24e0a	24e16	called	avc_dec__shared_24e0a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24e16	24e2e	called	sched_mark_err__h_24e16	I	mechanical	avc_dec	1	every call path leads to sched_mark_err 0b940
+24e2e	24e5e	called	sched_irq__h_24e2e	I	mechanical	avc_dec	1	every call path leads to sched_irq 0c526
+24e5e	24e7c	called	avc_dec__shared_24e5e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24e7c	24ed4	called	avc_dec_sched_alloc_substream	R	func_string	avc_dec	1	__func__ string(s): avc_dec_sched_alloc_substream
+24ed4	24f44	called	avc_dec_sched_alloc_slice	R	func_string	avc_dec	1	__func__ string(s): avc_dec_sched_alloc_slice
+24f44	24fa8	called	avc_dec_sched_alloc_wp	R	func_string	avc_dec	1	__func__ string(s): avc_dec_sched_alloc_wp
+24fa8	24fe6	called	avc_dec__shared_24fa8	I	mechanical	avc_dec	3	call paths lead to 0 named functions: 
+24fe6	24fec	called	avc_dec__shared_24fe6	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+24fec	24ff2	called	avc_dec__shared_24fec	I	mechanical	avc_dec	13	call paths lead to 2 named functions: sched_irq,sched_run_task
+24ff2	25006	called	avc_dec__shared_24ff2	I	mechanical	avc_dec	6	call paths lead to 2 named functions: sched_irq,sched_run_task
+25006	2501a	called	avc_dec__shared_25006	I	mechanical	avc_dec	5	call paths lead to 0 named functions: 
+2501a	2521e	called	avc_dec__shared_2501a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2521e	25250	called	avc_dec__shared_2521e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25250	252fc	called	avc_dec__shared_25250	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+252fc	2537c	called	avc_dec__shared_252fc	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2537c	255e8	called	avc_dec__shared_2537c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+255e8	25616	called	avc_dec__shared_255e8	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25616	2584a	called	avc_dec__shared_25616	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2584a	25882	called	avc_dec__shared_2584a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25882	2592a	called	avc_dec__shared_25882	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+2592a	25aa0	called	avc_dec__shared_2592a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25aa0	25dee	called	avc_dec__shared_25aa0	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25dee	25ed2	called	avc_dec__shared_25dee	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25ed2	25f7c	called	avc_dec__shared_25ed2	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+25f7c	26118	called	avc_dec__shared_25f7c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26118	26178	called	avc_dec__shared_26118	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26178	261a8	called	avc_dec__shared_26178	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+261a8	26200	called	avc_dec__shared_261a8	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26200	26252	addr	avc_dec__ptr_26200	I	mechanical	avc_dec	0	address taken at 2558c
+26252	2629a	called	exec_codec_cmd__h_26252	I	mechanical	avc_dec	1	every call path leads to exec_codec_cmd 04cee
+2629a	2656e	called	avc_dec__shared_2629a	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2656e	26608	called	avc_dec__shared_2656e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26608	2663c	called	avc_dec__shared_26608	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2663c	266e8	called	avc_dec__shared_2663c	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+266e8	26760	called	avc_dec__shared_266e8	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26760	267b2	called	avc_dec__shared_26760	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+267b2	26842	called	avc_dec__shared_267b2	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26842	26870	called	avc_dec__shared_26842	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26870	2688e	called	avc_dec__shared_26870	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+2688e	268a6	called	avc_dec__shared_2688e	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+268a6	268d4	called	avc_dec__shared_268a6	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+268d4	269a8	called	dec_pic_in@268d4	R	func_string	avc_dec	1	__func__ string(s): dec_pic_in
+269a8	269ca	called	avc_dec__shared_269a8	I	mechanical	avc_dec	3	call paths lead to 0 named functions: 
+269ca	269dc	called	avc_dec__shared_269ca	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+269dc	26b82	called	avc_dec__shared_269dc	I	mechanical	avc_dec	2	call paths lead to 0 named functions: 
+26b82	26bd6	called	avc_dec__shared_26b82	I	mechanical	avc_dec	1	call paths lead to 0 named functions: 
+26bd6	26c0e	orphan	avc_dec__unused_26bd6	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26c0e	26c4c	orphan	avc_dec__unused_26c0e	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26c4c	26c68	orphan	avc_dec__unused_26c4c	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26c68	26c88	orphan	avc_dec__unused_26c68	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26c88	26cb0	orphan	avc_dec__unused_26c88	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26cb0	26ccc	orphan	avc_dec__unused_26cb0	I	mechanical	avc_dec	0	no call, no address reference, no branch from other code
+26ccc	26d16	called	hevc_enc_pic__h_26ccc	I	mechanical	avc_dec	1	every call path leads to hevc_enc_pic 26fce
+26d16	26d42	called	hevc_enc_set_param__h_26d16	I	mechanical	avc_dec	1	every call path leads to hevc_enc_set_param 26e1e
+26d42	26e1e	called	create_instance__h_26d42	I	mechanical	avc_dec	1	every call path leads to create_instance 38994
+26e1e	26fce	called	hevc_enc_set_param	R	func_string	hevc_enc	2	__func__ string(s): hevc_enc_set_param
+26fce	2741a	called	hevc_enc_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_pic
+2741a	275fc	called	hevc_enc_end_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_end_pic
+275fc	2772e	called	hevc_enc_end_pic_drop	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_end_pic_drop
+2772e	27730	orphan	hevc_enc__unused_2772e	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+27730	278ee	called	pred_weight_table	R	func_string	hevc_enc	1	__func__ string(s): pred_weight_table
+278ee	27be6	called	hevc_enc_slice_header	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_slice_header
+27be6	285a2	called	enc_set_seq_info	R	func_string	hevc_enc	1	__func__ string(s): enc_set_seq_info
+285a2	28a18	called	enc_set_change_param_info	R	func_string	hevc_enc	1	__func__ string(s): enc_set_change_param_info
+28a18	28b54	called	enc_init_header	R	func_string	hevc_enc	1	__func__ string(s): enc_init_header
+28b54	28b96	called	hevc_enc_set_param__h_28b54	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_set_param 26e1e
+28b96	28bf6	called	enc_check_err_param	R	func_string	hevc_enc	1	__func__ string(s): enc_check_err_param
+28bf6	28c9a	called	enc_set_preset_gop	R	func_string	hevc_enc	1	__func__ string(s): enc_set_preset_gop
+28c9a	28d6e	called	hevc_enc_pic__h_28c9a	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_pic 26fce
+28d6e	28e3a	called	hevc_enc_pic__h_28d6e	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_pic 26fce
+28e3a	28f90	called	hevc_enc_pic__h_28e3a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_pic 26fce
+28f90	29088	called	hevc_enc_pic__h_28f90	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_pic 26fce
+29088	290be	called	hevc_enc_set_param__h_29088	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_set_param 26e1e
+290be	2911a	called	enc_set_seq_info__h_290be	I	mechanical	hevc_enc	1	every call path leads to enc_set_seq_info 27be6
+2911a	29244	called	hevc_enc__shared_2911a	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_init_header,hevc_enc_one_pic_vcpu
+29244	292bc	called	hevc_enc_slice_header__h_29244	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_slice_header 278ee
+292bc	292fa	called	hevc_enc_vcore_run_task__h_292bc	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_run_task 359b6
+292fa	29344	called	hevc_enc__shared_292fa	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_init_header,hevc_enc_one_pic_vcpu
+29344	293dc	called	hevc_enc__shared_29344	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_init_header,hevc_enc_one_pic_vcpu
+293dc	29546	called	hevc_enc__shared_293dc	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_init_header,hevc_enc_one_pic_vcpu
+29546	295d6	called	hevc_enc_ref_list_init__h_29546	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_ref_list_init 3103c
+295d6	29638	called	hevc_enc_one_pic_vcore__h_295d6	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+29638	296c8	called	hevc_enc_one_pic_vcore__h_29638	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+296c8	2970e	called	hevc_enc_one_pic_vcore__h_296c8	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_one_pic_vcore 2a172
+2970e	297b6	called	hevc_enc_one_pic_vcore__h_2970e	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+297b6	29f10	called	hevc_enc_apply_change_param	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_apply_change_param
+29f10	2a0e2	called	hevc_enc_init_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_init_pic
+2a0e2	2a172	called	hevc_enc_one_pic_vcpu	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_one_pic_vcpu
+2a172	2a238	called	hevc_enc_one_pic_vcore	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_one_pic_vcore
+2a238	2a78c	called	hevc_enc_gen_sh_param	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_gen_sh_param
+2a78c	2a7a4	called	hevc_enc_one_pic_vcore__h_2a78c	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+2a7a4	2a7ca	called	hevc_enc_vcore_run_task__h_2a7a4	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_vcore_run_task 359b6
+2a7ca	2b1c6	called	hevc_enc__shared_2a7ca	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+2b1c6	2b422	called	hevc_enc_one_pic_vcpu__h_2b1c6	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcpu 2a0e2
+2b422	2b556	called	hevc_enc_one_pic_vcpu__h_2b422	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcpu 2a0e2
+2b556	2b5f0	called	hevc_enc_mng_ref__h_2b556	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_mng_ref 327a8
+2b5f0	2b66a	called	hevc_enc_one_pic_vcore__h_2b5f0	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+2b66a	2b6fe	called	hevc_enc_one_pic_vcpu__h_2b66a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcpu 2a0e2
+2b6fe	2b8ba	called	hevc_enc__shared_2b6fe	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+2b8ba	2b93a	called	hevc_enc__shared_2b8ba	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+2b93a	2b984	called	hevc_enc_one_pic_vcpu__h_2b93a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcpu 2a0e2
+2b984	2b9e0	called	hevc_enc__shared_2b984	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+2b9e0	2ba12	called	hevc_enc_one_pic_vcore__h_2b9e0	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_one_pic_vcore 2a172
+2ba12	2ba2a	called	round_div@2ba12	R	execution	hevc_enc	2	fits round_div(x,d) 150/150
+2ba2a	2ba5c	called	hevc_enc_gen_sh_param__h_2ba2a	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_gen_sh_param 2a238
+2ba5c	2bb3c	called	hevc_enc_gen_sh_param__h_2ba5c	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_gen_sh_param 2a238
+2bb3c	2bdae	called	hevc_enc_gen_sh_param__h_2bb3c	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_gen_sh_param 2a238
+2bdae	2be7c	called	hevc_enc_ps_init	R	func_string	hevc_enc	6	__func__ string(s): hevc_enc_ps_init
+2be7c	2bf1c	called	ps_done	R	func_string	hevc_enc	4	__func__ string(s): ps_done
+2bf1c	2bfa0	called	hevc_enc__shared_2bf1c	I	mechanical	hevc_enc	8	call paths lead to 5 named functions: enc_put_bits,h265_write_sei,hevc_gen_pps,hevc_gen_sps,hevc_gen_vps
+2bfa0	2c01e	called	enc_put_bits	I	hand	hevc_enc	91	(value, nbits); every HEVC header writer calls it
+2c01e	2c04a	called	enc_put_ue	R	hand	hevc_enc	43	exp-Golomb: n = bit length of v+1, put_bits(0, n-1), put_bits(v+1, n)
+2c04a	2c066	called	hevc_gen_pps__h_2c04a	I	mechanical	hevc_enc	5	every call path leads to hevc_gen_pps 2c464
+2c066	2c08a	called	hevc_enc__shared_2c066	I	mechanical	hevc_enc	4	call paths lead to 5 named functions: hevc_gen_pps,hevc_gen_sps,hevc_gen_vps,write_sei_buffering_period,write_sei_pic_timing
+2c08a	2c094	called	h265_write_sei__h_2c08a	I	mechanical	hevc_enc	2	every call path leads to h265_write_sei 2d28c
+2c094	2c1f4	called	hevc_gen_vps	R	func_string	hevc_enc	1	__func__ string(s): hevc_gen_vps
+2c1f4	2c464	called	hevc_gen_sps	R	func_string	hevc_enc	1	__func__ string(s): hevc_gen_sps
+2c464	2c638	called	hevc_gen_pps	R	func_string	hevc_enc	1	__func__ string(s): hevc_gen_pps
+2c638	2c684	called	hevc_enc__shared_2c638	I	mechanical	hevc_enc	4	call paths lead to 4 named functions: h265_write_sei,hevc_gen_pps,hevc_gen_sps,hevc_gen_vps
+2c684	2c724	called	hevc_enc_gen_ptl__h_2c684	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_gen_ptl 2c724
+2c724	2c7b0	called	hevc_enc_gen_ptl	R	func_string	hevc_enc	2	__func__ string(s): hevc_enc_gen_ptl
+2c7b0	2c8b4	called	hevc_gen_profile_tier	R	func_string	hevc_enc	1	__func__ string(s): hevc_gen_profile_tier
+2c8b4	2c8c2	called	enc_put_flag	R	hand	hevc_enc	32	put_bits(v, 1)
+2c8c2	2c8d8	called	enc_put_u	R	hand	hevc_enc	41	(nbits, v) -> put_bits(v, nbits)
+2c8d8	2c8e4	called	enc_put_ue_w	R	hand	hevc_enc	25	wrapper of enc_put_ue
+2c8e4	2c90a	called	hevc_encode_vui__h_2c8e4	I	mechanical	hevc_enc	2	every call path leads to hevc_encode_vui 2cc56
+2c90a	2c922	called	write_hrd_parameters__h_2c90a	I	mechanical	hevc_enc	2	every call path leads to write_hrd_parameters 2c930
+2c922	2c930	called	hevc_enc__shared_2c922	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: write_sei_buffering_period,write_sei_pic_timing
+2c930	2cc56	called	write_hrd_parameters	R	func_string	hevc_enc	1	__func__ string(s): au_cpb_removal_delay_length_minus1, bit_rate_du_value_minus1, bit_rate_scale, bit_rate_value_minus1, cbr_flag, cpb_size_
+2cc56	2cfbc	called	hevc_encode_vui	R	func_string	hevc_enc	1	__func__ string(s): aspect_ratio_idc, aspect_ratio_info_present_flag, b_overscan_appropriate_flag, bitstream_restriction_flag, chroma_loc_in
+2cfbc	2d158	called	write_sei_buffering_period	R	func_string	hevc_enc	2	__func__ string(s): au_cpb_removal_delay_delta_minus1, concatenation_flag, cpb_delay_offset, dpb_delay_offset, irap_cpb_params_present_flag,
+2d158	2d28c	called	write_sei_pic_timing	R	func_string	hevc_enc	2	__func__ string(s): duplicate_flag, pic_struct, source_scan_type, write_sei_pic_timing
+2d28c	2d43c	called	h265_write_sei	R	func_string	hevc_enc	1	__func__ string(s): h265_write_sei
+2d43c	2d4f6	called	hevc_set_spp_buf	R	func_string	hevc_enc	1	__func__ string(s): hevc_set_spp_buf
+2d4f6	2d532	called	queue_init	R	func_string	hevc_enc	4	__func__ string(s): queue_init
+2d532	2d576	called	queue_put	R	func_string	hevc_enc	4	__func__ string(s): queue_put
+2d576	2d5c8	called	queue_get	R	func_string	hevc_enc	4	__func__ string(s): queue_get
+2d5c8	2d648	called	calc_qp_from_bpp	R	func_string	hevc_enc	5	__func__ string(s): calc_qp_from_bpp
+2d648	2d6ca	called	calc_bpp_from_qp	R	func_string	hevc_enc	5	__func__ string(s): calc_bpp_from_qp
+2d6ca	2d7b2	called	init_rq_model	R	func_string	hevc_enc	1	__func__ string(s): init_rq_model
+2d7b2	2d810	called	GradIQP_lookup_qp	R	func_string	hevc_enc	1	__func__ string(s): GradIQP_lookup_qp
+2d810	2dc12	called	GradIQP_init_rq_model	R	func_string	hevc_enc	1	__func__ string(s): GradIQP_init_rq_model
+2dc12	2dcc6	called	GradIQP_calc_qp_from_bpp__h_2dc12	I	mechanical	hevc_enc	1	every call path leads to GradIQP_calc_qp_from_bpp 2dcc6
+2dcc6	2de32	called	GradIQP_calc_qp_from_bpp	R	func_string	hevc_enc	1	__func__ string(s): GradIQP_calc_qp_from_bpp
+2de32	2df4a	called	GradIQP_calc_bpp_from_qp	R	func_string	hevc_enc	2	__func__ string(s): GradIQP_calc_bpp_from_qp
+2df4a	2e08a	called	GradIQP_update_cond	R	func_string	hevc_enc	1	__func__ string(s): GradIQP_update_cond
+2e08a	2e08e	orphan	hevc_enc__unused_2e08a	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+2e08e	2e742	called	alloc_gop_bit	R	func_string	hevc_enc	1	__func__ string(s): alloc_gop_bit
+2e742	2e95c	called	update_rq_model	R	func_string	hevc_enc	2	__func__ string(s): update_rq_model
+2e95c	2e9d8	called	init_rc_buf	R	func_string	hevc_enc	1	__func__ string(s): init_rc_buf
+2e9d8	2eb16	called	update_rc_buf	R	func_string	hevc_enc	2	__func__ string(s): update_rc_buf
+2eb16	2ef1c	called	alloc_pic_bit	R	func_string	hevc_enc	1	__func__ string(s): alloc_pic_bit
+2ef1c	2f02c	called	hevc_enc_rc_pic_init__h_2ef1c	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_rc_pic_init 2ff04
+2f02c	2f110	called	hevc_enc_rc_init	R	func_string	hevc_enc	3	__func__ string(s): hevc_enc_rc_init
+2f110	2f750	called	hevc_enc_rc_seq_init	R	func_string	hevc_enc	3	__func__ string(s): hevc_enc_rc_seq_init
+2f750	2fb0a	called	init_rc_clip	R	func_string	hevc_enc	1	__func__ string(s): init_rc_clip
+2fb0a	2fb10	called	hevc_enc_rc_pic_init__h_2fb0a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_rc_pic_init 2ff04
+2fb10	2fb44	called	hevc_enc__shared_2fb10	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: hevc_enc_rc_pic_adjust_qp,hevc_enc_rc_pic_init
+2fb44	2ff04	called	update_rc_clip	R	func_string	hevc_enc	2	__func__ string(s): update_rc_clip
+2ff04	305ce	called	hevc_enc_rc_pic_init	R	func_string	hevc_enc	2	__func__ string(s): hevc_enc_rc_pic_init
+305ce	3065a	called	estimate_bit_from_bin	R	func_string	hevc_enc	1	__func__ string(s): estimate_bit_from_bin
+3065a	307ee	called	update_bit_estimator	R	func_string	hevc_enc	1	__func__ string(s): update_bit_estimator
+307ee	30850	called	calc_bit_error	R	func_string	hevc_enc	1	__func__ string(s): calc_bit_error
+30850	309a2	called	hevc_enc_rc_pic_end	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_rc_pic_end
+309a2	30b8c	called	hevc_enc_rc_pic_adjust_qp	R	func_string	hevc_enc	4	__func__ string(s): hevc_enc_rc_pic_adjust_qp
+30b8c	30e08	called	hevc_enc_rps_init	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_rps_init
+30e08	30ea8	called	hevc_enc_ref_add	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_add
+30ea8	30fa4	called	hevc_enc_ref_mark	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_mark
+30fa4	3103c	called	hevc_enc_ref_flush	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_flush
+3103c	3149a	called	hevc_enc_ref_list_init	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_list_init
+3149a	31572	called	hevc_enc_ref_remove	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_remove
+31572	315ee	called	hevc_enc_ref_get_ref_idc	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_ref_get_ref_idc
+315ee	31674	called	hevc_enc_ref_find_idx	R	func_string	hevc_enc	3	__func__ string(s): hevc_enc_ref_find_idx
+31674	31726	called	copy_st_rps	R	func_string	hevc_enc	1	__func__ string(s): copy_st_rps
+31726	31916	called	hevc_enc__shared_31726	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: hevc_enc_pic,hevc_enc_set_param
+31916	31a94	called	hevc_gen_short_term_ref_pic_set	R	func_string	hevc_enc	2	__func__ string(s): hevc_gen_short_term_ref_pic_set
+31a94	31f8e	called	hevc_enc_gen_rps	R	func_string	hevc_enc	2	__func__ string(s): hevc_enc_gen_rps
+31f8e	31fe6	called	hevc_enc_rps_init_value	R	func_string	hevc_enc	2	__func__ string(s): hevc_enc_rps_init_value
+31fe6	322fc	called	hevc_enc_gen_dpb_param	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_gen_dpb_param
+322fc	32372	called	hevc_enc_gen_dpb_param__h_322fc	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_gen_dpb_param 31fe6
+32372	3249e	called	hevc_set_st_rps	R	func_string	hevc_enc	3	__func__ string(s): hevc_set_st_rps
+3249e	327a8	called	hevc_set_st_rps_inter_rps_pred	R	func_string	hevc_enc	1	__func__ string(s): hevc_set_st_rps_inter_rps_pred
+327a8	328b4	called	hevc_enc_mng_ref	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_mng_ref
+328b4	32a82	called	hevc_enc_get_rps_idx	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_get_rps_idx
+32a82	32abc	called	hevc_enc__shared_32a82	I	mechanical	hevc_enc	5	call paths lead to 5 named functions: __divsf3,__eqsf2,__floatsisf,__mulsf3
+32abc	32ada	called	__divsf3__h_32abc	I	mechanical	hevc_enc	2	every call path leads to __divsf3 3360e
+32ada	32afa	called	__divsf3__h_32ada	I	mechanical	hevc_enc	2	every call path leads to __divsf3 3360e
+32afa	32b42	called	hevc_enc__shared_32afa	I	mechanical	hevc_enc	3	call paths lead to 2 named functions: __divsf3,__mulsf3
+32b42	32bec	called	__divsf3__h_32b42	I	mechanical	hevc_enc	1	every call path leads to __divsf3 3360e
+32bec	32c1a	called	clz32@32bec	R	execution	hevc_enc	2	fits clz32 (a!=0) 150/150
+32c1a	32c2c	called	hevc_enc__shared_32c1a	I	mechanical	hevc_enc	18	call paths lead to 6 named functions: __divsf3,__eqsf2,__fixsfsi,__floatsisf,__mulsf3
+32c2c	32c3e	called	hevc_enc__shared_32c2c	I	mechanical	hevc_enc	2	call paths lead to 4 named functions: __divsf3,__eqsf2,__mulsf3
+32c3e	32c66	called	hevc_enc__shared_32c3e	I	mechanical	hevc_enc	8	call paths lead to 4 named functions: __divsf3,__eqsf2,__mulsf3
+32c66	32cf4	called	hevc_enc__shared_32c66	I	mechanical	hevc_enc	5	call paths lead to 4 named functions: __divsf3,__eqsf2,__mulsf3
+32cf4	32cfc	called	hevc_enc__shared_32cf4	I	mechanical	hevc_enc	24	call paths lead to 5 named functions: __divsf3,__eqsf2,__fixsfsi,__mulsf3
+32cfc	32d08	called	hevc_enc__shared_32cfc	I	mechanical	hevc_enc	23	call paths lead to 5 named functions: __divsf3,__eqsf2,__fixsfsi,__mulsf3
+32d08	32d12	called	hevc_enc__shared_32d08	I	mechanical	hevc_enc	20	call paths lead to 4 named functions: __divsf3,__eqsf2,__fixsfsi,__mulsf3
+32d12	32d36	called	hevc_enc__shared_32d12	I	mechanical	hevc_enc	4	call paths lead to 2 named functions: __divsf3,__mulsf3
+32d36	32d48	called	hevc_enc__shared_32d36	I	mechanical	hevc_enc	10	call paths lead to 5 named functions: __divsf3,__eqsf2,__floatsisf,__mulsf3
+32d48	32e74	called	hevc_enc__shared_32d48	I	mechanical	hevc_enc	4	call paths lead to 5 named functions: __divsf3,__eqsf2,__floatsisf,__mulsf3
+32e74	32ea0	called	hevc_enc__shared_32e74	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: __eqsf2,__floatsisf
+32ea0	32ee6	orphan	__floatsisf@32ea0	R	execution	hevc_enc	0	fits __floatsisf 150/150
+32ee6	32fd6	orphan	hevc_enc__unused_32ee6	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+32fd6	3308c	orphan	__fixsfsi@32fd6	R	execution	hevc_enc	0	fits __fixsfsi 150/150; __fixunssfsi 150/150
+3308c	331c6	orphan	hevc_enc__unused_3308c	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+331c6	332e2	called	__eqsf2__h_331c6	I	mechanical	hevc_enc	2	every call path leads to __eqsf2 3346c
+332e2	3342e	called	__eqsf2@332e2	R	execution	hevc_enc	2	fits __eqsf2/__nesf2 (0 iff ==) 150/150
+3342e	3346c	orphan	hevc_enc__unused_3342e	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+3346c	334aa	orphan	__eqsf2@3346c	R	execution	hevc_enc	0	fits __eqsf2/__nesf2 (0 iff ==) 150/150
+334aa	3360e	orphan	__mulsf3	R	execution	hevc_enc	0	fits __mulsf3 150/150
+3360e	337c2	orphan	__divsf3	R	execution	hevc_enc	0	fits __divsf3 150/150
+337c2	3382e	orphan	hevc_enc__unused_337c2	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+3382e	338be	orphan	hevc_enc__unused_3382e	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+338be	3394a	orphan	hevc_enc__unused_338be	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+3394a	339aa	orphan	hevc_enc__unused_3394a	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+339aa	33a46	orphan	hevc_enc__unused_339aa	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+33a46	33ade	orphan	hevc_enc__unused_33a46	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+33ade	33afc	called	hevc_enc__shared_33ade	I	mechanical	hevc_enc	3	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+33afc	33b1a	called	sched_check_rdy__h_33afc	I	mechanical	hevc_enc	1	every call path leads to sched_check_rdy 0acc2
+33b1a	33b4c	called	sched_init_pic__h_33b1a	I	mechanical	hevc_enc	1	every call path leads to sched_init_pic 0b7be
+33b4c	33b7e	called	sched_run_task__h_33b4c	I	mechanical	hevc_enc	1	every call path leads to sched_run_task 0c2da
+33b7e	33bb2	called	sched_done_pic__h_33b7e	I	mechanical	hevc_enc	1	every call path leads to sched_done_pic 0baaa
+33bb2	33c64	orphan	hevc_enc_sched_mark_err	R	func_string	hevc_enc	0	__func__ string(s): hevc_enc_sched_mark_err
+33c64	33c94	called	sched_irq__h_33c64	I	mechanical	hevc_enc	1	every call path leads to sched_irq 0c526
+33c94	33ca0	called	hevc_enc__shared_33c94	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+33ca0	33ca4	orphan	hevc_enc__unused_33ca0	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+33ca4	33ce8	called	hevc_enc__shared_33ca4	I	mechanical	hevc_enc	1	call paths lead to 2 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic
+33ce8	33d04	called	hevc_enc__shared_33ce8	I	mechanical	hevc_enc	1	call paths lead to 2 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic
+33d04	33d16	called	hevc_enc__shared_33d04	I	mechanical	hevc_enc	1	call paths lead to 2 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic
+33d16	33d4e	called	hevc_enc__shared_33d16	I	mechanical	hevc_enc	1	call paths lead to 2 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic
+33d4e	33db4	called	hevc_enc__shared_33d4e	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: hevc_enc_encoder_run_task,hevc_enc_packer_done_pic
+33db4	33ffa	called	hevc_enc_encoder_init_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_encoder_init_pic
+33ffa	343a0	called	hevc_enc_encoder_run_task	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_encoder_run_task
+343a0	3463a	called	hevc_enc_packer_done_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_packer_done_pic
+3463a	3466a	called	hevc_enc__shared_3463a	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+3466a	349e8	called	init_pic@3466a	R	func_string	hevc_enc	1	__func__ string(s): init_pic
+349e8	34c98	called	run_tile	R	func_string	hevc_enc	1	__func__ string(s): run_tile
+34c98	34d06	called	hevc_enc_encoder_run_task__h_34c98	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_encoder_run_task 33ffa
+34d06	34e52	called	encoder_done	R	func_string	hevc_enc	1	__func__ string(s): encoder_done
+34e52	35046	called	encoder_empty	R	func_string	hevc_enc	2	__func__ string(s): encoder_empty
+35046	3504a	orphan	hevc_enc__unused_35046	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+3504a	3504c	orphan	hevc_enc__unused_3504a	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+3504c	35050	orphan	hevc_enc__unused_3504c	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+35050	35054	orphan	hevc_enc__unused_35050	I	mechanical	hevc_enc	0	no call, no address reference, no branch from other code
+35054	35272	called	hevc_enc_vcore_done_pic__h_35054	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_done_pic 35d40
+35272	352ba	called	hevc_enc__shared_35272	I	mechanical	hevc_enc	4	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+352ba	355e2	called	hevc_enc__shared_352ba	I	mechanical	hevc_enc	1	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+355e2	35890	called	hevc_enc_vcore_prepare_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcore_prepare_pic
+35890	359b6	called	hevc_enc_vcore_init_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcore_init_pic
+359b6	35d40	called	hevc_enc_vcore_run_task	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcore_run_task
+35d40	3641c	called	hevc_enc_vcore_done_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcore_done_pic
+3641c	36644	called	init_pic__h_3641c	I	mechanical	hevc_enc	1	every call path leads to init_pic 366e0
+36644	366e0	called	init_pic__h_36644	I	mechanical	hevc_enc	1	every call path leads to init_pic 366e0
+366e0	36b86	called	init_pic@366e0	R	func_string	hevc_enc	1	__func__ string(s): init_pic
+36b86	36c86	called	init_pic__h_36b86	I	mechanical	hevc_enc	1	every call path leads to init_pic 366e0
+36c86	37e1a	called	init_pic__h_36c86	I	mechanical	hevc_enc	1	every call path leads to init_pic 366e0
+37e1a	37ea2	called	hevc_enc_vcore_done_pic__h_37e1a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_done_pic 35d40
+37ea2	37ee6	called	hevc_enc_vcore_done_pic__h_37ea2	I	mechanical	hevc_enc	2	every call path leads to hevc_enc_vcore_done_pic 35d40
+37ee6	37f0a	called	hevc_enc_vcore_run_task__h_37ee6	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_run_task 359b6
+37f0a	37f72	called	hevc_enc_vcore_done_pic__h_37f0a	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_done_pic 35d40
+37f72	37fa2	called	hevc_enc_vcore_done_pic__h_37f72	I	mechanical	hevc_enc	1	every call path leads to hevc_enc_vcore_done_pic 35d40
+37fa2	37ff4	called	init_pic__h_37fa2	I	mechanical	hevc_enc	1	every call path leads to init_pic 366e0
+37ff4	380e8	called	hevc_enc_vcore_irq	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcore_irq
+380e8	38132	called	hevc_enc__shared_380e8	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_set_change_param_info,enc_set_seq_info
+38132	381fe	orphan	gen_ms_avail	R	func_string	hevc_enc	0	__func__ string(s): gen_ms_avail
+381fe	382a8	called	get_num_vcore	R	func_string	hevc_enc	1	__func__ string(s): get_num_vcore
+382a8	38374	called	hevc_enc_set_shm_param	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_set_shm_param
+38374	383b0	called	exec_codec_cmd__h_38374	I	mechanical	hevc_enc	1	every call path leads to exec_codec_cmd 04cee
+383b0	38772	called	hevc_enc_vcpu_report	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcpu_report
+38772	3880c	called	hevc_enc__shared_38772	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+3880c	38990	called	hevc_enc_vcpu_init_pic	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_vcpu_init_pic
+38990	38994	called	hevc_enc__shared_38990	I	mechanical	hevc_enc	1	call paths lead to 0 named functions: 
+38994	38a8a	called	create_instance@38994	R	func_string	hevc_enc	1	__func__ string(s): create_instance
+38a8a	38c30	called	set_param	R	func_string	hevc_enc	1	__func__ string(s): set_param
+38c30	38dc4	called	enc_pic_cmd	R	func_string	hevc_enc	1	__func__ string(s): enc_pic_cmd
+38dc4	38e8a	called	destroy_instance@38dc4	R	func_string	hevc_enc	1	__func__ string(s): destroy_instance
+38e8a	38f02	called	create_instance_in	R	func_string	hevc_enc	1	__func__ string(s): create_instance_in
+38f02	38fac	called	set_param_in	R	func_string	hevc_enc	2	__func__ string(s): set_param_in
+38fac	39164	called	enc_pic_in@38fac	R	func_string	hevc_enc	1	__func__ string(s): enc_pic_in
+39164	391da	called	common_report	R	func_string	hevc_enc	2	__func__ string(s): common_report
+391da	3926c	called	set_param_report	R	func_string	hevc_enc	1	__func__ string(s): set_param_report
+3926c	3938c	called	hevc_enc__shared_3926c	I	mechanical	hevc_enc	2	call paths lead to 2 named functions: enc_pic_cmd,set_param_report
+3938c	393ca	called	create_instance__h_3938c	I	mechanical	hevc_enc	1	every call path leads to create_instance 38994
+393ca	394e2	called	hevc_enc_calc_task_buf_size	R	func_string	hevc_enc	1	__func__ string(s): hevc_enc_calc_task_buf_size
+394e2	39576	called	hevc_enc_vcpu_get_resource_size	R	func_string	avc_enc	1	__func__ string(s): hevc_enc_vcpu_get_resource_size
+39576	3958c	called	exec_codec_cmd__h_39576	I	mechanical	avc_enc	2	every call path leads to exec_codec_cmd 04cee
+3958c	39612	called	exec_codec_cmd__h_3958c	I	mechanical	avc_enc	1	every call path leads to exec_codec_cmd 04cee
+39612	396d0	called	exec_codec_cmd__h_39612	I	mechanical	avc_enc	1	every call path leads to exec_codec_cmd 04cee
+396d0	397da	called	exec_codec_cmd__h_396d0	I	mechanical	avc_enc	2	every call path leads to exec_codec_cmd 04cee
+397da	39a6c	called	exec_codec_cmd__h_397da	I	mechanical	avc_enc	1	every call path leads to exec_codec_cmd 04cee
+39a6c	39aa4	called	avc_enc__shared_39a6c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+39aa4	3a136	called	avc_enc__shared_39aa4	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a136	3a1ba	called	avc_enc__shared_3a136	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a1ba	3a216	called	avc_enc__shared_3a1ba	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a216	3a24c	called	avc_enc__shared_3a216	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a24c	3a28e	called	avc_enc__shared_3a24c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a28e	3a432	called	avc_enc__shared_3a28e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a432	3a558	called	avc_enc__shared_3a432	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3a558	3a5ee	called	avc_enc__shared_3a558	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3a5ee	3a6be	called	avc_enc__shared_3a5ee	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a6be	3a7a0	called	avc_enc__shared_3a6be	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a7a0	3a89c	called	avc_enc__shared_3a7a0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3a89c	3a8b0	called	sched_run_task__h_3a89c	I	mechanical	avc_enc	1	every call path leads to sched_run_task 0c2da
+3a8b0	3a932	called	sched_run_task__h_3a8b0	I	mechanical	avc_enc	1	every call path leads to sched_run_task 0c2da
+3a932	3aa8e	called	sched_run_task__h_3a932	I	mechanical	avc_enc	1	every call path leads to sched_run_task 0c2da
+3aa8e	3ab7a	called	avc_enc__shared_3aa8e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ab7a	3abae	called	avc_enc__shared_3ab7a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3abae	3ac28	called	avc_enc__shared_3abae	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ac28	3acc8	called	avc_enc__shared_3ac28	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3acc8	3ad86	called	avc_enc__shared_3acc8	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ad86	3ada0	called	avc_enc__shared_3ad86	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ada0	3adea	called	avc_enc__shared_3ada0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3adea	3aea0	called	avc_enc__shared_3adea	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3aea0	3af58	called	avc_enc__shared_3aea0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3af58	3afbe	called	avc_enc__shared_3af58	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3afbe	3b004	called	avc_enc__shared_3afbe	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3b004	3b088	called	avc_enc__shared_3b004	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3b088	3b220	called	sched_done_pic__h_3b088	I	mechanical	avc_enc	1	every call path leads to sched_done_pic 0baaa
+3b220	3b25e	orphan	avc_enc__unused_3b220	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+3b25e	3b564	called	avc_enc__shared_3b25e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3b564	3b5ae	called	avc_enc__shared_3b564	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3b5ae	3b646	called	avc_enc__shared_3b5ae	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3b646	3b7b0	called	avc_enc__shared_3b646	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3b7b0	3b7b2	called	avc_enc__shared_3b7b0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3b7b2	3b804	called	avc_enc__shared_3b7b2	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3b804	3b88e	called	avc_enc__shared_3b804	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3b88e	3b8d4	called	avc_enc__shared_3b88e	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3b8d4	3b97c	orphan	avc_enc__unused_3b8d4	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+3b97c	3bf5a	called	avc_enc__shared_3b97c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3bf5a	3bf64	called	avc_enc__shared_3bf5a	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3bf64	3c08c	called	avc_enc__shared_3bf64	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c08c	3c0cc	called	avc_enc__shared_3c08c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c0cc	3c236	called	avc_enc__shared_3c0cc	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c236	3c272	called	avc_enc__shared_3c236	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c272	3c28a	called	avc_enc__shared_3c272	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c28a	3c6e6	called	avc_enc__shared_3c28a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3c6e6	3cf04	called	avc_enc__shared_3c6e6	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3cf04	3d176	called	avc_enc__shared_3cf04	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d176	3d20c	called	avc_enc__shared_3d176	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d20c	3d3c4	called	avc_enc__shared_3d20c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d3c4	3d440	called	avc_enc__shared_3d3c4	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d440	3d47a	called	avc_enc__shared_3d440	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d47a	3d4d2	called	avc_enc__shared_3d47a	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3d4d2	3d594	called	avc_enc__shared_3d4d2	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d594	3d6e2	called	avc_enc__shared_3d594	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d6e2	3d712	called	avc_enc__shared_3d6e2	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3d712	3d7c6	called	avc_enc__shared_3d712	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3d7c6	3da7c	called	avc_enc__shared_3d7c6	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3da7c	3da94	called	round_div@3da7c	R	execution	avc_enc	2	fits round_div(x,d) 150/150
+3da94	3daaa	called	avc_enc__shared_3da94	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3daaa	3db5c	called	avc_enc__shared_3daaa	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3db5c	3db68	called	sched_run_task__h_3db5c	I	mechanical	avc_enc	1	every call path leads to sched_run_task 0c2da
+3db68	3dbb2	called	sched_init_pic__h_3db68	I	mechanical	avc_enc	7	every call path leads to sched_init_pic 0b7be
+3dbb2	3dbce	called	sched_init_pic__h_3dbb2	I	mechanical	avc_enc	6	every call path leads to sched_init_pic 0b7be
+3dbce	3dc52	called	avc_enc__shared_3dbce	I	mechanical	avc_enc	11	call paths lead to 2 named functions: avc_put_bits,sched_init_pic
+3dc52	3dcd0	called	avc_put_bits	I	hand	avc_enc	68	same shape as enc_put_bits 0x2bfa0 (calls a writer and __ashldi3), AVC encoder
+3dcd0	3dcfc	called	avc_put_ue	I	hand	avc_enc	34	same shape as enc_put_ue 0x2c01e over avc_put_bits
+3dcfc	3dd18	called	avc_enc__shared_3dcfc	I	mechanical	avc_enc	4	call paths lead to 0 named functions: 
+3dd18	3dd3c	called	sched_init_pic__h_3dd18	I	mechanical	avc_enc	8	every call path leads to sched_init_pic 0b7be
+3dd3c	3dd46	called	sched_init_pic__h_3dd3c	I	mechanical	avc_enc	3	every call path leads to sched_init_pic 0b7be
+3dd46	3dd54	called	avc_enc__shared_3dd46	I	mechanical	avc_enc	18	call paths lead to 0 named functions: 
+3dd54	3dd62	called	sched_init_pic__h_3dd54	I	mechanical	avc_enc	24	every call path leads to sched_init_pic 0b7be
+3dd62	3dd6e	called	sched_init_pic__h_3dd62	I	mechanical	avc_enc	10	every call path leads to sched_init_pic 0b7be
+3dd6e	3dd94	called	avc_enc__shared_3dd6e	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3dd94	3dda0	called	sched_init_pic__h_3dd94	I	mechanical	avc_enc	3	every call path leads to sched_init_pic 0b7be
+3dda0	3dfdc	called	avc_enc__shared_3dda0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3dfdc	3e03a	called	sched_init_pic__h_3dfdc	I	mechanical	avc_enc	2	every call path leads to sched_init_pic 0b7be
+3e03a	3e0ae	called	sched_init_pic__h_3e03a	I	mechanical	avc_enc	2	every call path leads to sched_init_pic 0b7be
+3e0ae	3e13a	called	sched_init_pic__h_3e0ae	I	mechanical	avc_enc	1	every call path leads to sched_init_pic 0b7be
+3e13a	3e2e0	called	avc_enc__shared_3e13a	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3e2e0	3e356	orphan	avc_enc__unused_3e2e0	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+3e356	3e426	called	sched_init_pic__h_3e356	I	mechanical	avc_enc	1	every call path leads to sched_init_pic 0b7be
+3e426	3e624	called	avc_enc__shared_3e426	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3e624	3e712	called	avc_enc__shared_3e624	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3e712	3e754	called	avc_enc__shared_3e712	I	mechanical	avc_enc	4	call paths lead to 0 named functions: 
+3e754	3e86a	called	avc_enc__shared_3e754	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3e86a	3e8a0	called	avc_enc__shared_3e86a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3e8a0	3e8a8	called	avc_enc__shared_3e8a0	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+3e8a8	3e8bc	called	avc_enc__shared_3e8a8	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+3e8bc	3e8e0	called	avc_enc__shared_3e8bc	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+3e8e0	3e93e	called	avc_enc__shared_3e8e0	I	mechanical	avc_enc	5	call paths lead to 0 named functions: 
+3e93e	3e99e	called	sched_done_pic__h_3e93e	I	mechanical	avc_enc	5	every call path leads to sched_done_pic 0baaa
+3e99e	3ea2a	called	avc_enc__shared_3e99e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ea2a	3ea60	called	avc_enc__shared_3ea2a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ea60	3ee34	called	avc_enc__shared_3ea60	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3ee34	3eee8	called	avc_enc__shared_3ee34	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3eee8	3f026	called	avc_enc__shared_3eee8	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3f026	3f110	called	avc_enc__shared_3f026	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3f110	3f224	called	avc_enc__shared_3f110	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3f224	3f2e8	called	avc_enc__shared_3f224	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3f2e8	3f96c	called	avc_enc__shared_3f2e8	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3f96c	3fb58	called	avc_enc__shared_3f96c	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+3fb58	3fbac	called	avc_enc__shared_3fb58	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3fbac	3fcd0	called	avc_enc__shared_3fbac	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+3fcd0	400aa	called	avc_enc__shared_3fcd0	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+400aa	401a6	called	avc_enc__shared_400aa	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+401a6	40256	called	avc_enc__shared_401a6	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+40256	4087c	called	avc_enc__shared_40256	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+4087c	40c0a	called	avc_enc__shared_4087c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+40c0a	40c10	called	avc_enc__shared_40c0a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+40c10	40c44	called	sched_done_pic__h_40c10	I	mechanical	avc_enc	2	every call path leads to sched_done_pic 0baaa
+40c44	40fd8	called	avc_enc__shared_40c44	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+40fd8	415fe	called	avc_enc__shared_40fd8	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+415fe	41656	called	avc_enc__shared_415fe	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+41656	417b2	called	avc_enc__shared_41656	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+417b2	417ec	called	avc_enc__shared_417b2	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+417ec	41924	called	avc_enc__shared_417ec	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+41924	41a70	called	sched_done_pic__h_41924	I	mechanical	avc_enc	4	every call path leads to sched_done_pic 0baaa
+41a70	41c4e	called	avc_enc__shared_41a70	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+41c4e	41ca4	called	avc_enc__shared_41c4e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+41ca4	41d36	called	avc_enc__shared_41ca4	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+41d36	42114	called	avc_enc__shared_41d36	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42114	421a8	called	avc_enc__shared_42114	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+421a8	421e6	called	avc_enc__shared_421a8	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+421e6	42242	called	avc_enc__shared_421e6	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42242	4226e	called	avc_enc__shared_42242	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4226e	42298	called	avc_enc__shared_4226e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42298	423da	called	avc_enc__shared_42298	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+423da	4252e	orphan	avc_enc__unused_423da	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+4252e	429b2	called	avc_enc__shared_4252e	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+429b2	429d8	called	avc_enc__shared_429b2	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+429d8	42a4e	orphan	avc_enc__unused_429d8	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+42a4e	42b22	called	avc_enc__shared_42a4e	I	mechanical	avc_enc	3	call paths lead to 0 named functions: 
+42b22	42d9e	called	avc_enc__shared_42b22	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42d9e	42e4a	called	avc_enc__shared_42d9e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42e4a	42f36	called	avc_enc__shared_42e4a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+42f36	42f54	called	avc_enc__shared_42f36	I	mechanical	avc_enc	3	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+42f54	42f72	called	sched_check_rdy__h_42f54	I	mechanical	avc_enc	1	every call path leads to sched_check_rdy 0acc2
+42f72	42fa4	called	sched_init_pic__h_42f72	I	mechanical	avc_enc	1	every call path leads to sched_init_pic 0b7be
+42fa4	42fd6	called	sched_run_task__h_42fa4	I	mechanical	avc_enc	1	every call path leads to sched_run_task 0c2da
+42fd6	4300a	called	sched_done_pic__h_42fd6	I	mechanical	avc_enc	1	every call path leads to sched_done_pic 0baaa
+4300a	43022	called	sched_mark_err__h_4300a	I	mechanical	avc_enc	1	every call path leads to sched_mark_err 0b940
+43022	43052	called	sched_irq__h_43022	I	mechanical	avc_enc	1	every call path leads to sched_irq 0c526
+43052	4305e	called	avc_enc__shared_43052	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4305e	4326c	called	avc_enc__shared_4305e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4326c	432b4	called	avc_enc__shared_4326c	I	mechanical	avc_enc	4	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+432b4	435e2	called	avc_enc__shared_432b4	I	mechanical	avc_enc	1	call paths lead to 2 named functions: dump_sched_check_rdy,sched_check_rdy
+435e2	43746	called	avc_enc__shared_435e2	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+43746	4378a	called	avc_enc__shared_43746	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4378a	439be	called	avc_enc__shared_4378a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+439be	43ef8	called	avc_enc__shared_439be	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+43ef8	44294	called	init_pic@43ef8	R	func_string	avc_enc	1	__func__ string(s): init_pic
+44294	44300	called	avc_enc__shared_44294	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+44300	44528	called	init_pic__h_44300	I	mechanical	avc_enc	1	every call path leads to init_pic 43ef8
+44528	445c4	called	init_pic__h_44528	I	mechanical	avc_enc	1	every call path leads to init_pic 43ef8
+445c4	44608	called	avc_enc__shared_445c4	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+44608	446f2	called	memcmp	R	execution	avc_enc	1	fits memcmp(a,b,n) sign 150/150
+446f2	45298	called	init_pic__h_446f2	I	mechanical	avc_enc	1	every call path leads to init_pic 43ef8
+45298	452ea	called	avc_enc__shared_45298	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+452ea	4531e	called	avc_enc__shared_452ea	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4531e	45342	called	avc_enc__shared_4531e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45342	453aa	called	avc_enc__shared_45342	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+453aa	453da	called	avc_enc__shared_453aa	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+453da	45408	called	exec_codec_cmd__h_453da	I	mechanical	avc_enc	1	every call path leads to exec_codec_cmd 04cee
+45408	45444	called	exec_codec_cmd__h_45408	I	mechanical	avc_enc	1	every call path leads to exec_codec_cmd 04cee
+45444	45654	called	avc_enc__shared_45444	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45654	456ee	called	avc_enc__shared_45654	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+456ee	45722	called	avc_enc__shared_456ee	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45722	45726	called	avc_enc__shared_45722	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45726	457f8	called	avc_enc__shared_45726	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+457f8	458c2	called	avc_enc__shared_457f8	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+458c2	4593c	called	avc_enc__shared_458c2	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4593c	4595a	called	avc_enc__shared_4593c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4595a	45978	called	avc_enc__shared_4595a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45978	459a0	called	avc_enc__shared_45978	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+459a0	45ae2	called	enc_pic_in@459a0	R	func_string	avc_enc	1	__func__ string(s): enc_pic_in
+45ae2	45b04	called	avc_enc__shared_45ae2	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+45b04	45b16	called	avc_enc__shared_45b04	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45b16	45c40	called	avc_enc__shared_45b16	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+45c40	45cd8	called	avc_enc__shared_45c40	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45cd8	45d16	called	avc_enc__shared_45cd8	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45d16	45d38	called	vcpu_get_codec_resource_size__h_45d16	I	mechanical	avc_enc	1	every call path leads to vcpu_get_codec_resource_size 067fc
+45d38	45d3c	orphan	avc_enc__unused_45d38	I	mechanical	avc_enc	0	no call, no address reference, no branch from other code
+45d3c	45d80	called	avc_enc__shared_45d3c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45d80	45d9c	called	avc_enc__shared_45d80	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45d9c	45dae	called	avc_enc__shared_45d9c	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45dae	45de4	called	avc_enc__shared_45dae	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45de4	45e4a	called	avc_enc__shared_45de4	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+45e4a	45f76	called	avc_enc__shared_45e4a	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+45f76	46250	called	avc_enc__shared_45f76	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+46250	46412	called	avc_enc__shared_46250	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+46412	46442	called	avc_enc__shared_46412	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+46442	4669e	called	avc_enc__shared_46442	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+4669e	468ba	called	avc_enc__shared_4669e	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+468ba	46928	called	avc_enc__shared_468ba	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+46928	469ea	called	avc_enc__shared_46928	I	mechanical	avc_enc	1	call paths lead to 0 named functions: 
+469ea	46b14	called	avc_enc__shared_469ea	I	mechanical	avc_enc	2	call paths lead to 0 named functions: 
+46b14	46b98	called	__udivsi3	R	execution	libgcc	65	fits __udivsi3 a/b 150/150
+46b98	46c50	called	__divsi3	R	execution	libgcc	69	fits __divsi3 a/b 150/150
+46c50	46ce8	called	__umodsi3	R	execution	libgcc	41	fits __umodsi3 a%b 150/150
+46ce8	46d96	called	__modsi3	R	execution	libgcc	45	fits __modsi3 a%b 150/150
+46d96	46e54	called	float_text_conv__h_46d96	I	mechanical	libgcc	6	every call path leads to float_text_conv 4b7ea
+46e54	46f16	called	libgcc__shared_46e54	I	mechanical	libgcc	9	call paths lead to 2 named functions: _svfprintf_r,float_text_conv
+46f16	46f1e	orphan	__floatunsisf	R	execution	libgcc	0	fits __floatunsisf 150/150
+46f1e	46f82	called	__floatsisf@46f1e	R	execution	libgcc	1	fits __floatsisf 150/150
+46f82	471a0	called	__addsf3	I	hand	libgcc	1	float add: exact in 138 of 200 emulated runs, the rest off in the last bits (emulator gap)
+471a0	473ca	called	__mulsf3?	I	hand	libgcc	1	one mul/mfmh pair between __addsf3 and __fixsfsi; not reproduced (mul/mfmh semantics open)
+473ca	475c2	orphan	libgcc__unused_473ca	I	mechanical	libgcc	0	no call, no address reference, no branch from other code
+475c2	47632	called	__fixsfsi@475c2	R	execution	libgcc	1	fits __fixsfsi 150/150; __fixunssfsi 150/150
+47632	4791c	called	__muldf3?	I	hand	libgcc	16	four mul/mfmh pairs; called with __divdf3 by the float-text routine; not reproduced (as above)
+4791c	47c06	called	__divdf3	R	execution	libgcc	6	fits __divdf3 150/150
+47c06	47c4a	called	__lshrdi3	R	execution	libgcc	1	fits __lshrdi3 150/150
+47c4a	47c8e	called	__ashldi3	R	execution	libgcc	10	fits __ashldi3 150/150
+47c8e	48088	called	__udivdi3	R	execution	libgcc	8	fits __udivdi3 150/150
+48088	480ac	called	__assert_func	R	hand	newlib	13	string `assertion "%s" failed: file "%s", line %d`
+480ac	480d2	called	newlib__shared_480ac	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+480d2	480ec	called	__assert_func__h_480d2	I	mechanical	newlib	1	every call path leads to __assert_func 48088
+480ec	48180	called	newlib__shared_480ec	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48180	4819c	called	newlib__shared_48180	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4819c	48478	called	newlib__shared_4819c	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+48478	4849a	orphan	newlib__unused_48478	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4849a	484cc	called	newlib__shared_4849a	I	mechanical	newlib	3	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+484cc	484d0	called	__assert_func__h_484cc	I	mechanical	newlib	1	every call path leads to __assert_func 48088
+484d0	485ac	called	newlib__shared_484d0	I	mechanical	newlib	3	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+485ac	485c6	called	newlib__shared_485ac	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+485c6	485e0	called	newlib__shared_485c6	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+485e0	48760	called	newlib__shared_485e0	I	mechanical	newlib	1	call paths lead to 4 named functions: __assert_func,_svfprintf_r,_vfiprintf_r?,float_text_conv
+48760	48afa	called	newlib__shared_48760	I	mechanical	newlib	9	call paths lead to 4 named functions: __assert_func,_svfprintf_r,_vfiprintf_r?,float_text_conv
+48afa	48b68	called	memcpy@48afa	R	execution	newlib	16	fits memcpy(d,s,n) 150/150; memcpy-void(d,s,n) 150/150
+48b68	48bc8	called	memset	R	execution	newlib	15	fits memset(d,c,n) 150/150
+48bc8	48bca	called	__malloc_lock	I	hand	newlib	4	a single ret, called around the allocator 0x4c75a
+48bca	48bcc	called	__malloc_unlock	I	hand	newlib	8	a single ret, called around the allocator 0x4c75a
+48bcc	48c02	called	newlib__shared_48bcc	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48c02	48c24	orphan	newlib__unused_48c02	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+48c24	48c4a	called	newlib__shared_48c24	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48c4a	48ca4	called	newlib__shared_48c4a	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48ca4	48cbc	called	newlib__shared_48ca4	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48cbc	48ce8	addr	newlib__ptr_48cbc	I	mechanical	newlib	0	address taken at 48dae
+48ce8	48e06	called	newlib__shared_48ce8	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+48e06	48e32	called	newlib__shared_48e06	I	mechanical	newlib	5	call paths lead to 5 named functions: __assert_func,_malloc_r?,_svfprintf_r,_vfiprintf_r?,float_text_conv
+48e32	48e78	addr	newlib__ptr_48e32	I	mechanical	newlib	0	address taken at 48136,4c548
+48e78	48ec4	addr	newlib__ptr_48e78	I	mechanical	newlib	0	address taken at 4813e,4c550
+48ec4	48f0c	addr	newlib__ptr_48ec4	I	mechanical	newlib	0	address taken at 48146,48212,48596,4c558
+48f0c	48f26	addr	newlib__ptr_48f0c	I	mechanical	newlib	0	address taken at 4814e,4c560
+48f26	48f70	called	strcpy	R	execution	newlib	1	fits strcpy(d,s) 150/150
+48f70	48fb0	called	strlen	R	execution	newlib	9	fits strlen(s) [nonempty] 150/150
+48fb0	48fe6	called	newlib__shared_48fb0	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+48fe6	48ff8	called	newlib__shared_48fe6	I	mechanical	newlib	7	call paths lead to 5 named functions: __assert_func,_malloc_r?,_svfprintf_r,_vfiprintf_r?,float_text_conv
+48ff8	49022	called	_vfiprintf_r?__h_48ff8	I	mechanical	newlib	13	every call path leads to _vfiprintf_r? 490c8
+49022	490a8	called	_vfiprintf_r?__h_49022	I	mechanical	newlib	1	every call path leads to _vfiprintf_r? 490c8
+490a8	490c8	called	newlib__shared_490a8	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+490c8	49a24	called	_vfiprintf_r?	I	hand	newlib	2	newlib vfprintf body without float conversion (strings "bug in vfprintf: bad base", "(null)")
+49a24	49a4e	called	_svfprintf_r__h_49a24	I	mechanical	newlib	28	every call path leads to _svfprintf_r 49af4
+49a4e	49ad4	called	_svfprintf_r__h_49a4e	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+49ad4	49af4	called	newlib__shared_49ad4	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+49af4	4ac6a	called	_svfprintf_r	I	hand	newlib	7	newlib vfprintf body with float conversion (also "INF", "NAN", "inf", "nan")
+4ac6a	4ad70	called	_svfprintf_r__h_4ac6a	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+4ad70	4adfe	called	_svfprintf_r__h_4ad70	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+4adfe	4ae54	called	vsprintf_2	I	hand	newlib	1	same shape as 0x4aea6, used by log_out
+4ae54	4aea6	orphan	newlib__unused_4ae54	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4aea6	4aeec	called	vsprintf	I	hand	newlib	4	(buf, fmt, va) -> _svfprintf_r with the reent pointer 0x5f8f4; used by log_printf
+4aeec	4af2c	orphan	newlib__unused_4aeec	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4af2c	4afd6	called	newlib__shared_4af2c	I	mechanical	newlib	6	call paths lead to 0 named functions: 
+4afd6	4b01c	called	newlib__shared_4afd6	I	mechanical	newlib	6	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4b01c	4b03c	orphan	newlib__unused_4b01c	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4b03c	4b0e0	called	newlib__shared_4b03c	I	mechanical	newlib	5	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4b0e0	4b104	orphan	newlib__unused_4b0e0	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4b104	4b430	called	_setlocale_r?	I	hand	newlib	1	strings "C-UTF-8", "C-SJIS", "C-EUCJP", "C-JIS"
+4b430	4b466	called	newlib__shared_4b430	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4b466	4b51e	called	newlib__shared_4b466	I	mechanical	newlib	4	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4b51e	4b5fc	called	newlib__shared_4b51e	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4b5fc	4b634	called	__assert_func__h_4b5fc	I	mechanical	newlib	1	every call path leads to __assert_func 48088
+4b634	4b652	called	__assert_func__h_4b634	I	mechanical	newlib	2	every call path leads to __assert_func 48088
+4b652	4b662	called	__assert_func__h_4b652	I	mechanical	newlib	2	every call path leads to __assert_func 48088
+4b662	4b692	called	newlib__shared_4b662	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4b692	4b7ea	called	float_text_conv__h_4b692	I	mechanical	newlib	2	every call path leads to float_text_conv 4b7ea
+4b7ea	4c4a2	called	float_text_conv	I	hand	newlib	1	strings "NaN", "Infinity"; calls __divdf3 / __muldf3? (newlib _strtod_r or _dtoa_r)
+4c4a2	4c52c	called	newlib__shared_4c4a2	I	mechanical	newlib	13	call paths lead to 0 named functions: 
+4c52c	4c568	called	newlib__shared_4c52c	I	mechanical	newlib	3	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4c568	4c59c	called	newlib__shared_4c568	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4c59c	4c622	called	newlib__shared_4c59c	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4c622	4c634	called	newlib__shared_4c622	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4c634	4c646	orphan	newlib__unused_4c634	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4c646	4c6a4	called	newlib__shared_4c646	I	mechanical	newlib	9	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4c6a4	4c6a6	called	newlib__shared_4c6a4	I	mechanical	newlib	5	call paths lead to 0 named functions: 
+4c6a6	4c6a8	called	newlib__shared_4c6a6	I	mechanical	newlib	6	call paths lead to 0 named functions: 
+4c6a8	4c6aa	called	newlib__shared_4c6a8	I	mechanical	newlib	1	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4c6aa	4c6ac	called	newlib__shared_4c6aa	I	mechanical	newlib	1	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4c6ac	4c6b0	addr	newlib__ptr_4c6ac	I	mechanical	newlib	0	address taken at 4c6c4
+4c6b0	4c6b4	addr	newlib__ptr_4c6b0	I	mechanical	newlib	0	address taken at 4c6de
+4c6b4	4c6ce	orphan	newlib__unused_4c6b4	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4c6ce	4c6e8	orphan	newlib__unused_4c6ce	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4c6e8	4c75a	called	newlib__shared_4c6e8	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4c75a	4c912	called	_malloc_r?	I	hand	newlib	17	allocator shape: 17 calls, brackets its work with 0x48bc8 / 0x48bca
+4c912	4c9d4	called	_malloc_r?__h_4c912	I	mechanical	newlib	1	every call path leads to _malloc_r? 4c75a
+4c9d4	4c9e4	called	newlib__shared_4c9d4	I	mechanical	newlib	1	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4c9e4	4cc2c	called	newlib__shared_4c9e4	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+4cc2c	4cc72	called	newlib__shared_4cc2c	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4cc72	4ccbc	called	newlib__shared_4cc72	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4ccbc	4ccde	called	newlib__shared_4ccbc	I	mechanical	newlib	5	call paths lead to 0 named functions: 
+4ccde	4cd00	orphan	newlib__unused_4ccde	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4cd00	4cd04	called	newlib__shared_4cd00	I	mechanical	newlib	1	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4cd04	4cd4e	called	newlib__shared_4cd04	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4cd4e	4cd58	orphan	newlib__unused_4cd4e	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4cd58	4cd60	called	_svfprintf_r__h_4cd58	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+4cd60	4cd7c	orphan	newlib__unused_4cd60	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4cd7c	4cd8e	called	_svfprintf_r__h_4cd7c	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+4cd8e	4cdc4	called	newlib__shared_4cd8e	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+4cdc4	4ce42	called	newlib__shared_4cdc4	I	mechanical	newlib	3	call paths lead to 2 named functions: _svfprintf_r,_vfiprintf_r?
+4ce42	4cedc	called	memcpy@4ce42	R	execution	newlib	8	fits memcpy(d,s,n) 150/150; memcpy-void(d,s,n) 150/150
+4cedc	4cf4a	called	float_text_conv__h_4cedc	I	mechanical	newlib	10	every call path leads to float_text_conv 4b7ea
+4cf4a	4cf68	called	float_text_conv__h_4cf4a	I	mechanical	newlib	10	every call path leads to float_text_conv 4b7ea
+4cf68	4cff6	called	float_text_conv__h_4cf68	I	mechanical	newlib	11	every call path leads to float_text_conv 4b7ea
+4cff6	4d08a	orphan	newlib__unused_4cff6	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4d08a	4d0da	called	clz32@4d08a	R	execution	newlib	3	fits clz32 (a!=0) 150/150
+4d0da	4d15c	called	float_text_conv__h_4d0da	I	mechanical	newlib	2	every call path leads to float_text_conv 4b7ea
+4d15c	4d176	called	float_text_conv__h_4d15c	I	mechanical	newlib	3	every call path leads to float_text_conv 4b7ea
+4d176	4d2b8	called	float_text_conv__h_4d176	I	mechanical	newlib	3	every call path leads to float_text_conv 4b7ea
+4d2b8	4d35a	called	float_text_conv__h_4d2b8	I	mechanical	newlib	3	every call path leads to float_text_conv 4b7ea
+4d35a	4d408	called	float_text_conv__h_4d35a	I	mechanical	newlib	6	every call path leads to float_text_conv 4b7ea
+4d408	4d450	called	float_text_conv__h_4d408	I	mechanical	newlib	8	every call path leads to float_text_conv 4b7ea
+4d450	4d538	called	float_text_conv__h_4d450	I	mechanical	newlib	1	every call path leads to float_text_conv 4b7ea
+4d538	4d588	orphan	newlib__unused_4d538	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4d588	4d64a	called	newlib__shared_4d588	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+4d64a	4d71e	called	float_text_conv__h_4d64a	I	mechanical	newlib	1	every call path leads to float_text_conv 4b7ea
+4d71e	4d788	orphan	newlib__unused_4d71e	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4d788	4d7d0	orphan	newlib__unused_4d788	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4d7d0	4d7ec	called	newlib__shared_4d7d0	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4d7ec	4d822	called	newlib__shared_4d7ec	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4d822	4db62	called	newlib__shared_4d822	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4db62	4db90	called	_svfprintf_r__h_4db62	I	mechanical	newlib	2	every call path leads to _svfprintf_r 49af4
+4db90	4dbb2	called	_svfprintf_r__h_4db90	I	mechanical	newlib	1	every call path leads to _svfprintf_r 49af4
+4dbb2	4dbfc	called	newlib__shared_4dbb2	I	mechanical	newlib	1	call paths lead to 5 named functions: __assert_func,_malloc_r?,_svfprintf_r,_vfiprintf_r?,float_text_conv
+4dbfc	4dc18	orphan	newlib__unused_4dbfc	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4dc18	4dc54	called	newlib__shared_4dc18	I	mechanical	newlib	4	call paths lead to 0 named functions: 
+4dc54	4dc9c	called	newlib__shared_4dc54	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4dc9c	4dd16	called	newlib__shared_4dc9c	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4dd16	4dd6a	called	newlib__shared_4dd16	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4dd6a	4dd82	called	newlib__shared_4dd6a	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4dd82	4dda0	orphan	newlib__unused_4dd82	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4dda0	4ddb4	orphan	newlib__unused_4dda0	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4ddb4	4ddcc	orphan	newlib__unused_4ddb4	I	mechanical	newlib	0	no call, no address reference, no branch from other code
+4ddcc	4ddfe	called	newlib__shared_4ddcc	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4ddfe	4de0a	called	newlib__shared_4ddfe	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4de0a	4de8c	called	strchr	R	execution	newlib	2	fits strchr(s,c) 150/150
+4de8c	4def4	called	strcmp	R	execution	newlib	6	fits strcmp(a,b) sign 150/150
+4def4	4df10	called	newlib__shared_4def4	I	mechanical	newlib	3	call paths lead to 5 named functions: __assert_func,_malloc_r?,_svfprintf_r,_vfiprintf_r?,float_text_conv
+4df10	4df86	called	newlib__shared_4df10	I	mechanical	newlib	2	call paths lead to 0 named functions: 
+4df86	4df9c	called	newlib__shared_4df86	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4df9c	4e048	called	newlib__shared_4df9c	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4e048	4e060	addr	newlib__ptr_4e048	I	mechanical	newlib	0	address taken at 4c62a
+4e060	4e078	called	newlib__shared_4e060	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4e078	4e094	called	newlib__shared_4e078	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4e094	4e0b0	called	newlib__shared_4e094	I	mechanical	newlib	1	call paths lead to 0 named functions: 
+4e0b0	4e120	called	__eqdf2@4e0b0	R	execution	libgcc_fp	3	fits __eqdf2/__nedf2 (0 iff ==) 150/150
+4e120	4e1d2	called	float_text_conv__h_4e120	I	mechanical	libgcc_fp	1	every call path leads to float_text_conv 4b7ea
+4e1d2	4e248	called	__eqdf2@4e1d2	R	execution	libgcc_fp	5	fits __eqdf2/__nedf2 (0 iff ==) 150/150
+4e248	4e5c6	called	__adddf3	R	execution	libgcc_fp	6	fits __adddf3 150/150
+4e5c6	4e5d8	called	__subdf3	R	execution	libgcc_fp	8	fits __subdf3 150/150
+4e5d8	4e5f6	orphan	__floatunsidf	R	execution	libgcc_fp	0	fits __floatunsidf 150/150
+4e5f6	4e61e	called	__floatsidf	R	execution	libgcc_fp	7	fits __floatsidf 150/150
+4e61e	4e6a6	called	__fixdfsi	R	execution	libgcc_fp	4	fits __fixdfsi 150/150; __fixunsdfsi 150/150
+4e6a6	4e6c0	orphan	tail__unused_4e6a6	I	mechanical	tail	0	no call, no address reference, no branch from other code

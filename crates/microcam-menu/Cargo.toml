@@ -1,0 +1,12 @@
+[package]
+name = "microcam-menu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "the camera's menu program: a client of microcamd's control socket"
+
+[dependencies]
+microcam-core = { path = "../microcam-core" }
+microcam-draw = { path = "../microcam-draw" }
+libc.workspace = true
+serde_json.workspace = true

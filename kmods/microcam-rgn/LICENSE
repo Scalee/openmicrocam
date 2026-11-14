@@ -1,0 +1,8 @@
+microcam-rgn — the RGN (OSD over the scaler outputs) driver of the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6), in
+place of its stock mi_rgn.ko
+
+Licence: MIT No Attribution (../../LICENSE) or, at your choice, the GNU General Public License version 2 (../COPYING).
+
+Ours (OpenMicroCam): microcam_rgn.c and Kbuild, written for this project. The interface it serves is the stock module's —
+the ioctls of libmi_rgn, their payloads, checks and error codes, the two exports mi_scl calls every frame — and the GOP
+and cover functions it calls are mhal's; both as docs/firmware/components/rgn-gop.md describes them.

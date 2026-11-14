@@ -1,0 +1,7 @@
+# Rebuild of the camera's g_webcam.ko from SigmaStar's legacy/webcam.c (Infinity6E 4.9 tree) with our descriptor tables (LICENSE).
+obj-m := g_webcam.o
+g_webcam-y := webcam.o
+ccflags-y := -I$(src) -I$(src)/include/uapi -DCONFIG_USB_WEBCAM_UVC=1 -DCONFIG_USB_WEBCAM_RNDIS=1 -DCONFIG_SS_GADGET=1 \
+             -DCONFIG_MULTI_STREAM_FUNC_NUM=1 -DCONFIG_USB_GADGET_VBUS_DRAW=2 -DCONFIG_ATT_SELFPOWER=1
+# the SD card as a mass-storage LUN; needs usb_f_mass_storage.ko
+ccflags-y += -DCONFIG_USB_WEBCAM_MSC=1

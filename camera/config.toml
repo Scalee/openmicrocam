@@ -1,0 +1,33 @@
+# microcamd configuration. Every key is optional; these are the defaults for this camera. The controls' defaults are
+# microcamd's own; what the user sets is kept in the settings file.
+# Installed as /customer/microcam/config.toml (a trial from RAM uses /tmp/microcam/config.toml with the same content).
+
+[paths]
+# tables = "/customer/microcam"              # directory of policy.toml; default: this file's directory
+modes = "/sys/module/drv_ms_cus_gc8613_MIPI/parameters/modes"   # the mode list the loaded sensor driver shows
+formats = "/sys/module/g_webcam/parameters/formats"              # the format list the loaded UVC gadget shows
+iq_bin = "/customer/microcam/iq_file_gc8613.bin"
+settings = "/customer/microcam/settings.json"   # the controls the user set, written by microcamd alone
+
+[mounting]                # how the sensor sits: its orientation as the vendor app set it (setmirrorflip 0 1 1); the
+mirror = true             # user's `mirror` and `flip` controls turn the picture over it
+flip = true
+
+[control]
+unix_socket = "/tmp/microcam.sock"
+tcp = "0.0.0.0:7700"      # the laptop reaches it over the USB network; "" = no TCP
+
+[usb]
+device = "/dev/video0"
+enabled = true
+buffers = 3               # gadget buffers; 2 lowers latency, 3 is the vendor's
+max_payload = 3072        # isochronous payload (g_webcam streaming_maxpacket)
+streamon_budget_ms = 4000 # pipeline + first frame must be ready within this after STREAMON (Linux hosts wait 5 s)
+vc_interface = 2          # UVC interfaces in the composite gadget (RNDIS takes 0 and 1): VideoControl 2, VideoStreaming 3
+vs_interface = 3
+
+[watchdog]
+device = "/dev/watchdog0" # fed while the pipeline thread is responsive and the sensor's frames arrive; "" = leave it alone
+
+[log]
+level = "debug"           # into a 1 MB ring in RAM; live: microcam log-level debug|info|off|…,ui=debug,kernel=off

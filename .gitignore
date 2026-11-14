@@ -1,0 +1,15 @@
+/target
+/stage/
+*.o
+__pycache__/
+# kernel module build output
+*.ko
+*.mod.c
+.*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+/microcam.env
+# generated at build time from the stock module of your camera's dump
+/kmods/g_webcam/yz_desc.h
+/work/

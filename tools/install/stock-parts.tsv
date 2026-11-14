@@ -1,0 +1,218 @@
+# OpenMicroCam — the stock firmware of the YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6, GC8613) as found on the
+# tested camera: every file and flash region docs/firmware/blobs.md maps and the boot files the install depends on, with
+# their sizes and sha256. tools/install/checkparts.py compares a camera's dump (or the camera itself) with this list.
+# Columns: kind, part, bytes, sha256, need, on_differ, note.
+# file: a path in the unpacked dump (rootfs/ is the camera's /, miservice/ its /config, customer/ its /customer; nor.bin
+#   the whole flash); byte-identical files under several names have a row each. region: a flash range of nor.bin,
+#   NAME@offset. image: what lies inside a region from its start, NAME:what; KERNEL:Image is the kernel unpacked from the
+#   KERNEL uImage.
+# need: what of ours depends on the part (build, run, install, dump, restore), - = nothing.
+# on_differ: stop = a difference stops the build and the install where need names them; warn = reported; info = reported
+#   quietly, as a sign of another firmware build (left out under --quiet), never stops.
+#
+# version	IPL	MVX4##m6##ga0090c8IPL_###########XVM
+# version	U-Boot	2015.01, MVX4##M6##g#######CM_UBT1501#XVM, built 2025-06-03
+# version	kernel	Linux version 4.9.227 (xuejian@kjd-AIOT-Server) (gcc version 9.1.0 (GCC) ) #44 SMP PREEMPT Thu Mar 5 18:01:23 CST 2026
+# version	kernel image	MVX4##M6##gc8e0e527dKL_LX409##[BR:WS_H1605_NOR_8836_IMX662]
+# version	MI SDK	project_commit.7251436 sdk_commit.80327e1 build_time.20220721
+# version	sensor driver	MVX3M6__g2029d13af-dirty, tree Tiramisu_DLS00V012_8836_UVC
+# version	codec firmware	CODEC40.22031116.I5535c99.03
+# version	rootfs	BusyBox v1.20.2 (2020-08-05), glibc 2.30
+# version	application	/customer/version.txt = version:W11861322604301
+# version	flash	SPI NOR 16 MiB
+# Flash image — nor.bin
+file	nor.bin	16777216	a705e4e1fdf2a14238118f852fe9a5ecd085b6b056d99f6a868aa25ce8560713	-	info	the whole flash
+region	IPL@0x0	65536	e33683ea5dc7d4d9aeb9af051f4a916d864a99c1bb352b50cc4752825236b44c	restore	warn	first-stage loader
+image	IPL:used	29696	5f65e8af3471e7cea2f018d725bda6ca5018cd57f92b846ba8c39acb7ec06423	-	info	
+region	IPL_CUST@0x10000	65536	76c853d43147201880341506b2d92e450593cfa58b81b7d371f9e1ae4e03b32a	restore	warn	board setup
+image	IPL_CUST:used	23696	34e98920fc74e3eeb0ad4e45b9012771a6e6bdf2f1296fa4fa9ddffed8c89bc1	-	info	
+region	MXPT@0x20000	65536	dbac3f1bda34af37654ade8a372418e5c4ee7817ef05ec766b911f62dc852107	restore	stop	partition table: every offset below
+image	MXPT:table	4096	6717906c7cf56532d7253d60c026228b21aecb6d74282725bfe6931564052b3b	-	info	
+region	UBOOT@0x30000	258048	04ff542ea19a8778c646358a9c4cc0b8974c39d54912ed01e16be56474541d01	dump,restore	stop	U-Boot 2015.01: the dump and restore commands, RAM addresses
+image	UBOOT:uImage	247116	995f246091a69f07ebfbc983f78e861c501bc4b348ab4c9589f0bc1a45a02585	-	info	
+region	UBOOT_ENV@0x6f000	4096	8c340ef614cba8d9080a4fbe3375ace49fc087b64a0fbd9bd12ea60148ef8a97	-	info	bootargs: our install changes mma_heap
+region	KERNEL@0x70000	2162688	3a3185283d617b6c7f5f8d9deee70935d4be1c1ac1666b3e69bb62361a89bbe5	build,run	stop	kernel uImage: the module ABI
+image	KERNEL:uImage	2150812	5086618172f42413d0c1b2161842dc80c89657518b52ba55b24df8f0eaa743fd	-	info	
+image	KERNEL:Image	4526080	636de2d75131096f9a64d8499dcefe4c06f4e2424ebdeaf0a6afd557c3d15483	build,run	stop	vermagic 4.9.227 SMP preempt mod_unload ARMv7 thumb2 p2v8; our modules bind by name
+region	rootfs@0x280000	2097152	2f199a81cfba615fa356af41da825cdaa34afef40fc5108bc4666285549fd5a8	run	warn	files checked one by one below
+image	rootfs:squashfs	1944828	8a6ff372267d05bd02d6a1293461378c8386337b0068d6b22bd6f3fc705f4908	-	info	
+region	miservice@0x480000	4194304	548194ed83f655423a28d524146a5e5e344121d864f9b0d1492e194a2c40868b	run	warn	files checked one by one below
+image	miservice:squashfs	4129130	7647668ab59474bdec57411c2fbaa77fec3344eea2d8bd99cefe8f9b2d7e9642	-	info	
+region	customer@0x880000	6356992	ddfd8afcc986243b5483de473a6662d85e70d03855863315948924a4fda090b6	-	info	written by the install and at run time
+region	MISC@0xe90000	655360	7c6759ed6cbc130ba27bc3d3e756d7d2c77fd4c11c179e17a78ce52cbf948e50	run	warn	boot logo and panel settings (firmwarefs)
+region	free@0xf30000	851968	b025d1484fde38fe4e37f5e95a9190964c19e9a7a716a694aa4072cb06651aa1	-	info	outside every partition, all 0xFF
+# Kernel modules — miservice/modules/4.9.227/ (/config/modules/4.9.227)
+# Media stack: mhal, MI modules, framebuffer, sensor drivers
+file	miservice/modules/4.9.227/mhal.ko	2531752	fd5fcbf4fd325c89090f3baf57815d38e3b218123d2d519d9ff2c6f50000bcfa	run	stop	our modules import its names
+file	miservice/modules/4.9.227/mi_common.ko	13888	db35b720b17fd6dd48754737b9d3f69872eb0baa1d7844fa36267d5c7352001f	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_sys.ko	778348	9f186ae43576eedea793192f913a6efcc162f6a54c1ef4acb38c97af0d73dfd1	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_sensor.ko	44192	5889e2eaa87c94fd6a64d1e84d9a1c14cf5eafeb345ec6bc6c4909d24cf6edc0	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_vif.ko	118160	39d1663b7e6c9413736a8ed3335f161514bdc9b1a48365502286a05ed082e72d	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_isp.ko	150776	dba93531a052a7421dec7211a19bc33d1c89f32bdb3a6c945ee3d0267c2d0219	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_scl.ko	155540	7f698b4bd63734032123e1a744a8d3d4ea55945a4aca09c7e78d12c0b29f72f3	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_rgn.ko	134332	522c62387627a165ccf0931144ad6bd87a6d4ba4925fd72c587c2412a49100d3	run	warn	replaced by ours when built
+file	miservice/modules/4.9.227/mi_gfx.ko	40584	4eacf03b90895d1a14439182f8e07dfc00e912c9276e5eaad71520546ff0ed5f	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_venc.ko	442672	4fb5521bb60399691bedcabce99d301e2e8dd647c5a63b82477a67401d7c0820	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_disp.ko	211936	04764acb8f020dd4858a8a467c4d4aee218eb96a4519bfcc21699d8fc160a996	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_hdmi.ko	51700	5c3e9f5d654bc63e9ad89a65bd49cbe57e1017fd8cabb7469c8fe853678b0133	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_jpd.ko	103232	125667cd47528a36eb741957a317b4858beddc5d319f207b390cc1ba9dd786e4	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_vdec.ko	246324	a91a9d181e3004c6701b282b79e897e989f0edc9f48e1acda5eed74373a5b56c	run	stop	MI build 7251436/80327e1
+file	miservice/modules/4.9.227/mi_ldc.ko	733220	7b10829f44313560389d6a4bcc0a1594dd74e40f354f3555b4abe32288c97b3d	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_ai.ko	146256	99d56ee9a0aa80d8135638110e19b691e046b1c65e9f6d0b0ef85ccb3753e39a	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_ao.ko	129104	ec20df52ab474ebe72787303536b1d81731cfb6b9da67b4d52db6639008804c2	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_vdisp.ko	79300	31b0d35b9f2d8874b3e754e6bba270a717259756f0635dae7930c44a622c8e53	-	info	MI build 7251436/80327e1; not used (its insmod line only places ours)
+file	miservice/modules/4.9.227/mi_shadow.ko	63296	0714ec7f2779e36d8b91bffca3c2df50fd0f5d658704d911e67e4ba53b2a7383	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_ipu.ko	37824	0230d1aaf96ec286467dc746b96c0f759df1580bb75ee01456a02105c69a1766	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_mipitx.ko	31036	470f010267c88150573d53f1ccfba35da3197dc3e8ecd1dd62d53574262e5795	run	warn	loaded, not used
+file	miservice/modules/4.9.227/mi_panel.ko	49488	dec1492a6a3a590f5bdb996a716c13a86f61990ef6e82599cc5ad303b6bed369	run	warn	loaded, not used
+file	miservice/modules/4.9.227/fbdev.ko	47932	6e2980b0f30e6286aae9b763c8e9cc24326ad70e98247593aa2d3bd760c2ce47	run	stop	fbhide hides its window
+file	miservice/modules/4.9.227/gc8613_MIPI.ko	11240	1d0551c10751be89fbacc7e8a20f8e80080492fe037e4c9189e5295a0ca5d081	build,run	stop	the sensor tables are generated from it; the fallback driver
+file	miservice/modules/4.9.227/imx307_MIPI.ko	21180	127906ddc5c8d88f84d6da44edc40ec1c91e037ec103b74469a9899045e2a7df	-	info	
+# USB device stack
+file	miservice/modules/4.9.227/g_webcam.ko	12960	f719a706ad854be7f636a74a21c60051853f91be23074cd40feb4ff8fba4a2c3	build	stop	the UVC descriptors are generated from it
+file	miservice/modules/4.9.227/usb_f_uvc.ko	62120	7111e99eda9f6d0b43271f4fba05a1b808651bf3d36d671d75ba4a00efc239a6	run	stop	our gadget and UDC bind to it
+file	miservice/modules/4.9.227/udc-msb250x.ko	32688	7ebeb1316d49fa3b6ec0027a6f5b4939d58147010025cdb389370983f9534c16	run	warn	replaced by ours when built
+file	miservice/modules/4.9.227/udc-core.ko	16800	1885ffeaa2e87ed868b27792401e0588899c2f340f0e1471c1a4df99d5e789aa	run	stop	our gadget and UDC bind to it
+file	miservice/modules/4.9.227/libcomposite.ko	40424	dce6f302d9bfda33f4ba63737e3dca30a8231fee4fc6d25863df4417868e65fe	run	stop	our gadget and UDC bind to it
+file	miservice/modules/4.9.227/u_ether.ko	13296	344356075af01589ce97493147ad29a7644576256261d88d62fa05c940c87cfc	run	stop	
+file	miservice/modules/4.9.227/usb_f_rndis.ko	17316	17a19db1b06db00509435a480ae48ec9705aecd42523f1262a26d58f457554f0	run	stop	
+file	miservice/modules/4.9.227/usb-common.ko	5856	ba9286850fd1b2c320287c0da2bb44f964f96085b1ddb3cd7cc75f87acfec221	run	stop	
+file	miservice/modules/4.9.227/videobuf2-core.ko	24556	18b221ad18c4d519a4c2ac8c5ec76a595cb0414aa0475d0d8f8d47d7011eefd8	run	stop	
+file	miservice/modules/4.9.227/videobuf2-memops.ko	3824	c4d37c12e5cd5f9df6f78e2ad5d69c1a82018c16bfb3170804233b6d2c8ed5d6	run	stop	
+file	miservice/modules/4.9.227/videobuf2-v4l2.ko	13512	2a327354dd9404e06da78519f3aa69f16382009135159a753ef0961063f832c3	run	stop	
+file	miservice/modules/4.9.227/videobuf2-vmalloc.ko	7924	b6329ef462c8525b8fe9da2e675cf00a4894d5671d742d9b243ce6a443b76b5c	run	stop	
+file	miservice/modules/4.9.227/g_mass_storage.ko	7972	9744f1d860b60d37ced7b9057824f301cbae6a44cbc22cf64cea8b28fb60ae33	-	info	
+file	miservice/modules/4.9.227/usb_f_mass_storage.ko	33696	2102be40bc65a6e0fc970f665050da596a4040608192a03301de3bc82c9127bd	run	stop	
+# SD card, file systems and the rest
+file	miservice/modules/4.9.227/kdrv_sdmmc.ko	49560	4bb459e2152b3f63d238e000d51e9664ae6aa404b48eb5928758aadbbd40f942	run	stop	
+file	miservice/modules/4.9.227/mmc_core.ko	99760	47e1bc392b40bcb095a5b05a5ff46648096b339f435a814a7ec2b96b69bbdf2f	run	stop	
+file	miservice/modules/4.9.227/mmc_block.ko	30896	b4746fb7560ad6e95e87adf801cf28e081ccaa921e1698a9ea8ca4dd808395cc	run	stop	
+file	miservice/modules/4.9.227/fat.ko	55320	c63f94a812d59254dbd60eadb0ecbceda8a0138b7dd9516623bac597cd52a506	run	stop	
+file	miservice/modules/4.9.227/vfat.ko	11916	1bc2cbc2a8cf85db08b5f6ff4500cd787f719ab58cc73356f78da2ada7dd979f	run	stop	
+file	miservice/modules/4.9.227/msdos.ko	10364	fe5df4e4dd92575b737cbee525eee698ef3f29604eda10def1c5fcc1d86aeac3	-	info	
+file	miservice/modules/4.9.227/ntfs.ko	89736	6a6512fc8a225732f3a6ef4f8d6fbf8c2931d1d7c45de7b0ef1ed22a8b8cf593	-	info	
+file	miservice/modules/4.9.227/nls_utf8.ko	3784	2814acfd8b6d3711fc50772295d20a67a10e883847b18d455dc1f173a9199359	-	info	
+file	miservice/modules/4.9.227/cifs.ko	210788	03b3f7cfca88ca135f711fc5d1f77c5a0308308a5165dd54798ca4975afa389c	-	info	
+file	miservice/modules/4.9.227/nfs.ko	126852	0bbd0b808b62d86f47fa82868bbed40ebb2f5435d21730051915511b45c0570c	-	info	
+file	miservice/modules/4.9.227/nfsv2.ko	17116	154149008416867d758c4bd63c51306ed0cb2f382fc63013455614ab3d4a3fa6	-	info	
+file	miservice/modules/4.9.227/nfsv3.ko	23124	53e563281c2ecde5bb72f9d91045743f65b80f7b7865f55ad0846b02a50aa449	-	info	
+file	miservice/modules/4.9.227/lockd.ko	62284	e0eb3dba15c1011f5214ef1eed378d7c7e8af2cb8507e11af0505658fe2c3053	-	info	
+file	miservice/modules/4.9.227/sunrpc.ko	181072	6eae2ac98ea96baff2370bfdbe58b2d26d2561ae484f1ca30db900fa7dfbd7e5	-	info	
+file	miservice/modules/4.9.227/grace.ko	5592	0b0f830092c5c0704ecb6b30430ac3ae8764888af0a7b8145992be9170b12b55	-	info	
+file	miservice/modules/4.9.227/usbcore.ko	171728	0a64f29dc701e01dc55bf40d8a2c70274c5411a0eb19bfd18d89982a5c60b89f	-	info	
+file	miservice/modules/4.9.227/ehci-hcd.ko	49260	a13969a0e72d20343efe69d64e3d015908608d8b975b8d6789d9e35b07cecdec	-	info	
+file	miservice/modules/4.9.227/usb-storage.ko	71428	35dfa5ef8b6b9b69312166ed12ef45ec36add29c4cc4b33f63302b7f2c6273d1	-	info	
+file	miservice/modules/4.9.227/usbhid.ko	23484	eaec022c35fca3dbded37bbbdc3b1e57b6fd264609e2bb1281cf91c4c0087e5a	-	info	
+file	miservice/modules/4.9.227/mdrv-sata-host.ko	23544	4f6212eb6d3f2e32af0acca60952499a1fe7f8fa5a2695158735519ad2e51a25	-	info	
+file	miservice/modules/4.9.227/media.ko	21932	402c567bcb66c88c25dd91f26f0f5c63d622938f3eb4f128725653608e4b1fe8	-	info	only the stock UVC function uses it
+file	miservice/modules/4.9.227/videodev.ko	119996	420e2b5c0a862df6e4fb236eb22b0cbd54b2cf31eddabc45312f3bb15b0c2c51	-	info	only the stock UVC function uses it
+file	miservice/modules/4.9.227/v4l2-common.ko	6236	01899d98e3dd7855d079491a3ea23b89e68230dd0b6b558f450b523a48110f64	-	info	only the stock UVC function uses it
+# User libraries — miservice/lib/ (/config/lib)
+file	miservice/lib/libmi_common.so	14004	36173814f54356d5b2184be654320b308c14dae31fa3b40dc2e5948de65513ab	build,run	stop	
+file	miservice/lib/libmi_sys.so	13928	7d8c53b8a6efac44450266f9f3b3c3e7d3d16a6ced894acdcaddde60a3df89f1	build,run	stop	
+file	miservice/lib/libmi_sensor.so	9684	84f3fa49855ed0b5c193b4d53c4b0d20e6f1bea7614865b76dc7e7a9c7dc771c	build,run	stop	
+file	miservice/lib/libmi_vif.so	9680	6452f576412c37662fde17bf7cba1c625899f66569f117a7b9eb665bc6cfd1fc	build,run	stop	
+file	miservice/lib/libmi_isp.so	73632	3cd5e12431f02895fc54d65c8d70b2438827200aa2c68bcbf81ecad025c1acbc	build,run	stop	
+file	miservice/lib/libmi_scl.so	9680	9628016af1228a12618084f74e3da997aade0dfa63505aa7e1d2ef562faacc97	build,run	stop	
+file	miservice/lib/libmi_venc.so	46608	9cd76bd4bc2a335fc0e86bea70b1d082f66109eb043f6077ca913baf8768d6b9	build,run	stop	
+file	miservice/lib/libmi_disp.so	13792	b2416c432b0155ac7034f0749662df7fc92c9d72402e9d5a8aaabcabb4d9653f	build,run	stop	
+file	miservice/lib/libmi_hdmi.so	30260	b291caf61f8f062a78ece59851b73dd99351a63c23674af0f6b5bcc7904e108e	build,run	stop	
+file	miservice/lib/libmi_rgn.so	9704	d69593e5cf0248b5549020ee6a88b25c31a82f66e71cea8c5ccd6b99dd3621fa	build,run	stop	
+file	miservice/lib/libmi_gfx.so	9692	c37a8e0046ed66b94a6c0bd1ffd595b9128a0a645bee01748774808e916166b2	build,run	stop	
+file	miservice/lib/libcam_os_wrapper.so	34752	76e2eebc3c803a49a225b709f067f67e33633c1d6ebda98d5a2af49a7a3a4778	build,run	stop	
+file	miservice/lib/libcam_fs_wrapper.so	5448	f136aa1f91aac824d8a56455ce8d49f49922faa9d4043002e1265d28c2b0808e	-	info	
+file	miservice/lib/libispalgo.so	173160	e54e59742de7ca370e248565c055bf018e559d3d5b75be4e9af11cbbe4752569	build,run	stop	
+file	miservice/lib/libcus3a.so	26592	c3d2fabc7d6d721517e87550ed0ffb2930709d728fea19edf4137e2dd66c50f6	build,run	stop	
+file	miservice/lib/libmi_jpd.so	13808	a7a7e99317c3a66e30b5f458b1f79c6152e1b105838a3dfe7b408a4a421d72db	build,run	stop	
+file	miservice/lib/libmi_vdec.so	13804	36d0b4ca65d7e0f8732e5ceda14ac30ea32a1c3002abd778f26830282a1db21c	build,run	stop	
+file	miservice/lib/libmi_iqserver.so	51720	4df38da114ce75ee7cc4df87034d265c99830795271e34e8fd2f8243468aef14	-	info	
+file	miservice/lib/libfbc_decode.so	166608	29f2002cfbe194492bab634d4747a7134c2742a05f57c55947f7ef4e1d468926	-	info	
+file	miservice/lib/libsigma3a.so	10048	e2517b02cf3c5d92ae0783186ccf971ed9d6eab5defcfe1e4843a4d67aae6725	-	info	
+file	miservice/lib/libmi_ldc.so	9692	67c6262ef051ebf6f5a3ed13ddef10fcb8face92243196a920eb71d42a3787af	build	warn	C testers only
+file	miservice/lib/libmi_ai.so	30256	979c33e850c8b3253e1273275425f1b65178d27d0c59def35865c2bbbe481c93	-	info	
+file	miservice/lib/libmi_ao.so	34364	188dd92777881065ba8483a5919c3cb49cca1125d8a247b2d9c8566d99af1051	-	info	
+file	miservice/lib/libmi_vdisp.so	9680	30637567f73ec886e48df60d22bdb970328b4089199ad06f88906fa89407c222	build	warn	C testers only
+file	miservice/lib/libmi_shadow.so	13812	c46c26bec877ae8e4ff6259e1d1378faa45d5087ce471b1da40476683758efae	-	info	
+file	miservice/lib/libmi_ipu.so	26168	5a6810bbc6fde040c193c2f14b02be5ea71f56aaeb0f1f2c3decb4ca2c11c84f	-	info	
+file	miservice/lib/libmi_mipitx.so	9680	d8abb3db90eaa43440021bf6ff411168147e0917b9deca2d2b897d9d8f497544	-	info	
+file	miservice/lib/libmi_panel.so	9688	f450c2e4afba807ab11e7fddff028f0fc59a05276b3627ff8ed7750389a9f81b	-	info	
+file	miservice/lib/libmi_ive.so	742208	4f58ea191a15fdaa086899f20915aa21a8c3bb12e6ab6cee31d3b9fffdd99c19	-	info	
+file	miservice/lib/libMD_LINUX.so	150148	2e53324f70ffcf37b25cfa82b9b06f3ef1a39ba7e50b00d48a3ad15befb7f645	-	info	
+file	miservice/lib/libOD_LINUX.so	109240	924effadb21db8b8ddc95a9e6702a61588f572856bb526870e5b9469dbd17abe	-	info	
+file	miservice/lib/libVG_LINUX.so	54920	f16622ea957cabdb6691a17da098e46c079b677a326b08ea464df0926f865e4c	-	info	
+file	miservice/lib/libAEC_LINUX.so	79636	df792bcd50d3cecdaab78d586a91f964f0ff58d3d5ce154a7b0bc90dbe047988	-	info	
+file	miservice/lib/libAED_LINUX.so	115480	100ac91318f60b74d0f529d24056ea66e6808fcf1ce2adc9d2ef7fbe0ea5632f	-	info	
+file	miservice/lib/libAPC_LINUX.so	125772	2ccd24a832464121b8915f80ef1efce8242b5164580d5dc9e64f6d6d7d11e1ab	-	info	
+file	miservice/lib/libBF_LINUX.so	142680	57d4b32f94efd1074cb052c7704677caa79ad6135201db8a3a62d3f6c4eebb92	-	info	
+file	miservice/lib/libSRC_LINUX.so	37152	1aac9d888f4d760b6af2b29114f6b5e9f1127caad76d279c7a59eb703b7f7e85	-	info	
+file	miservice/lib/libSSL_LINUX.so	30900	d95c509a4dac7545bfa6cb14f9839ace1809ccbe832c841e6597a3d6d96ceb95	-	info	
+file	miservice/lib/libmi_divp.so	9664	667b8bebdb4f8debf1d7f8f05db7317313ddc9e412d6906dd84888993ca58800	-	info	
+file	miservice/lib/libmi_gyro.so	9664	e6d7fb94472410f15627cc0a33ec11906136f4f454e7e397ca30e827c49d1954	-	info	
+file	miservice/lib/libmi_vpe.so	13776	5ed956da0500173770f4e39ed29669e531493145b89b650481f1e9fbe6787cc1	-	info	
+file	miservice/lib/libmi_sed.so	22180	023e0f51cf186b1badcb112d2b932e405a9993baa639fe4afda315dec5941781	-	info	
+file	miservice/lib/libmi_vdf.so	67464	b4ebccfa7d68c888eb61c0a741218ca3cecc73764abeee433bb9246a159e2f65	-	info	
+file	miservice/lib/libmi_wlan.so	39112	2b2f23ca35e96ad2f8ffb3b0efa8d4cc0bfce03c2448b25ea9f89ff03206e695	-	info	
+file	miservice/lib/libcjson.so	26048	37dcde287e03017d828d0519a57cb8328f4ac9a556030f32c9726159afe1d020	-	info	
+file	miservice/lib/libg711.so	5648	029b075a88f170f9ea7ff9dbe79c6071cfbe0e3eb476e047095a4856971f4fa8	-	info	
+file	miservice/lib/libg726.so	9512	3c73654e3b66f55ec0aa40a630efe6868908c80f2603e447c8c54325a1f8cb7d	-	info	
+# Coprocessor firmware, IQ data, app data and configuration tables
+file	miservice/venc_fw/chagall.bin	394112	f2dfc1ebd9594e46d45b1f8a52271c49b0326135e2afc8adca6b3b4b5fdb6826	run	stop	codec firmware CODEC40.22031116
+file	miservice/dla/ipu_firmware.bin	602632	b65f44371c0d0d6df133b81a01dbde44527bb11d1265b86307451ed7b81fdd59	-	info	
+file	miservice/iqfile/imx307_iqfile.bin	39135	2941436bcb7f31625d90b6d04e3e134c0a574d5dbaace54299bfa89a890e7bb9	run	stop	the 3A start-up file
+file	miservice/iqfile/imx307_api.bin	93961	acf73dd356da34ac28854961e69b13abbe347319ab44b0153074d3150075d79e	-	info	
+file	customer/iq_file_gc8613.bin	93961	7714b62dba0d92f670cf321d29f7aac159719b7e3f87e678c6dc421cac22e3b8	run	stop	the ISP tuning microcamd loads
+file	customer/ws.bin	88	4b9e1bc21796e44a3a0269dafe799f9ce8f925ba84cf6a5c564fff09da417127	-	info	the owner's menu settings: differ from camera to camera
+file	customer/default_ws.bin	88	0f8845cd14a819f8ca242cb890788f683336e94475a0cd4d671585a4eb59b556	-	warn	the vendor menu defaults
+file	miservice/iqfile/isp_api.xml	164700	f7934cd7a844f3fa0046186b9ef22319a2fe11f22f01f0668fbb216a95404289	-	info	
+file	miservice/mmap.ini	5487	a5aa535da3ff2909f6b16213c51109d768f2adc17d295ef8d60de3cfc0d3d08e	run	stop	memory map
+file	miservice/config.ini	76005	a363faa70b7a23d67b7540791c9d41a2f7fed579a007f2f7039c306bf3867341	-	info	HDMI and panel timings; a copy nothing reads (MISC config.ini is read)
+file	miservice/fbdev.ini	558	bcd235b13c4a0595d91a271b1f046a711ab7a325716673d416cf0a26fa13bd9b	run	stop	
+file	miservice/board.ini	472	17575f5da6e7bf046f3e11e6e1c949eb581ffa46fa4685219b4447d74ff3378e	-	info	
+file	miservice/model/Customer.ini	2808	afb4470b21301b130b975c8ca92cd8cd1daa9098937b15a32a397deacae25b68	-	info	
+file	miservice/model/LCM.ini	475	4bcc877f6a187a429599d392117506d2f06c6ec6f4a1df7df26cf8a9e0182b5e	-	info	
+# Applications and tools
+file	customer/prog_uvc	579968	972ae0a67695f98e3ccd1e60f769d9652aec5e40ef4318e8623cde0f7f2653c1	-	info	
+file	customer/kjd_lvgl	2345232	d49ac10f94a13b3f59e643c2cd6172a7d123e8f36df3ac017e3513eff0d5092f	-	info	
+file	customer/lib/libmp4v2.so	1246476	c9b3be972e56f71dfcfcff7044e018b672d823df4883a3f6c5dc019243608d65	-	info	
+file	customer/lib/libmp4v2.so.2	1246476	c9b3be972e56f71dfcfcff7044e018b672d823df4883a3f6c5dc019243608d65	-	info	
+file	customer/lib/libmp4v2.so.2.0.0	1246476	c9b3be972e56f71dfcfcff7044e018b672d823df4883a3f6c5dc019243608d65	-	info	
+file	customer/sd_version_recognition	12632	cb5ffbb2e558a95e92ee5bcc7e376ddcdf8f27b240b8d2a44fa2e955ca3f5bc5	-	info	
+file	customer/riu_w	5612	15016388aa96a37b2973cca16807f460ef56e89263feee3c9f6b636391189eef	-	info	
+file	customer/riu_r	5612	15016388aa96a37b2973cca16807f460ef56e89263feee3c9f6b636391189eef	-	info	
+file	customer/riux32_r	5612	15016388aa96a37b2973cca16807f460ef56e89263feee3c9f6b636391189eef	-	info	
+file	customer/riux32_w	5612	15016388aa96a37b2973cca16807f460ef56e89263feee3c9f6b636391189eef	-	info	
+file	customer/i2c_read_write	22260	7af160e56c70f11d55c24133ce24c1cf9fbc55131c1f45450b6d647f1529df85	-	info	
+file	customer/tmp	16836	1b433f24154305b2a3f79dddb358d480c6501b1453128765f73d705de744a4f9	-	info	
+file	customer/htop	743240	fa8d4aa78b745b79c9c3434a4394eebb78b1fbb7fa28e49b66da7ba20da867ea	-	info	
+file	customer/iperf3	134268	18610f92327d0f707b4e6f129d016ca67d8f42314a5dd2d98c4e6ca7f969dada	-	info	
+file	miservice/config_tool	49616	dd9343ebca8cc634120d8dac3c662f679d6560108448d435324136631d7b7b7d	run	stop	mi_sys usermode helper
+file	rootfs/bin/busybox	679184	2dc238d832dd86a46ce03e7d637395eea48cddf51e5346fd043a2e3fe612b346	install,run	warn	the shell the boot scripts run in
+file	rootfs/bin/fwfs	70488	1dc5608545d16e85ac023f1dc6b0bef96ff6ab870254c9c9a8036eaa68364846	-	info	
+file	rootfs/etc/fw_printenv	26432	b23222c06fd08c71ac2314ca536aa791e5e84edbfd8fc2b0b2c277851fe80f8e	install	warn	fw_setenv: the install writes bootargs with it
+file	rootfs/bin/scp	42852	90a0fd62fb22e6c628a9046e986de5810725de4cce566aff0f2b882f1207a9e9	-	info	
+# rootfs libraries — rootfs/lib/
+file	rootfs/lib/ld-2.30.so	105792	dd2f57c2363db9abce352fcaf07b943e59fbd5dcca898bb39a2709350fbadb4c	build,run	stop	glibc 2.30
+file	rootfs/lib/libc-2.30.so	926636	3b2cc951503e0bc40e45ebc6e8f39b92b937ab7a3b7c009377708d2473756657	build,run	stop	glibc 2.30
+file	rootfs/lib/libm-2.30.so	353752	8025a30fd4b7b118ebd35fc1b71e9898473136dc83edaa24358f57ba69d04084	build,run	stop	
+file	rootfs/lib/libpthread-2.30.so	76096	bb6cf33d1c580d39b4f27370e1f96aa6e731b72c4a928f69902b92930e018155	build,run	stop	
+file	rootfs/lib/libdl-2.30.so	9724	b18b8a39e854f928e62d47452f99d069fe5ef869efb14269fee4ff8395e06f63	build,run	stop	
+file	rootfs/lib/librt-2.30.so	22456	f4293df48cc2dee0db3791e8d16495fe33ccf404c0ca8ca26731e13d4d151e40	-	info	nothing of ours links it
+file	rootfs/lib/libresolv-2.30.so	50952	2ae03982785a1637fa765351b59b42356ec58cc085409da0a6a565cbc369f22b	-	info	
+file	rootfs/lib/libutil.so	9752	b65cb022b0e239467813cfb7ce4de67e69df8660ac7fc926fdaadd0928e3c222	-	info	
+file	rootfs/lib/libutil.so.1	9752	b65cb022b0e239467813cfb7ce4de67e69df8660ac7fc926fdaadd0928e3c222	-	info	
+file	rootfs/lib/libcrypt.so	30348	83069132d52e44f11a9a12488f1773abd43738cf433250cc723f6e172d793abb	-	info	
+file	rootfs/lib/libcrypt.so.1	30348	83069132d52e44f11a9a12488f1773abd43738cf433250cc723f6e172d793abb	-	info	
+file	rootfs/lib/libnss_compat.so.2	22272	6d8f8ee7488ec05ef3185a63139c849718f68c9c5a58b11545ea1c13d53046b9	-	info	
+file	rootfs/lib/libnss_files.so.2	30296	bff4f221754ccae9eb47a7f8588e72a4e97a0c0327e4e70cda8cc2f4748b929d	-	info	
+file	rootfs/lib/libpcprofile.so	5492	3473155ee8c7e882a74d8f0f015f1be40451dab09808547cc1ffe8aa8672e67b	-	info	
+file	rootfs/lib/libstdc++.so.6.0.26	1270200	b024e287f63aec63485219078f0a56d0390ee231a794a2fdfa6789a743b02b50	-	info	
+file	rootfs/lib/libgcc_s.so.1	112280	5def4c502c9fe114903eef41dfdbd5b2b6b7abf89015dac444dbafde4de441f0	build,run	stop	
+file	rootfs/lib/libz.so	75388	db56b71e32a6d9803729402a3f2cfeb02db287e7124ede73c40d87db69b1fe90	-	info	
+file	rootfs/lib/libz.so.1	75388	db56b71e32a6d9803729402a3f2cfeb02db287e7124ede73c40d87db69b1fe90	-	info	
+file	rootfs/lib/libfuse.so.2.9.9	137684	441065b278447c6e5d488e802c9a0730c50f31629d346856e4e9dee8a2899f40	-	info	
+# Boot scripts and settings the install depends on (blobs.md leaves the scripts out)
+file	rootfs/etc/init.d/rcS	1536	f9ab3687aa147fcf05d126345d632496a836ca1d7376078f5048b417a0e96e93	install	stop	runs /customer/demo.sh
+file	rootfs/etc/fw_env.config	33	f0a27e316dc27a783261895407f32ee09df48c3aed375f7eed3f1d89eaa432d7	install	stop	where fw_setenv writes bootargs
+file	customer/demo.sh	3268	b889beccb295f9f62e9a59167046d8f92f288f791572f33e37f012e8f046cac5	install	stop	the boot script the installer patches
+file	customer/set.sh	65	3f05bd5f781da2734d3fc673faaff614605cd064743d864d1e7b632b1ad0ee14	run	warn	sourced by demo.sh
+file	customer/sd_hotplug.sh	1666	c4879d17089508766b0105b45a575c6c0b2e36442dde5f317843baa4539c0c58	run	warn	microcamd owns the card instead

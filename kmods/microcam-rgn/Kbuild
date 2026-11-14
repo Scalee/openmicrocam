@@ -1,0 +1,3 @@
+# The RGN driver in place of the stock mi_rgn.ko; build: ../build-ko.sh .
+obj-m := microcam_rgn.o
+ccflags-y += -march=armv7-a

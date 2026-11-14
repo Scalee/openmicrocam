@@ -1,0 +1,3 @@
+# What microcamd needs of mi_gfx that only the kernel offers; build: ../build-ko.sh .
+obj-m := microcam_sys.o
+ccflags-y += -march=armv7-a

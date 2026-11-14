@@ -1,0 +1,99 @@
+# How OpenMicroCam draws — every scheme here starts with `...@_style` and keeps to this file.
+#
+# A scheme is a D2 file (d2lang.com; what our page adds: tools/scheme/README.md). Labels are short and technical, in the
+# words of the hardware and the code.
+# Languages: a public scheme is written in English and Russian, always both: `# languages: en ru` among its leading
+# comments and every text as «English ‖ Russian» (tools/scheme/README.md «Languages»); a change to a text changes both.
+# The palette is dark: who runs a block is its fill, its state is its border.
+# Conventions:
+# - blocks: hw = a block of the SoC, ours = our code, vend = the vendor's code, ext = outside the SoC, none = unused/not yet
+# - states (a second class: `class: [ours; bad]`): bad = eats memory, copies or breaks; good = fits / right;
+#   changed = changed in the step the tab names (put the step in the label too)
+# - memory: a pool or a program's memory is a `pool` container; a place in it a `place` (a block with a double border),
+#   its size and owner on its label lines («owner: …»)
+# - arrows: rt = lines flow without memory; frames = whole frames through DRAM (label = buffer count); ctl = control,
+#   not picture; data = the bytes move; ref = only a reference moves; copy = a copy that should not be
+# - size: a scheme is read in a panel about half the screen wide and the whole height (it changes with the window).
+#   Text is big and the blocks tight around it (the classes set 17 px); split a long label into short lines instead of
+#   widening the block. The page sizes every plain block to its label.
+# - layout: D2's elk by default; with the picture's live-layout button on, the page lays a scheme out itself, live,
+#   for the panel's size and the zoom (tools/scheme/README.md) — write for both: zones are
+#   containers, their blocks go in chains along the arrows, a zone stands next to the zones its arrows run to, and the
+#   zones line up across the panel and wrap into rows. So write the zones in the order the data goes, the blocks in a zone
+#   in the order of their chains, an arrow against the reading direction as `a <- b`, and keep a note by its block with an
+#   invisible `blk -> note {class: tie}`. A scheme that places its blocks itself keeps them — a grid (`grid-rows` before
+#   `grid-columns` fills row by row, empty cells of class `gap`) or, where the picture needs it (two to three times the
+#   work), blocks placed by hand with TALA and `top`/`left` (hardware-map.d2: related blocks in one row, the devices'
+#   ports in grids, notes by their blocks).
+# - versions are tabs: the root board is «as now» (its tab name: a `# tab: …` line under the title), `scenarios` change
+#   it («to be», «as was»); a picture of another shape is a `layers` board (it needs its own `...@_style`)
+# - `vars.intro` (markdown) is the tab's text in the panel under the picture; a board with no blocks shows it as a page
+# - details go in `tooltip` (markdown-lite), shown in the panel under the picture under the pointer and on a click; the
+#   picture keeps short labels. A tooltip is compact, only what matters: a block or a port in three
+#   paragraphs — «**kind** · name — a few words» (SoC block, device, port, channel, layer, our thread …), then «Limits:
+#   …» (its parameters and limits, when it has any), then «Ours: …» (what it does for us); nothing to say, no tooltip.
+#   An arrow's tooltip (in `vars.arrows`, tools/scheme/README.md; also shown under the pointer) — what goes, how
+#   (lines with no memory · a reference to a buffer · a copy by the CPU · DMA by the hardware · a byte stream · a call,
+#   ioctl or register write · a message over a socket · an event or interrupt · statistics), who moves it (pushes /
+#   takes: the hardware, MI_SYS by a bind, our thread …), buffers and their pool, how often (each frame / on an event /
+#   once at setup); each fact with its origin tag
+# - memory as a strip: a pool is a row of blocks as wide as their sizes (class mem; free memfree), the measurement and
+#   its conditions in the pool's label and tooltip; `vars.links` ties each to the ports and arrows its buffers pass
+# - ports, channels and layers are blocks inside their device's block (a grid container), all the hardware has, the
+#   unused ones of class none; arrows go to the port itself
+# - a legend is a `legend` container placed `near` a corner, holding samples of the classes the scheme uses
+#
+# Catalog (one line per scheme in this folder):
+# - hardware-map.d2 — the map of the hardware and our software, frame paths; blocks placed by hand
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 200
+    pad: 16
+    theme-overrides: {
+      N1: "#d8dde4"
+      N2: "#8a94a3"
+      N3: "#6b7480"
+      N4: "#2a313b"
+      N5: "#232a33"
+      N6: "#1d232b"
+      N7: "#0f1216"
+      B1: "#8a94a3"
+      B2: "#6b7480"
+      B3: "#2a313b"
+      B4: "#171b21"
+      B5: "#1d232b"
+      B6: "#232a33"
+    }
+  }
+}
+
+classes: {
+  hw: {style: {font-size: 17; fill: "#1d3550"; stroke: "#2f6fb3"; border-radius: 6}}
+  ours: {style: {font-size: 17; fill: "#173d2c"; stroke: "#2f9e6a"; border-radius: 6}}
+  vend: {style: {font-size: 17; fill: "#4a2f16"; stroke: "#c8792a"; border-radius: 6}}
+  ext: {style: {font-size: 17; fill: "#262b33"; stroke: "#6b7480"; border-radius: 6}}
+  none: {style: {font-size: 17; fill: "#1a1a1a"; stroke: "#666666"; stroke-dash: 3; font-color: "#8a94a3"; border-radius: 6}}
+
+  bad: {style: {stroke: "#ff6b5c"; stroke-width: 3}}
+  good: {style: {stroke: "#4cc38a"; stroke-width: 3}}
+  changed: {style: {stroke: "#5fb3ff"; stroke-width: 3; fill: "#16304a"}}
+
+  gap: {label: ""; width: 10; height: 10; style: {opacity: 0}}
+  pool: {style: {fill: "#171b21"; stroke: "#2a313b"; border-radius: 10; font-color: "#8a94a3"; font-size: 16}}
+  place: {style: {font-size: 17; double-border: true; fill: "#3a2f20"; stroke: "#9a7b4f"; border-radius: 2}}
+
+  rt: {style: {italic: false; font-size: 15; stroke: "#5fb3ff"; stroke-width: 2; font-color: "#5fb3ff"}}
+  frames: {style: {italic: false; font-size: 15; stroke: "#f0c060"; stroke-width: 2; stroke-dash: 4; font-color: "#f0c060"}}
+  ctl: {style: {italic: false; font-size: 15; stroke: "#9a8cff"; stroke-width: 1; stroke-dash: 2; font-color: "#9a8cff"}}
+  data: {style: {italic: false; font-size: 15; stroke: "#d8dde4"; stroke-width: 2}}
+  ref: {style: {italic: false; font-size: 15; stroke: "#5fb3ff"; stroke-width: 2; stroke-dash: 5; font-color: "#5fb3ff"}}
+  tie: {style: {opacity: 0}}
+  copy: {style: {italic: false; font-size: 15; stroke: "#ff6b5c"; stroke-width: 3; font-color: "#ff6b5c"}}
+
+  head: {shape: text; style: {font-color: "#8a94a3"; font-size: 16; bold: true}}
+  note: {shape: text; style: {font-color: "#8a94a3"; font-size: 15}}
+  alarm: {shape: text; style: {font-color: "#ff6b5c"; bold: true; font-size: 15}}
+  legend: {style: {fill: "#171b21"; stroke: "#2a313b"; font-color: "#8a94a3"; font-size: 14}}
+}
