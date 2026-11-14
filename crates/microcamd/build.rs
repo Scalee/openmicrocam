@@ -2,7 +2,7 @@
 //! linked as needed-regardless (`--no-as-needed`) and found at run time through RPATH /config/lib (.cargo/config.toml).
 //! The linker reads link-time copies of the camera's MI libraries from the directory `MICROCAM_LINK_LIBS` names: the
 //! libraries of the camera's dump (`miservice/lib`), each with its file name set as its SONAME (`patchelf --set-soname`),
-//! since the originals carry none and a linker would record their full path as NEEDED (README «Building»). The value
+//! since the originals carry none and a linker would record their full path as NEEDED (docs/INSTALL.md «Build OpenMicroCam»). The value
 //! comes from tools/hostconf.py, which reads the environment, the config file and the default, as every tool does.
 use std::env;
 use std::path::PathBuf;

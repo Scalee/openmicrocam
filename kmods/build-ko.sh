@@ -1,7 +1,7 @@
 #!/bin/sh
 # Build a kernel module directory against the prepared vanilla 4.9.227 tree ($KTREE; configured to the camera's module
 # ABI: vermagic "4.9.227 SMP preempt mod_unload ARMv7 thumb2 p2v8", struct module 512 B with init @0xe8 / exit @0x1dc).
-# Usage: build-ko.sh <module dir> ; the .ko is also copied to $MICROCAM_STAGE. Settings: README «Building».
+# Usage: build-ko.sh <module dir> ; the .ko is also copied to $MICROCAM_STAGE. Settings: docs/TOOLS.md «Settings».
 set -e
 eval "$(python3 "$(dirname "$0")/../tools/hostconf.py" --sh)"
 K=${KTREE:?KTREE=<the prepared linux-4.9.227 tree>}

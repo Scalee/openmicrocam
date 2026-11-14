@@ -98,7 +98,7 @@ def bundle(dump, microcamd, menu):
     """The files for the camera, in a new directory."""
     for path in (microcamd, menu):
         if not os.path.exists(path):
-            sys.exit(f'install: no {path}: build it first (README «Building»)')
+            sys.exit(f'install: no {path}: build it first (docs/INSTALL.md «Build OpenMicroCam»)')
     b = tempfile.mkdtemp(prefix='microcam-bundle-')
     camlib.pack_xz(microcamd, f'{b}/microcamd.xz')
     camlib.pack_xz(menu, f'{b}/microcam-menu.xz')
@@ -110,7 +110,7 @@ def bundle(dump, microcamd, menu):
             shutil.copy(os.path.join(stage, name), b)
     missing = [n for n in NEEDED if not os.path.exists(os.path.join(b, n))]
     if missing:
-        sys.exit(f'install: not built: {", ".join(missing)} (README «Building»; modules and fbhide land in MICROCAM_STAGE)')
+        sys.exit(f'install: not built: {", ".join(missing)} (docs/INSTALL.md «Build OpenMicroCam»; modules and fbhide land in MICROCAM_STAGE)')
     # the ISP tuning microcamd is tested with: the camera's own file with the defect-pixel blending off
     subprocess.run([sys.executable, os.path.join(HERE, 'iq-dpc-noblend.py'), os.path.join(dump, 'customer/iq_file_gc8613.bin'),
                     os.path.join(b, 'iq_file_gc8613.bin')], check=True, stdout=subprocess.DEVNULL)

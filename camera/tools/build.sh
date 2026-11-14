@@ -1,7 +1,7 @@
 #!/bin/sh
 # Build a camera-side C tool: host cross-gcc, but linked against the camera's own glibc 2.30 and MI libs from its dump.
 # usage: build.sh <tool.c> [-lLIB…]   (-> the binary beside it, also copied to $MICROCAM_STAGE; -lLIB: a library of the dump's
-#        miservice/lib the tool needs beyond the common set below); settings: README «Building», docs/TOOLS.md
+#        miservice/lib the tool needs beyond the common set below); settings: docs/TOOLS.md «Settings»
 set -e
 eval "$(python3 "$(dirname "$0")/../../tools/hostconf.py" --sh)"
 SRC=$(cd "$(dirname "$1")" && pwd)/$(basename "$1" .c); shift

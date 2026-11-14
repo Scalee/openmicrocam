@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install the build toolchain (README «Building»): Rust with the armv7 target (rust-toolchain.toml), zig, cargo-zigbuild,
+# Install the build toolchain (docs/INSTALL.md «Build OpenMicroCam»): Rust with the armv7 target (rust-toolchain.toml), zig, cargo-zigbuild,
 # and on Debian/Ubuntu the host packages: the arm-linux-gnueabihf cross gcc and binutils (kernel modules, camera-side
 # C tools), libclang (bindgen), patchelf (tools/mk-linklibs.sh), xz. Already present parts are kept.
 # usage: tools/install-toolchain.sh        (rustup and cargo honour RUSTUP_HOME / CARGO_HOME when set)

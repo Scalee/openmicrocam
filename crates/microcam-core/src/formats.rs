@@ -194,7 +194,7 @@ pub(crate) mod tests {
     pub(crate) fn formats_toml() -> &'static str {
         static T: std::sync::OnceLock<String> = std::sync::OnceLock::new();
         T.get_or_init(|| {
-            let h = include_str!("../../../kmods/g_webcam/yz_desc.h"); // made by kmods/g_webcam/build.sh (README «Building»)
+            let h = include_str!("../../../kmods/g_webcam/yz_desc.h"); // made by kmods/g_webcam/build.sh (docs/INSTALL.md «Build OpenMicroCam»)
             let list = h.split_once("yz_format_list[] =\n").expect("yz_format_list in yz_desc.h").1;
             let list = list.split_once(";\n").expect("the list's end").0;
             list.lines().map(|l| l.trim().trim_start_matches('"').trim_end_matches("\\n\"").replace("\\\"", "\"") + "\n").collect()

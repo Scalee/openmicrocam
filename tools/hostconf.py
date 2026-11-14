@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The host settings of the tools: one set of environment variables, the build's (README «Building») and the camera's,
+"""The host settings of the tools: one set of environment variables, the build's (docs/TOOLS.md «Settings») and the camera's,
 listed in docs/TOOLS.md. Each is read from the environment, else from the config file, else its default below.
 
 The config file is a shell file of `NAME=value` lines, sourced by sh in its own directory (so `$PWD`, `$HOME` and

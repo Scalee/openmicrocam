@@ -456,7 +456,7 @@ KNOWN = [re.compile(p) for p in (
     r"^warning: unstable feature specified for `-Ctarget-feature`: `(neon|d32)`",
     r"^warning: mi@[\d.]+: \S+/cargo-zigbuild/\S+/aeabi_unaligned\.c:1:1: error: FileNotFound$",
     r"^\s*\|?\s*$", r"^\s*= note: this feature is not stably supported; its behavior can change in the future",
-    r"^warning: `\S+` \((lib|bin \"\S+\")\) generated [23] warnings( \(2 duplicates\))?$",
+    r"^warning: `\S+` \((lib|bin \"\S+\")\) generated \d+ warnings?( \(\d+ duplicates?\))?$",   # a count of the lines above
     # a binary linked without microcamd's build script (the menu): zig ignores the flag cargo passes
     r"^warning: linker stderr: zig: argument unused during compilation: '-fuse-ld=lld'", r"^\s*= note: `#\[warn\(linker_messages\)\]` on by default$",
     r"^\s*(Compiling|Finished|Building|Blocking|Fresh|Updating|Locking|Downloaded|Downloading|Checking)\b")]
@@ -468,7 +468,7 @@ def show(msg):
 
 
 def build():
-    """cargo zigbuild of microcamd and the menu with the host's build settings (README «Building»); (ok, the lines worth
+    """cargo zigbuild of microcamd and the menu with the host's build settings (docs/INSTALL.md «Build OpenMicroCam»); (ok, the lines worth
     showing)."""
     p = subprocess.run(['cargo', 'zigbuild', '--release', '--target', f'{TARGET}.2.30', '-p', 'microcamd', '-p', 'microcam-menu'],
                        cwd=REPO, env=hostconf.environ(), capture_output=True, text=True)

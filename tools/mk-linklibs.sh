@@ -1,7 +1,7 @@
 #!/bin/sh
 # Link-time copies of the camera's MI libraries. The originals (in the camera's dump) carry no DT_SONAME, so a linker
 # would record their full laptop path as NEEDED; the copies get SONAME = file name. Only the linker reads these; the
-# camera runs its own. usage: mk-linklibs.sh   (settings, README «Building»: MICROCAM_SYSROOT in, MICROCAM_LINK_LIBS out)
+# camera runs its own. usage: mk-linklibs.sh   (settings, docs/TOOLS.md «Settings»: MICROCAM_SYSROOT in, MICROCAM_LINK_LIBS out)
 set -e
 eval "$(python3 "$(dirname "$0")/hostconf.py" --sh)"
 S=${MICROCAM_SYSROOT:?MICROCAM_SYSROOT=<dump dir with miservice/lib>}
