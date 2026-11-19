@@ -3,9 +3,9 @@
 ![OpenMicroCam — open firmware for the YIZHAN 4K (XHU4012) HDMI/USB microscope camera, SigmaStar SSC8836, GC8613: the camera and its picture with the on-screen menu](docs/images/yizhan-4k-microscope-camera-openmicrocam.png)
 
 OpenMicroCam is an independent open firmware for the **YIZHAN 4K** HDMI/USB microscope camera, built on the SigmaStar
-SSC8836 (Mercury6) with a GalaxyCore GC8613 sensor. It is written from scratch — not a dump of the stock firmware and not a
-patch of it. Its daemon, `microcamd`, takes the place of the vendor's application: live video to HDMI and USB (UVC), an
-on-screen menu, photos and recording.
+SSC8836 (Mercury6) with a GalaxyCore GC8613 sensor. It began with a sensor driver of its own — the stock one has a single
+mode — and grew into a daemon, `microcamd`, that takes the place of the vendor's application: live video to HDMI and USB
+(UVC), an on-screen menu, photos and recording.
 
 > **Status:** everything described here works on the tested camera. The documentation, the install scripts and the tools
 > are still being tidied up.
