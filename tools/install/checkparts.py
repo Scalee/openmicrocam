@@ -8,8 +8,10 @@ usage: checkparts.py [DUMP] [--for build|run|install|restore|all] [--camera] [--
   --camera  read the parts on the running camera (its shell, docs/TOOLS.md) instead of a dump
 Prints one line per part: «same», «DIFFERS» or «missing», with the stock firmware's version strings for a differing
 kernel or U-Boot. A part nothing of ours depends on (on_differ «info») never stops: its difference is printed as
-information about another firmware build, and under --quiet only counted. Exit 0 when every part that may stop is the
-same, 1 when one differs or is missing, 2 on a usage error.
+information about another firmware build, and under --quiet only counted. A part that holds the camera's own data
+(on_differ «data»: it differs on every camera) and a flash range the dump does not hold (a dump read over the network
+ends with the last partition) are not compared. Exit 0 when every part that may stop is the same, 1 when one differs or
+is missing, 2 on a usage error.
 Our kernel modules take the vendor's symbols by name and microcamd links the vendor's libraries without symbol versions:
 another build of those parts loads without an error and fails at run time, so a difference there stops the build and
 the install.
@@ -57,20 +59,22 @@ class Dump:
         p = os.path.join(root, 'nor.bin')
         self.nor = open(p, 'rb').read() if os.path.exists(p) else None
 
+    def offset(self, r):
+        return self.regions[r['part'].split(':')[0]] if r['kind'] == 'image' else region_span(r['part'])[1]
+
+    def beyond(self, r):
+        """The part is a flash range past this dump's end: a dump read through the kernel ends with the last partition."""
+        return r['kind'] != 'file' and self.nor is not None and self.offset(r) + r['size'] > len(self.nor)
+
     def blob(self, r):
         if r['kind'] == 'file':
             p = os.path.join(self.root, r['part'])
             return open(p, 'rb').read() if os.path.isfile(p) else None
-        if self.nor is None:
+        if self.nor is None or self.beyond(r):
             return None
         if r['part'] == 'KERNEL:Image':
             return kernel_image(self.nor)
-        if r['kind'] == 'image':
-            off = self.regions[r['part'].split(':')[0]]
-        else:
-            _, off = region_span(r['part'])
-        if off + r['size'] > len(self.nor):
-            return None  # a dump read through the kernel ends with the last partition
+        off = self.offset(r)
         return self.nor[off:off + r['size']]
 
     def sha(self, r):
@@ -150,6 +154,10 @@ def main():
         where = a.dump
     bad = warn = info = same = 0
     for i, r in enumerate(rows):
+        if r['on'] == 'data' or (not a.camera and src.beyond(r)):
+            if not a.quiet:
+                print(f'{"-":8} {r["part"]}  not compared: {r["note"] if r["on"] == "data" else "this dump does not hold it"}')
+            continue
         sha = src.sha(i) if a.camera else src.sha(r)
         stops = r['on'] == 'stop' and (a.purpose == 'all' or a.purpose in r['need'])
         if sha == r['sha']:
@@ -177,7 +185,7 @@ def main():
         verdict = (f'OK — your firmware differs from the tested one only in {info} part{"s" if info > 1 else ""} '
                    'OpenMicroCam does not use; it works, this is for information')
     else:
-        verdict = f'OK, the tested firmware — all {len(rows)} parts identical'
+        verdict = f'OK, the tested firmware — all {same + warn} parts identical'
     if not bad and warn:
         verdict += f'; {warn} warning{"s" if warn > 1 else ""} above'
     print(f'checkparts: {where}: {verdict}')

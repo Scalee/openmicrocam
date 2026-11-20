@@ -8,7 +8,8 @@
 #   KERNEL uImage.
 # need: what of ours depends on the part (build, run, install, dump, restore), - = nothing.
 # on_differ: stop = a difference stops the build and the install where need names them; warn = reported; info = reported
-#   quietly, as a sign of another firmware build (left out under --quiet), never stops.
+#   quietly, as a sign of another firmware build (left out under --quiet), never stops; data = the camera's own data,
+#   different on every camera: not compared.
 #
 # version	IPL	MVX4##m6##ga0090c8IPL_###########XVM
 # version	U-Boot	2015.01, MVX4##M6##g#######CM_UBT1501#XVM, built 2025-06-03
@@ -21,7 +22,7 @@
 # version	application	/customer/version.txt = version:W11861322604301
 # version	flash	SPI NOR 16 MiB
 # Flash image — nor.bin
-file	nor.bin	16777216	a705e4e1fdf2a14238118f852fe9a5ecd085b6b056d99f6a868aa25ce8560713	-	info	the whole flash
+file	nor.bin	16777216	a705e4e1fdf2a14238118f852fe9a5ecd085b6b056d99f6a868aa25ce8560713	-	data	the whole flash, the camera's own data in it
 region	IPL@0x0	65536	e33683ea5dc7d4d9aeb9af051f4a916d864a99c1bb352b50cc4752825236b44c	restore	warn	first-stage loader
 image	IPL:used	29696	5f65e8af3471e7cea2f018d725bda6ca5018cd57f92b846ba8c39acb7ec06423	-	info	
 region	IPL_CUST@0x10000	65536	76c853d43147201880341506b2d92e450593cfa58b81b7d371f9e1ae4e03b32a	restore	warn	board setup
@@ -30,7 +31,7 @@ region	MXPT@0x20000	65536	dbac3f1bda34af37654ade8a372418e5c4ee7817ef05ec766b911f
 image	MXPT:table	4096	6717906c7cf56532d7253d60c026228b21aecb6d74282725bfe6931564052b3b	-	info	
 region	UBOOT@0x30000	258048	04ff542ea19a8778c646358a9c4cc0b8974c39d54912ed01e16be56474541d01	dump,restore	stop	U-Boot 2015.01: the dump and restore commands, RAM addresses
 image	UBOOT:uImage	247116	995f246091a69f07ebfbc983f78e861c501bc4b348ab4c9589f0bc1a45a02585	-	info	
-region	UBOOT_ENV@0x6f000	4096	8c340ef614cba8d9080a4fbe3375ace49fc087b64a0fbd9bd12ea60148ef8a97	-	info	bootargs: our install changes mma_heap
+region	UBOOT_ENV@0x6f000	4096	8c340ef614cba8d9080a4fbe3375ace49fc087b64a0fbd9bd12ea60148ef8a97	-	data	bootargs: our install changes mma_heap
 region	KERNEL@0x70000	2162688	3a3185283d617b6c7f5f8d9deee70935d4be1c1ac1666b3e69bb62361a89bbe5	build,run	stop	kernel uImage: the module ABI
 image	KERNEL:uImage	2150812	5086618172f42413d0c1b2161842dc80c89657518b52ba55b24df8f0eaa743fd	-	info	
 image	KERNEL:Image	4526080	636de2d75131096f9a64d8499dcefe4c06f4e2424ebdeaf0a6afd557c3d15483	build,run	stop	vermagic 4.9.227 SMP preempt mod_unload ARMv7 thumb2 p2v8; our modules bind by name
@@ -38,7 +39,7 @@ region	rootfs@0x280000	2097152	2f199a81cfba615fa356af41da825cdaa34afef40fc5108bc
 image	rootfs:squashfs	1944828	8a6ff372267d05bd02d6a1293461378c8386337b0068d6b22bd6f3fc705f4908	-	info	
 region	miservice@0x480000	4194304	548194ed83f655423a28d524146a5e5e344121d864f9b0d1492e194a2c40868b	run	warn	files checked one by one below
 image	miservice:squashfs	4129130	7647668ab59474bdec57411c2fbaa77fec3344eea2d8bd99cefe8f9b2d7e9642	-	info	
-region	customer@0x880000	6356992	ddfd8afcc986243b5483de473a6662d85e70d03855863315948924a4fda090b6	-	info	written by the install and at run time
+region	customer@0x880000	6356992	ddfd8afcc986243b5483de473a6662d85e70d03855863315948924a4fda090b6	-	data	written by the install and at run time
 region	MISC@0xe90000	655360	7c6759ed6cbc130ba27bc3d3e756d7d2c77fd4c11c179e17a78ce52cbf948e50	run	warn	boot logo and panel settings (firmwarefs)
 region	free@0xf30000	851968	b025d1484fde38fe4e37f5e95a9190964c19e9a7a716a694aa4072cb06651aa1	-	info	outside every partition, all 0xFF
 # Kernel modules — miservice/modules/4.9.227/ (/config/modules/4.9.227)

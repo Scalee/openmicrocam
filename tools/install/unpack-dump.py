@@ -65,7 +65,7 @@ def main():
                 sys.exit(f'unpack: {name} failed: {(p.stderr or p.stdout).strip()[-300:]}')
             n = sum(len(f) for _, _, f in os.walk(dest))
             print(f'{name}: {n} files')
-    print(f'unpacked into {out}; next: checkparts.py {out}')
+    print(f'unpacked into {out}')
 
 
 if __name__ == '__main__':
