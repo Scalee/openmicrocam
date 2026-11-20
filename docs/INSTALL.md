@@ -106,7 +106,8 @@ If OpenMicroCam does not start, the reason is in `OPENMICROCAM/install.log` on t
 
 **Restore the original firmware**
 
-1. Run this command. It creates the `work/card/stock` folder with the files for the card.
+1. Run this command. It creates the `work/card/stock` folder with the files for the card from the saved firmware
+   (`work/dump`).
 
    ```sh
    tools/install/install.py uninstall --card
