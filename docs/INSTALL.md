@@ -4,7 +4,8 @@ For the YIZHAN 4K HDMI/USB microscope camera (SigmaStar SSC8836 / Mercury6, GC86
 [HARDWARE.md](HARDWARE.md).
 
 You need Linux (Debian/Ubuntu); Windows and macOS are not tried. The camera is connected to the computer over USB. Run
-every command from the repository's root; the files they make are kept in `work/`.
+every command from the repository's root; the dump and the microSD card's files are kept in `work/`, the build's in
+`target/` and `stage/`.
 
 ## Save the original firmware
 
@@ -43,8 +44,11 @@ tools/install/prepare-ktree.sh                         # Linux 4.9.227 set up li
 cargo zigbuild --release --target armv7-unknown-linux-gnueabihf.2.30                                           # microcamd
 for m in microcam-sys microcam-canvas microcam-rgn gc8613 udc-msb250x; do sh kmods/build-ko.sh kmods/$m; done  # kernel modules
 kmods/g_webcam/build.sh                                # the USB gadget
-camera/tools/build.sh camera/tools/fbhide.c
+camera/tools/build.sh camera/tools/fbhide.c            # fbhide: a small tool that hides the stock boot loader's logo
 ```
+
+After a successful build `microcamd` and `microcam-menu` are in `target/armv7-unknown-linux-gnueabihf/release/`, the six
+kernel modules (`.ko`) and `fbhide` in `stage/`.
 
 ## Install or update OpenMicroCam
 

@@ -75,7 +75,7 @@ tools/install/prepare-ktree.sh                         # Linux 4.9.227 set up li
 cargo zigbuild --release --target armv7-unknown-linux-gnueabihf.2.30
 for m in microcam-sys microcam-canvas microcam-rgn gc8613 udc-msb250x; do sh kmods/build-ko.sh kmods/$m; done
 kmods/g_webcam/build.sh                                # the USB gadget
-camera/tools/build.sh camera/tools/fbhide.c
+camera/tools/build.sh camera/tools/fbhide.c            # fbhide: a small tool that hides the stock boot loader's logo
 
 # install; an update is the same command after a new build
 tools/install/install.py install                       # the camera reboots into OpenMicroCam
