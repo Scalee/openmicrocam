@@ -16,6 +16,9 @@ Install what unpacks the dump:
 sudo apt install squashfs-tools pipx && pipx install jefferson
 ```
 
+Take the microSD card out of the camera, if one is in it, and power the camera on again: with a card in, the computer
+sees the camera only as a USB drive, without the network the installer works over.
+
 Take the dump: the installer reads the flash over the camera's USB network and checks that it carries the firmware
 OpenMicroCam is tested with.
 

@@ -22,7 +22,7 @@ usage: install.py dump [OUTDIR] [--card | --serial [--reader DEV]]
              MICROCAM_PASSWORD (the stock one unless set) and put the boot hook in; then `install`
 Every step but access, --card and `dump --serial` goes over the camera's USB network with the camera's stock login, or
 the one MICROCAM_USER / MICROCAM_PASSWORD set (docs/TOOLS.md); when the camera does not answer there, the step says what
-to check and what the card or the serial console can do instead.
+this computer sees of it on USB; when it refuses the login, what the card or the serial console can do instead.
 --card writes files for the root of a microSD card (FAT32) into a folder of work/card, emptied first; the user copies
 them onto the card. At every power-on the camera's U-Boot runs the card's H161X.bin as a script; ours first overwrites it
 in place with DONE.BIN (U-Boot writes only over files of the same size: a file it makes anew is broken), so a card left
@@ -34,7 +34,7 @@ OPENMICROCAM/install.log and reboots.
 it is) and $MICROCAM_STAGE
 (modules, fbhide); settings: docs/TOOLS.md.
 """
-import argparse, base64, hashlib, os, re, shutil, socket, subprocess, sys, tempfile, threading, time
+import argparse, base64, glob, hashlib, os, re, shutil, socket, subprocess, sys, tempfile, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
@@ -231,19 +231,45 @@ def login_ok():
 SERIAL_DOC = 'docs/INSTALL.md «Over the serial console (UART)»'
 
 
-def need_shell(refused, silent):
-    """The camera's shell over its USB network with the login in force; else what to check, and the serial way
-    (`refused`: when the camera answers but takes no login, `silent`: when it does not answer)."""
+USB_CAMERA = ('0ac8', '3420')  # the camera on USB, under the stock firmware and under OpenMicroCam
+USB_CARD = ('0525', 'a4a5')  # the stock firmware with a microSD card in: a storage gadget, no camera and no network
+
+
+def usb_ids():
+    """The (vendor, product) ids of the USB devices this computer sees."""
+    ids = set()
+    for vendor in glob.glob('/sys/bus/usb/devices/*/idVendor'):
+        try:
+            with open(vendor) as v, open(os.path.join(os.path.dirname(vendor), 'idProduct')) as p:
+                ids.add((v.read().strip(), p.read().strip()))
+        except OSError:
+            pass
+    return ids
+
+
+def need_shell(refused):
+    """The camera's shell over its USB network with the login in force; else what this computer sees of the camera
+    (`refused`: what to do when the camera answers but takes no login)."""
     net = ''
     if not camlib.ping(2):  # this computer's address on the camera's USB network: the interface is new at every camera boot
         net = subprocess.run(['sh', os.path.join(REPO, 'tools', 'cam', 'cam-net.sh')], stdout=subprocess.PIPE, text=True).stdout.strip()
     if login_ok():
         return
     if camlib.ping(2):
-        sys.exit(f'install: {camlib.CAM} answers but its shell refuses the login: the stock one, unless MICROCAM_USER / '
-                 f'MICROCAM_PASSWORD set another (docs/TOOLS.md). {refused}')
-    sys.exit(f'install: no answer from {camlib.CAM} on the camera\'s USB network ({net}). With a microSD card in, the '
-             f'stock firmware does not come up on USB: take the card out and power-cycle the camera. {silent}')
+        login = (hostconf.get('MICROCAM_USER'), hostconf.get('MICROCAM_PASSWORD'))
+        if login == (hostconf.STOCK_USER, hostconf.STOCK_PASSWORD):
+            sys.exit(f'install: the camera answers at {camlib.CAM}, but the stock login and password did not work. If you '
+                     f'know your camera\'s login and password, set them in MICROCAM_USER and MICROCAM_PASSWORD '
+                     f'(docs/TOOLS.md). {refused}')
+        sys.exit(f'install: the camera answers at {camlib.CAM}, but the login and password set in MICROCAM_USER / '
+                 f'MICROCAM_PASSWORD did not work (docs/TOOLS.md). {refused}')
+    usb = usb_ids()
+    if USB_CAMERA in usb:
+        sys.exit(f'install: the camera is on USB, but {camlib.CAM} does not answer on its network' + (f' ({net}).' if net else '.'))
+    if USB_CARD in usb:
+        sys.exit(f'install: the camera is on USB as a drive ({":".join(USB_CARD)}): a microSD card is in it. Take the card '
+                 f'out and power-cycle the camera.')
+    sys.exit(f'install: no camera on USB (no device {":".join(USB_CAMERA)}): check the cable and that the camera is powered on.')
 
 
 def vendor_udc():
@@ -304,7 +330,6 @@ def reboot_and_wait(released, want_microcamd=True):
 
 
 NO_LOGIN = f'Over the serial console `install.py access` gives it the login of the settings, then run this again ({SERIAL_DOC}).'
-NO_NET = 'Without the USB network a microSD card does this step: the same command with --card.'
 
 
 def dump_network(path):
@@ -368,8 +393,7 @@ def cmd_dump(a):
         if not a.reader:
             return 0  # the flash is on the card; dump.sh said what comes next
     elif not a.card:
-        need_shell('The card\'s dump needs no login: `install.py dump --card`.',
-                   'Without the USB network a microSD card does it: `install.py dump --card`.')
+        need_shell('Without a login, take the dump through a microSD card: `install.py dump --card`.')
         dump_network(nor)
     if subprocess.run([sys.executable, os.path.join(HERE, 'unpack-dump.py'), nor, a.outdir]).returncode != 0:
         sys.exit(f'install: {nor} is saved, but unpacking it failed (the reason is above); run this again')
@@ -384,7 +408,7 @@ def cmd_install(a):
     say(f'bundle {b}: {", ".join(sorted(os.listdir(b)))}')
     if a.card:
         return card_job('install', 'install', b, dump)
-    need_shell(NO_LOGIN, NO_NET)
+    need_shell(NO_LOGIN)
     released = camlib.stream_release()
     try:
         if vendor_udc():
@@ -413,7 +437,7 @@ def cmd_install(a):
 def cmd_uninstall(a):
     dump = a.dump
     if not a.card:
-        need_shell(NO_LOGIN, NO_NET)
+        need_shell(NO_LOGIN)
     b = tempfile.mkdtemp(prefix='microcam-stock-')
     shutil.copy(os.path.join(REPO, 'camera', 'install.sh'), b)
     with open(os.path.join(b, 'stock.sha256'), 'w') as f:

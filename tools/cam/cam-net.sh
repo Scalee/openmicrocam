@@ -6,7 +6,7 @@
 eval "$(python3 "$(dirname "$0")/../hostconf.py" --sh)" || exit 1
 C=$MICROCAM_CAMERA H=$MICROCAM_HOST
 IFS_=$(ip -br link | awk '/^enx/{print $1}')
-[ -z "$IFS_" ] && { echo "no enx* interface (camera not on USB)"; exit 1; }
+[ -z "$IFS_" ] && { echo "no enx* network interface"; exit 1; }
 for IF in $IFS_; do
   nmcli dev set "$IF" managed no >/dev/null 2>&1
   ip -4 addr show "$IF" | grep -q "inet $H/" || sudo ip addr add "$H/24" dev "$IF"
