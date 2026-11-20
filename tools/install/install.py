@@ -6,7 +6,8 @@ usage: install.py dump [OUTDIR] [--card | --serial [--reader DEV]]
        install.py uninstall [--dump DIR] [-n | --card]
        install.py access
   dump       read this camera's flash into OUTDIR/nor.bin (default: MICROCAM_SYSROOT, work/dump), unpack it
-             (unpack-dump.py) and compare it with the tested camera's (checkparts.py). By default over the USB network
+             (unpack-dump.py) and compare it with the tested camera's (checkparts.py). It stops when OUTDIR already
+             holds a nor.bin: firmware saved earlier is never overwritten. By default over the USB network
              through the camera's kernel: its six partitions, which end 832 KB before the flash does (that tail is unused
              and the kernel does not show it). --card: the whole flash by U-Boot into a file on a microSD card: the
              first run writes the card's files into work/card/dump, the camera fills FLASH.BIN there at power-on, the
@@ -381,6 +382,9 @@ def dump_network(path):
 
 def cmd_dump(a):
     nor = os.path.join(a.outdir, 'nor.bin')
+    if os.path.exists(nor):
+        sys.exit(f'dump: {rel(a.outdir)} already holds a dump ({rel(nor)}). A dump is taken only into a folder with no '
+                 f'earlier dump in it: a precaution, so that firmware saved earlier is not overwritten.')
     if a.card:
         nor = dump_card()
         if not nor:
@@ -396,7 +400,11 @@ def cmd_dump(a):
         need_shell('Without a login, take the dump through a microSD card: `install.py dump --card`.')
         dump_network(nor)
     if subprocess.run([sys.executable, os.path.join(HERE, 'unpack-dump.py'), nor, a.outdir]).returncode != 0:
-        sys.exit(f'install: {nor} is saved, but unpacking it failed (the reason is above); run this again')
+        saved = os.path.join(a.outdir, 'nor.bin')
+        if os.path.exists(saved):
+            sys.exit(f'install: {rel(saved)} is saved, but unpacking it failed (the reason is above); when that is fixed, '
+                     f'unpack it: tools/install/unpack-dump.py {rel(saved)} {rel(a.outdir)}')
+        sys.exit('install: unpacking the dump failed (the reason is above); run this again')
     return subprocess.run([sys.executable, os.path.join(HERE, 'checkparts.py'), a.outdir, '--quiet']).returncode
 
 
