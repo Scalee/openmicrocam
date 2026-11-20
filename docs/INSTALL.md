@@ -59,7 +59,7 @@ a new build.
 tools/install/install.py install
 ```
 
-## Back to the original firmware
+## Restore the original firmware
 
 The installer puts the original files and settings from the dump back on the camera; with `-n` it only shows what it
 would change.
@@ -96,7 +96,7 @@ card.
 tools/install/install.py install --card
 ```
 
-Back to the original firmware — the same way, the files in `work/card/stock`.
+Restoring the original firmware — the same way, the files in `work/card/stock`.
 
 ```sh
 tools/install/install.py uninstall --card

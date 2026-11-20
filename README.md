@@ -81,7 +81,7 @@ camera/tools/build.sh camera/tools/fbhide.c            # fbhide: a small tool th
 tools/install/install.py install                       # the camera reboots into OpenMicroCam
 ```
 
-Back to the original firmware:
+Restore the original firmware:
 
 ```sh
 tools/install/install.py uninstall
