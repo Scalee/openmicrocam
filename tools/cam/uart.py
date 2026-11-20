@@ -7,6 +7,9 @@ usage: uart.py bridge          own the port: the console into $MICROCAM_LOGS/uar
                                (default 2), or up to the first RE (exit 1 when it does not come); --every sends TEXT
                                again every SECS until RE comes (catching the U-Boot prompt from power-up)
        uart.py login           log in at a login prompt (MICROCAM_USER / MICROCAM_PASSWORD)
+       uart.py uboot           the camera to the U-Boot prompt: when it stands there already, says so and leaves it;
+                               else asks for a power-cycle and catches the prompt (Enter every 50 ms, up to 120 s:
+                               this U-Boot waits no time for a key); exit 1 when no prompt comes
 """
 import argparse, errno, fcntl, os, re, select, stat, sys, termios, time, tty
 
@@ -16,6 +19,7 @@ import hostconf  # noqa: E402
 LOGS = hostconf.get('MICROCAM_LOGS')
 FIFO = os.path.join(os.environ.get('XDG_RUNTIME_DIR') or '/tmp', 'microcam-uart')
 ANSI = re.compile(rb'\x1b\[[0-9;]*m')
+PROMPT = 'SigmaStar #'
 
 
 def log_path():
@@ -124,6 +128,19 @@ def send(text, wait=2.0, until=None, every=None):
         time.sleep(min(0.05, every or 0.05))
 
 
+def uboot():
+    """Whether the camera is at the U-Boot prompt: there already, or caught after the power-cycle this asks for. A
+    command that writes the flash starts at once at a prompt that is already there, so the power-cycle is asked for
+    only when it is not: one landing in the middle of a write leaves the region half written."""
+    def say(msg):
+        print(f'[{time.strftime("%H:%M:%S")}] {msg}', flush=True)
+    if send('', 1.5, PROMPT)[0]:
+        say('the camera is already at the U-Boot prompt: do not touch its power')
+        return True
+    say('power-cycle the camera now; sending Enter every 50 ms for up to 120 s')
+    return send('', 120, PROMPT, 0.05)[0]
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest='cmd', required=True)
@@ -134,9 +151,12 @@ def main():
     p.add_argument('--until')
     p.add_argument('--every', type=float)
     sub.add_parser('login')
+    sub.add_parser('uboot')
     a = ap.parse_args()
     if a.cmd == 'bridge':
         bridge()
+    elif a.cmd == 'uboot':
+        sys.exit(0 if uboot() else 1)
     elif a.cmd == 'send':
         ok, got = send(a.text, a.w, a.until, a.every)
         sys.stdout.write(got)

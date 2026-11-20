@@ -4,7 +4,7 @@
 # from the card and checks them against U-Boot's CRC32; install.py then unpacks and compares the dump.
 # usage: dump.sh OUTDIR [READER]
 #   step 1 (no READER): the U-Boot part. Needs `tools/cam/uart.py bridge` running and a microSD card in the camera whose
-#          contents from 512 MB on may be overwritten. Power-cycle the camera when asked.
+#          contents from 512 MB on may be overwritten. Power-cycle the camera when asked (uart.py uboot).
 #   step 2 (READER = the card's whole block device on the laptop, e.g. /dev/sdb): read and check.
 # docs/INSTALL.md «Over the serial console (UART)».
 set -e
@@ -16,9 +16,8 @@ U="python3 $D/../cam/uart.py"
 LBA=1048576      # the image's place on the card: 512 MB in, as nor-dump-raw.sh writes it
 BLOCKS=32768     # 16 MB in 512-byte blocks
 if [ -z "$READER" ]; then
-  echo "[$(date +%T)] power-cycle the camera now; sending Enter every 50 ms for up to 120 s"
-  $U send '' -w 120 --every 0.05 --until 'SigmaStar #' >/dev/null || { echo "dump: no U-Boot prompt (is uart.py bridge running?)"; exit 1; }
-  echo "[$(date +%T)] U-Boot prompt caught; copying the flash to the card (a few minutes)"
+  $U uboot || { echo "dump: no U-Boot prompt (is uart.py bridge running?)"; exit 1; }
+  echo "[$(date +%T)] copying the flash to the card (about 20 seconds)"
   LOG=$("$D/../cam/nor-dump-raw.sh" | sed -n 's/^saved //p')
   [ -f "$LOG" ] || { echo "dump: nor-dump-raw.sh left no log"; exit 1; }
   CRCS=$(grep -aoiE 'crc32 for [0-9a-fx]+ \.\.\. [0-9a-fx]+ ==> [0-9a-f]{8}' "$LOG" | awk '{print $NF}' | sort -u)

@@ -59,7 +59,7 @@ A hook is a shell command in a variable, run by `sh -c` with the settings in its
 | `tools/cam/boottry.sh DRIVER.ko` | a one-boot trial of a sensor driver file in `/customer/fast`; reports what came up |
 | `tools/cam/ctester.sh FILE.c` | build a C tester (it includes `mi.h`) against the camera's libraries and run it on the camera |
 | `tools/cam/serve-slow.py` | a throttled HTTP server of `MICROCAM_STAGE` for uploads over the stock USB driver |
-| `tools/cam/uart.py` | the serial console: `bridge` owns the port and logs it, `send` a line (and wait for a pattern), `login` |
+| `tools/cam/uart.py` | the serial console: `bridge` owns the port and logs it, `send` a line (and wait for a pattern), `login`, `uboot` gets the U-Boot prompt |
 | `tools/cam/uboot-rescue.sh CMD` | catch the U-Boot prompt, boot once into a RAM shell, mount `/customer`, run a fix |
 | `tools/cam/nor-dump-raw.sh` | dump the 16 MB NOR flash from U-Boot to raw SD-card sectors, read back and compared |
 | `tools/cam/usb-preview.sh`, `view.sh` | low-latency viewers of the USB stream (ffplay; mpv or GStreamer fullscreen) |

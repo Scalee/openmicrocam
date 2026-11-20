@@ -28,8 +28,8 @@ camera does not come up on USB.
 When the login is unknown or the boot no longer reaches a shell, start the kernel once with a shell as its first
 process. Nothing is written to the flash; the next power-up boots as before.
 
-1. With `uart.py bridge` running, power the camera up while sending Enter continuously — its U-Boot waits no time for a
-   key (`bootdelay=0`): `uart.py send '' -w 120 --every 0.05 --until 'SigmaStar #'`.
+1. With `uart.py bridge` running, `uart.py uboot` asks for a power-cycle and catches the prompt by sending Enter
+   continuously — this U-Boot waits no time for a key (`bootdelay=0`).
 2. At the `SigmaStar #` prompt, `printenv bootargs` shows the kernel's command line. Set it again with `init=/linuxrc`
    replaced by `init=/bin/sh`, the rest unchanged: `setenv bootargs <the line, edited>`.
 3. `run bootcmd`. The kernel boots straight into a root shell on the console. **Do not** run `saveenv`: the change must

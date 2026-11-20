@@ -525,8 +525,7 @@ def cmd_access(a):
         for kind, part, digest, need, on in stock_parts():
             if part == 'customer/demo.sh':
                 f.write(f'{digest}  /customer/demo.sh\n')
-    say('power-cycle the camera now; catching the U-Boot prompt for up to 120 s')
-    if uart('', 120, 'SigmaStar #', 0.05)[0] != 0:
+    if subprocess.run([sys.executable, os.path.join(REPO, 'tools', 'cam', 'uart.py'), 'uboot']).returncode != 0:
         sys.exit('access: no U-Boot prompt (is `uart.py bridge` running, the adapter on the console pads?)')
     # one boot into a shell, from RAM: U-Boot's environment is not saved
     uart('setenv bootargs ${bootargs} init=/bin/sh', 2)
