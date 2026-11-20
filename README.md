@@ -87,5 +87,5 @@ Restore the original firmware:
 tools/install/install.py uninstall
 ```
 
-Installing from a microSD card (when the camera does not come up on USB) and over the serial console:
+Installing from a microSD card and over the serial console:
 [docs/INSTALL.md](docs/INSTALL.md).

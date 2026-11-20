@@ -72,35 +72,48 @@ tools/install/install.py uninstall
 
 ### With a microSD card
 
-Without the USB network: the camera takes the dump, installs and goes back by itself, when powered on with the card. The
-card is FAT32.
+You can save the camera's firmware and install new firmware using a microSD card. The card must be formatted as FAT32.
 
-The dump. The installer prepares the card's files in `work/card/dump`; copy them into the card's root and power the
-camera on with it — the camera writes its flash into the file `FLASH.BIN` on the card.
+**Save the camera's firmware**
 
-```sh
-tools/install/install.py dump --card
-```
+1. Run this command. It creates the `work/card/dump` folder with three files.
 
-Put the card's `FLASH.BIN` back into `work/card/dump`; the same command takes the dump from it and checks it.
+   ```sh
+   tools/install/install.py dump --card
+   ```
+2. Copy these three files to the root of the card. If the card already has files with these names, replace them.
+3. Insert the card into the camera, power it on and wait for it to boot. The camera writes its firmware to `FLASH.BIN`
+   on the card.
+4. Copy `FLASH.BIN` from the card back to `work/card/dump`.
+5. Run the same command again. It checks the firmware and saves it as `work/dump/nor.bin`.
 
-```sh
-tools/install/install.py dump --card
-```
+   ```sh
+   tools/install/install.py dump --card
+   ```
 
-The install. The installer prepares the files in `work/card/install`; copy them into the card's root and power the camera
-on with it — it installs OpenMicroCam and reboots. If it did not, the reason is in `OPENMICROCAM/install.log` on the
-card.
+**Install OpenMicroCam**
 
-```sh
-tools/install/install.py install --card
-```
+1. Run this command. It creates the `work/card/install` folder with the files for the card.
 
-Restoring the original firmware — the same way, the files in `work/card/stock`.
+   ```sh
+   tools/install/install.py install --card
+   ```
+2. Copy everything from this folder to the root of the card: two files and the `OPENMICROCAM` folder. If the card
+   already has files with these names, replace them.
+3. Insert the card into the camera and power it on. The camera installs OpenMicroCam and reboots.
 
-```sh
-tools/install/install.py uninstall --card
-```
+If OpenMicroCam does not start, the reason is in `OPENMICROCAM/install.log` on the card.
+
+**Restore the original firmware**
+
+1. Run this command. It creates the `work/card/stock` folder with the files for the card.
+
+   ```sh
+   tools/install/install.py uninstall --card
+   ```
+2. Copy everything from this folder to the root of the card: two files and the `OPENMICROCAM` folder. If the card
+   already has files with these names, replace them.
+3. Insert the card into the camera and power it on. The camera restores the original firmware and reboots.
 
 ### Over the serial console (UART)
 
