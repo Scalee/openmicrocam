@@ -26,8 +26,8 @@ OpenMicroCam is tested with.
 tools/install/install.py dump
 ```
 
-After a successful run the dump is in `work/dump`: `nor.bin` is the camera's flash, the copy of the original firmware;
-the rest is the same flash unpacked, which the build reads.
+After a successful run the dump is `work/dump/nor.bin`: the camera's flash, the copy of the original firmware. The
+rest of `work/dump` is the same flash unpacked, which the build reads.
 
 ## Build OpenMicroCam
 

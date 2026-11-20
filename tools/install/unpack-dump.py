@@ -65,8 +65,8 @@ def main():
                 sys.exit(f'unpack: {name} failed: {(p.stderr or p.stdout).strip()[-300:]}')
             n = sum(len(f) for _, _, f in os.walk(dest))
             print(f'{name}: {n} files')
-    print(f'the dump is in {out}: nor.bin is the camera\'s flash, the copy of the original firmware; the rest is the same '
-          'flash unpacked, which the build reads')
+    print(f'the dump is {os.path.join(out, "nor.bin")}: the camera\'s flash, the copy of the original firmware. The rest of '
+          f'{out} is the same flash unpacked, which the build reads')
 
 
 if __name__ == '__main__':
