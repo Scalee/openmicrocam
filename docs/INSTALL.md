@@ -118,29 +118,49 @@ If OpenMicroCam does not start, the reason is in `OPENMICROCAM/install.log` on t
 
 ### Over the serial console (UART)
 
-The serial console brings the factory login back, takes the full dump and restores a region of the flash. How to connect
-to the UART: [SHELL-ACCESS.md](SHELL-ACCESS.md). Keep the bridge to the console running in a separate terminal.
+You can save the camera's firmware and write it back over the serial console. The console carries only the commands for
+the camera's boot loader: sending the firmware itself over it would take too long, so a microSD card carries it. How to
+connect to the console: [SHELL-ACCESS.md](SHELL-ACCESS.md).
+
+You need a card of 1 GB or more. The firmware is written straight to the card, bypassing the file system: no files
+appear on the card, and any data stored in that place is destroyed. Use a card with no data you need, and format it
+afterwards.
+
+First start the console bridge in a separate terminal and leave it running.
 
 ```sh
 python3 tools/cam/uart.py bridge
 ```
 
-The factory login back:
+**Save the camera's firmware**
 
-```sh
-tools/install/install.py access
-```
+1. Insert the card into the camera and run this command.
 
-The full dump: a microSD card of 1 GB or more whose contents are overwritten.
+   ```sh
+   tools/install/install.py dump --serial
+   ```
+2. If the command asks, power the camera off and on. The camera writes its firmware to the card; this takes about
+   20 seconds.
+3. Power the camera off, move the card to a card reader and run the command again with the card's device (for example
+   `/dev/sdb`). It reads the firmware from the card, checks it and saves it as `work/dump/nor.bin`.
 
-```sh
-tools/install/install.py dump --serial                     # the card in the camera
-tools/install/install.py dump --serial --reader /dev/sdX   # then the card in the card reader
-```
+   ```sh
+   tools/install/install.py dump --serial --reader /dev/sdX
+   ```
 
-A region of the flash back from the dump, through a microSD card:
+**Write the firmware back**
 
-```sh
-tools/install/restore-region.sh REGION /dev/sdX            # the card in the card reader
-tools/install/restore-region.sh REGION                     # then the card in the camera
-```
+1. Insert the card into a card reader and run this command. It writes the saved firmware to the card.
+
+   ```sh
+   tools/install/restore-region.sh /dev/sdX
+   ```
+2. Move the card to the camera and run this command. It writes the firmware to the camera.
+
+   ```sh
+   tools/install/restore-region.sh
+   ```
+3. If the command asks, power the camera off and on. Do not touch the power while the write is in progress.
+
+To write only one part of the firmware instead of all of it, add its name in the second step, for example
+`tools/install/restore-region.sh customer`. The parts: `KERNEL`, `rootfs`, `miservice`, `customer`, `MISC`.

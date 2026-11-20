@@ -229,7 +229,7 @@ def login_ok():
         return False
 
 
-SERIAL_DOC = 'docs/INSTALL.md «Over the serial console (UART)»'
+SERIAL_DOC = 'docs/SHELL-ACCESS.md'
 
 
 USB_CAMERA = ('0ac8', '3420')  # the camera on USB, under the stock firmware and under OpenMicroCam
@@ -330,7 +330,7 @@ def reboot_and_wait(released, want_microcamd=True):
     return ok
 
 
-NO_LOGIN = f'Over the serial console `install.py access` gives it the login of the settings, then run this again ({SERIAL_DOC}).'
+NO_LOGIN = f'Over the serial console `install.py access` gives it the login of the settings, then run this again (how to connect to the console: {SERIAL_DOC}).'
 
 
 def dump_network(path):
