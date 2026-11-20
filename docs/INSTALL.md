@@ -26,6 +26,9 @@ OpenMicroCam is tested with.
 tools/install/install.py dump
 ```
 
+After a successful run the dump is in `work/dump`: `nor.bin` is the camera's flash, the copy of the original firmware;
+the rest is the same flash unpacked, which the build reads.
+
 ## Build OpenMicroCam
 
 The build sets up the tools and a kernel tree like the camera's, then builds microcamd, the kernel modules and the
