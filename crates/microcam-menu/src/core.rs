@@ -13,9 +13,10 @@ use microcam_core::protocol::{Action, Card, CardInfo, Envelope, Event, Output, F
 use crate::menu::{Entry, Item, Kind, Section, ROOT};
 use crate::text::{self, Asked, Lang, Msg, Wanted, T};
 
-/// A toast's time on the screen (the mockup's).
+/// A toast's time on the screen unless its caller gives one (the mockup's).
 const TOAST_MS: u64 = 2200;
-/// A refusal for lack of resources: two lines, a list of what to turn off — about the time to read twenty words.
+/// A toast that asks the user to act — a list of what to turn off, the card to eject on the computer: about the time
+/// to read twenty words.
 const TOAST_LONG_MS: u64 = 6000;
 /// A chip that comes for a moment (the zoom's factor, the mirror, the start): its time.
 const FLASH_MS: u64 = 2000;
@@ -462,7 +463,11 @@ impl Core {
     }
 
     fn toast(&mut self, m: Msg) {
-        let ms = if matches!(m, Msg::Resources(..)) { TOAST_LONG_MS } else { TOAST_MS };
+        self.toast_for(m, TOAST_MS);
+    }
+
+    /// A toast shown for `ms`.
+    fn toast_for(&mut self, m: Msg, ms: u64) {
         self.st.toast = Some((m, self.st.now + ms));
     }
 
@@ -477,7 +482,7 @@ impl Core {
             self.ask_clear(Request::Record, Pending::Asked(Asked::Record));
             return;
         }
-        self.toast(Msg::Resources(what, holders));
+        self.toast_for(Msg::Resources(what, holders), TOAST_LONG_MS);
     }
 
     /// The number of the freeze on the screen.
@@ -628,7 +633,7 @@ impl Core {
         match code {
             Some(Code::NoCard) => self.toast(Msg::Card(Card::None)),
             Some(Code::CardShared) => self.toast(Msg::Card(Card::Host)),
-            Some(Code::CardOpen) => self.toast(Msg::CardOpen),
+            Some(Code::CardOpen) => self.toast_for(Msg::CardOpen, TOAST_LONG_MS),
             Some(Code::Resources) => self.short(Wanted::Asked(what), holders),
             code => self.toast(Msg::Refused(what, code)),
         }
@@ -723,7 +728,7 @@ impl Core {
             Event::Presented { output, .. } if self.missing.contains(&output) => {
                 self.missing.retain(|o| *o != output);
                 if let Some((m @ Msg::Resources(..), _)) = self.st.toast.take() {
-                    self.toast(m);
+                    self.toast_for(m, TOAST_LONG_MS);
                 }
             }
             Event::Presented { .. } => {}

@@ -978,6 +978,10 @@ fn the_gallery_takes_the_card_back_unless_the_computer_has_it_open() {
     r.press(Key::Gallery);
     assert_eq!(r.asked(), [Request::Set { name: "card-reader".into(), value: Value::Bool(false) }]);
     assert_eq!((r.screen(), r.toast().as_deref(), r.cam.card), (&Screen::Live, Some("Карта открыта на компьютере: извлеките её там"), Card::Host));
+    r.wait(5999);
+    assert!(r.toast().is_some(), "a toast to act on stays long");
+    r.wait(1);
+    assert_eq!(r.toast(), None);
     r.cam.open = false;
     r.press(Key::Gallery);
     assert_eq!((r.gallery().from, r.core.st.cam.card.at, r.chosen_file()), (Origin::Live, Card::Camera, "P00040.jpg".into()));
