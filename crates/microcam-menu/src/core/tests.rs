@@ -65,6 +65,8 @@ impl Fake {
         let policy = microcam_core::policy::Policy::parse(include_str!("../../../../camera/policy.toml")).unwrap();
         let mut list = List::new(&prefs, &policy);
         list.follow(&prefs, &monitor);
+        // the card on the camera: the card reader mode, on by default, switched off
+        list.store("card-reader", Value::Bool(false), microcam_core::controls::By::User, &microcam_core::controls::Now::default());
         Fake {
             list,
             prefs,

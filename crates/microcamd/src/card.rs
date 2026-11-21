@@ -120,13 +120,14 @@ pub fn start(tx: Sender<Msg>, moved: Moved, tell: Tell, mode: Mode) -> io::Resul
     Ok(())
 }
 
-/// The card to the USB host (the mode switched on): unmounted here, the gadget's LUN given its block device.
+/// The card to the USB host (the mode switched on): unmounted here, the gadget's LUN given its block device; none in
+/// its slot, nothing to give: the mode gives it when it is put in.
 pub fn share() -> Result<(), Refusal> {
     let mut g = CARD_STATE.lock().unwrap();
     let c = g.as_mut().ok_or_else(|| Refusal::new(Code::Refused, "the card is not followed"))?;
     match c.at {
         Card::Host => Ok(()),
-        Card::None => Err(Refusal::new(Code::NoCard, missing())),
+        Card::None => Ok(()),
         Card::Camera | Card::Unreadable => c.give(),
     }
 }
@@ -304,7 +305,7 @@ fn place(present: bool, shared: bool, mounted: bool) -> Place {
 
 /// The state brought to the facts, never to the state stored: at start it is derived the same way (a restart while the
 /// host holds the card leaves it the host's).
-fn settle() {
+pub fn settle() {
     let mut g = CARD_STATE.lock().unwrap();
     let Some(c) = g.as_mut() else { return };
     let lun = lun_file();

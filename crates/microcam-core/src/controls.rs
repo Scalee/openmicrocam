@@ -203,7 +203,7 @@ pub enum Drive {
     /// only kept here
     Stored,
     /// the card reader mode: the SD card given to the USB host or taken back (microcamd's `card`), kept once it got
-    /// there; a factory reset leaves it
+    /// there; a factory reset puts back its default and the card goes where it puts it, as at start
     Card,
 }
 
@@ -544,7 +544,7 @@ impl List {
             num("nr3d", 0, MAX_NR3D),
             num("mjpeg-quality", 1, 99),
             on("standby", false),
-            Entry { c: switch("card-reader", false, true), drive: Drive::Card },
+            Entry { c: switch("card-reader", true, true), drive: Drive::Card },
         ];
         let timings = policy.hdmi_timings().to_vec();
         for e in entries.iter_mut().filter(|e| e.c.name == "hdmi") {
@@ -733,8 +733,8 @@ impl List {
         }
     }
 
-    /// The controls that are not the picture's — the kept values and the built ones — back to their defaults and no
-    /// longer the user's, but the recording's while one runs (they are its): the names of the entries changed here, and
+    /// The controls that are not the picture's — the kept values, the card reader mode and the built ones — back to
+    /// their defaults and no longer the user's, but the recording's while one runs (they are its): the names of the entries changed here, and
     /// the built ones to build, each with its default. The picture's go back once the ISP took them
     /// ([`Self::reset_picture`]).
     pub fn reset(&mut self) -> (Vec<String>, Vec<(String, Value)>) {
@@ -742,7 +742,7 @@ impl List {
         let mut build = Vec::new();
         let told = self.edit(|l| {
             let Self { entries, chosen, .. } = l;
-            for e in entries.iter_mut().filter(|e| matches!(e.drive, Drive::Built | Drive::Stored) && !(recording && e.c.name.starts_with("record-"))) {
+            for e in entries.iter_mut().filter(|e| matches!(e.drive, Drive::Built | Drive::Stored | Drive::Card) && !(recording && e.c.name.starts_with("record-"))) {
                 chosen.remove(&e.c.name);
                 if e.c.value == e.c.default {
                     continue;

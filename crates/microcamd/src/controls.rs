@@ -252,6 +252,8 @@ impl Controls {
         self.save();
         self.tell(&told);
         let _ = self.pipeline.lock().unwrap().send(Msg::PictureReset);
+        // the card where the mode's default puts it, by the road a start takes
+        crate::card::settle();
         if build.is_empty() {
             self.running.built(Action::Reset, &names, Ok(()));
             return Ok(());
