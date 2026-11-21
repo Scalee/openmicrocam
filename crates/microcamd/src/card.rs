@@ -1,6 +1,7 @@
 //! The SD card: microcamd owns it. It mounts the card on `/mnt` when it comes in and lets it go when it is pulled
 //! (the kernel's block uevents; the vendor's mdev hook is switched off by `app-start.sh`), hands it to the USB host as
-//! the gadget's removable mass-storage LUN on `card-share` and takes it back on `card-take` or when the host ejects it.
+//! the gadget's removable mass-storage LUN on `card-share` and takes it back on `card-take`, before a photo or a
+//! recording, or when the host ejects it.
 //! Photos and recordings go to `PHOTO/` and `VIDEO/` on it (where the vendor's menu listed them). Its space is read
 //! when it is mounted and after each change of microcamd's own ([`space_changed`]), never on a clock.
 
@@ -13,6 +14,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use microcam_core::controls::{Code, Refusal};
 use microcam_core::files::name_number;
 use microcam_core::protocol::{Card, CardInfo};
 use microcam_core::wish::Wish;
@@ -132,22 +134,29 @@ pub fn share() -> Result<(), String> {
     Ok(())
 }
 
-/// The card back from the USB host and mounted here; refused while the host keeps it locked.
-pub fn take() -> Result<(), String> {
+/// The card back from the USB host and mounted here; refused (`CardShared`) while the host keeps it open (it locks
+/// the medium while it has it mounted), unless `force`: then taken out of the LUN regardless (the gadget's
+/// `forced_eject`) and the host loses it as if pulled out.
+pub fn take(force: bool) -> Result<(), Refusal> {
+    let refused = |e: String| Refusal::new(Code::Refused, e);
     let mut g = CARD_STATE.lock().unwrap();
-    let c = g.as_mut().ok_or("the card is not followed")?;
+    let c = g.as_mut().ok_or_else(|| refused("the card is not followed".into()))?;
     match c.at {
         Card::Camera => return Ok(()),
-        Card::None => return Err(missing()),
+        Card::None => return Err(Refusal::new(Code::NoCard, missing())),
         Card::Host => {}
     }
     if let Some(lun) = lun_file() {
-        std::fs::write(&lun, "\n").map_err(|e| match e.raw_os_error() {
-            Some(libc::EBUSY) => "the host keeps the card: eject it there first".to_string(),
-            _ => format!("the LUN did not let the card go: {e}"),
+        let (file, what) = if force { (lun.with_file_name("forced_eject"), "1") } else { (lun, "\n") };
+        std::fs::write(&file, what).map_err(|e| match e.raw_os_error() {
+            Some(libc::EBUSY) => Refusal::new(Code::CardShared, "the USB host keeps the card open: eject it there first"),
+            _ => refused(format!("{}: {e}", file.display())),
         })?;
+        if force {
+            log::info!("card: taken from the USB host by force");
+        }
     }
-    mount().map_err(|e| format!("mount {CARD}: {e}"))?;
+    mount().map_err(|e| refused(format!("mount {CARD}: {e}")))?;
     c.set(Card::Camera);
     Ok(())
 }

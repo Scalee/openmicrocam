@@ -85,7 +85,7 @@ pub enum Code {
     Refused,
     /// no SD card in the camera
     NoCard,
-    /// the SD card is with the USB host
+    /// the SD card is with the USB host, which keeps it open
     CardShared,
     /// one of its kind is running already (a photo, a recording starting or stopping, a format, this control's build)
     Busy,

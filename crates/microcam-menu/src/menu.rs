@@ -210,7 +210,7 @@ impl Item {
             Hdmi => T("Разрешение и частота, с которыми камера выдаёт картинку на монитор. Авто — лучшее из того, что монитор сообщил о себе.", "The resolution and rate the camera gives the monitor. Auto — the best of what the monitor said it takes."),
             Priority => T("Какой выход важнее. Когда камере не хватает сил на оба сразу, этот остаётся в полном качестве, а у второго качество снижается.", "Which output matters more. When the camera cannot serve both in full, this one keeps its full quality and the other's is lowered."),
             Language => T("Язык меню.", "The menu's language."),
-            Card => T("Свободное место на карте и её форматирование.", "The card's free space and its formatting."),
+            Card => T("Свободное место на карте, режим картридера и форматирование.", "The card's free space, card reader mode and formatting."),
             Reset => T("Возвращает все настройки к заводским. Файлы на SD-карте не трогает.", "Every setting back to the factory's. The files on the SD card stay."),
             About => T("Версия прошивки и текущие режимы выходов.", "The firmware's version and the outputs' modes now."),
         }

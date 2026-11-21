@@ -2,10 +2,13 @@
 """The SD card as the USB host's disk beside the webcam, from the laptop, a host's USB stream on (docs/BENCH.md).
 
   share  `card share`: the menu told `host`, the laptop sees the gadget's disk, reads the card's files (MB/s), writes,
-         reads back and deletes a test file; USB video and microcamd's control go on meanwhile; a recording is refused;
-         `card take` while the laptop holds it mounted is refused or not (told); the laptop unmounts and ejects it — the
-         camera takes it back by itself (`camera`, mounted, the same files)
+         reads back and deletes a test file; USB video and microcamd's control go on meanwhile; a recording is refused
+         (`card-shared`); `card take` while the laptop holds it mounted is refused; the laptop unmounts and ejects it —
+         the camera takes it back by itself (`camera`, mounted, the same files)
   take   `card share`, then `card take` with the disk not mounted on the laptop: back on the camera, mounted
+  photo  `card share`, the laptop unmounts it, a photo: the camera takes the card back by itself and saves the photo
+  force  `card share`, mounted on the laptop: a recording refused, `card take force` takes it all the same (the laptop's
+         disk without a medium), a recording runs and stops
   plug   by hand (not in `cam check`): a 1080p recording runs, the user pulls the card — `none` told, the recording
          stopped, /mnt let go; the user puts it back — `camera` told, mounted, the files there (waits 3 min for each)
 
@@ -20,7 +23,7 @@ sys.path.insert(0, os.path.join(HERE, '..'))
 import camlib  # noqa: E402
 
 ap = argparse.ArgumentParser()
-ap.add_argument('case', nargs='+', choices=['share', 'take', 'plug'])
+ap.add_argument('case', nargs='+', choices=['share', 'take', 'photo', 'force', 'plug'])
 ap.add_argument('--json', action='store_true')
 a = ap.parse_args()
 rep = camlib.Report('card', a.json)
@@ -189,9 +192,9 @@ def case_share():
         os.sync()
         rep.case('share: write, read back', hashlib.md5(back).digest() == hashlib.md5(data).digest(), mb_s_write=round(8 / w, 2))
         r = microcam({'cmd': 'record'})
-        rep.case('share: recording refused', not r.get('ok') and 'host' in (r.get('error') or ''), error=r.get('error'))
+        rep.case('share: recording refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
         r = camlib.take_card()
-        rep.case('share: take while mounted', None, taken=r.get('ok'), error=r.get('error'))
+        rep.case('share: take while mounted refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
         if r.get('ok'):
             return
         # the laptop lets it go: unmounted and ejected
@@ -233,6 +236,70 @@ def case_take():
         c.close()
 
 
+def mounted_on_laptop(disk):
+    """The disk's partition once the desktop has mounted it (it does by itself), mounted here when it has not."""
+    part = partition(disk)
+    end = time.time() + 6
+    while not mountpoint(part) and time.time() < end:
+        time.sleep(0.2)
+    if not mountpoint(part):
+        run('udisksctl', 'mount', '-b', part)
+    return part
+
+
+def case_photo():
+    disk = None
+    c = camlib.Menu()
+    c.ask({'cmd': 'hello', 'take': True})
+    try:
+        told, disk = share(c)
+        rep.case('photo: host told', told is not None and disk is not None, s=told, dev=disk)
+        if not disk:
+            return
+        mounted_on_laptop(disk)
+        let_go(disk)
+        t = time.monotonic()
+        r = camlib.press_photo()
+        back = event(c, t, 'camera')
+        saved = c.event(lambda m: m.get('event') in ('photo-saved', 'failed'), t, 10)
+        rep.case('photo: card taken back, photo saved', bool(r.get('ok')) and back is not None and (saved or {}).get('event') == 'photo-saved',
+                 s=back, error=r.get('error'), saved=(saved or {}).get('file'))
+    finally:
+        give_back(disk)
+        c.close()
+
+
+def case_force():
+    disk = None
+    c = camlib.Menu()
+    c.ask({'cmd': 'hello', 'take': True})
+    try:
+        told, disk = share(c)
+        rep.case('force: host told', told is not None and disk is not None, s=told, dev=disk)
+        if not disk:
+            return
+        part = mounted_on_laptop(disk)
+        rep.case('force: mounted on the laptop', mountpoint(part) is not None, at=mountpoint(part))
+        r = microcam({'cmd': 'record'})
+        rep.case('force: recording refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
+        t = time.monotonic()
+        r = camlib.take_card(force=True)
+        back = event(c, t, 'camera')
+        mounted, n = camera_files()
+        rep.case('force: taken', bool(r.get('ok')) and back is not None and mounted, s=back, files=n, error=r.get('error'))
+        # the laptop's kernel sees no medium at its next poll (about every 2 s)
+        time.sleep(4)
+        size = run('cat', f'/sys/block/{os.path.basename(disk)}/size').stdout.strip()
+        rep.case('force: the laptop\'s disk empty', size == '0', size=size)
+        err = camlib.record_start()
+        time.sleep(2)
+        f, err2 = camlib.record_stop() if not err else (None, None)
+        rep.case('force: recording after', not err and not err2 and f is not None, error=err or err2, file=f)
+    finally:
+        give_back(disk)
+        c.close()
+
+
 def case_plug():
     c = camlib.Menu()
     c.ask({'cmd': 'hello', 'take': True})
@@ -260,7 +327,7 @@ def case_plug():
 
 for case in a.case:
     try:
-        {'share': case_share, 'take': case_take, 'plug': case_plug}[case]()
+        {'share': case_share, 'take': case_take, 'photo': case_photo, 'force': case_force, 'plug': case_plug}[case]()
     except (RuntimeError, camlib.Gone) as e:
         rep.case(case, False, note=str(e))
 sys.exit(1 if rep.fails else 0)

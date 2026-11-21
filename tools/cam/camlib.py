@@ -489,9 +489,10 @@ def share_card(timeout=20):
     return microcam({'cmd': 'card-share'}, timeout)
 
 
-def take_card(timeout=20):
-    """The SD card back from the USB host (`card-take`): microcamd's reply; taken, the journal forgets it."""
-    r = microcam({'cmd': 'card-take'}, timeout)
+def take_card(timeout=20, force=False):
+    """The SD card back from the USB host (`card-take`, `force`: even while the host keeps it open): microcamd's reply;
+    taken, the journal forgets it."""
+    r = microcam({'cmd': 'card-take', 'force': force}, timeout)
     if r.get('ok'):
         j = _journal()
         j['card'] = False

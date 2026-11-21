@@ -72,6 +72,14 @@ pub const CARD_IN: T = T("в камере", "in the camera");
 pub const CARD_NONE: T = T("Карты нет", "No card");
 pub const CARD_HOST: T = T("у компьютера", "with the computer");
 pub const CARD_FORMATTING: T = T("форматируется", "formatting");
+pub const CARD_READER: T = T("Режим картридера", "Card reader mode");
+pub const CARD_READER_HELP: T = T("Компьютер видит камеру ещё и как картридер с этой картой. Пока режим включён, карта у компьютера.", "The computer sees the camera as a card reader with this card in it, too. While the mode is on, the card is the computer's.");
+pub const CARD_ASK_PHOTO: T = T("Карта открыта на компьютере. Выключить режим картридера и сделать снимок?", "The card is open on the computer. Turn card reader mode off and take the photo?");
+pub const CARD_ASK_RECORD: T = T("Карта открыта на компьютере. Выключить режим картридера и начать запись?", "The card is open on the computer. Turn card reader mode off and start recording?");
+pub const NO: T = T("Нет", "No");
+pub const YES: T = T("Да", "Yes");
+pub const CARD_ASK_NO_HELP: T = T("Ничего не делать: карта остаётся у компьютера.", "Do nothing: the card stays with the computer.");
+pub const CARD_ASK_YES_HELP: T = T("Компьютер сообщит, что карту извлекли небезопасно.", "The computer will say the card was removed unsafely.");
 pub const FORMAT: T = T("Форматировать", "Format");
 pub const FORMAT_HELP: T = T("Стирает с карты все снимки и видео и размечает её заново.", "Erases every photo and video on the card and lays it out anew.");
 pub const FORMAT_ASK: T = T("Стереть всё с SD-карты?", "Erase everything on the SD card?");
@@ -96,7 +104,7 @@ pub const PAUSED: T = T("Пауза", "Paused");
 pub const OF: T = T("из", "of");
 pub const SD: T = T("SD", "SD");
 pub const NO_SD: T = T("нет SD", "no SD");
-pub const SD_HOST: T = T("SD у компьютера", "SD with the computer");
+pub const SD_HOST: T = T("SD: режим картридера", "SD: card reader mode");
 
 // what a key does, in the hints
 pub const H_CHOOSE: T = T("выбор", "choose");
@@ -168,6 +176,7 @@ pub enum Asked {
     Reset,
     Play,
     Player,
+    CardReader,
     Control(String),
 }
 
@@ -175,7 +184,7 @@ pub enum Asked {
 fn why(code: Code, lang: Lang) -> &'static str {
     match code {
         Code::NoCard => T("нет SD-карты", "no SD card"),
-        Code::CardShared => T("SD-карта у компьютера", "the SD card is with the computer"),
+        Code::CardShared => T("карта открыта на компьютере", "the card is open on the computer"),
         Code::Busy => T("камера ещё занята прошлым", "the camera is still busy with the last one"),
         Code::Playing => T("идёт просмотр видео", "a video is playing"),
         Code::Recording => T("идёт запись", "a recording is running"),
@@ -230,6 +239,7 @@ fn asked(what: &Asked) -> T {
         Asked::Format => T("Форматирование", "Formatting"),
         Asked::Reset => T("Сброс настроек", "Settings reset"),
         Asked::Play | Asked::Player => T("Видео", "Video"),
+        Asked::CardReader => T("Режим картридера", "Card reader mode"),
         Asked::Control(name) => control(name),
     }
 }
@@ -302,7 +312,7 @@ impl Msg {
             Msg::SettingsReset => t(T("Настройки сброшены", "Settings reset")),
             Msg::NoFiles => t(T("На карте нет снимков и видео", "No photos or videos on the card")),
             Msg::Recording => t(T("Идёт запись", "Recording")),
-            Msg::Card(microcam_core::protocol::Card::Host) => t(T("SD-карта у компьютера", "The SD card is with the computer")),
+            Msg::Card(microcam_core::protocol::Card::Host) => t(T("Включён режим картридера", "Card reader mode is on")),
             Msg::Card(_) => t(T("Нет SD-карты", "No SD card")),
             Msg::NoFreeze => t(T("Стоп-кадр не получился", "Could not freeze the picture")),
             Msg::Resources(what, holders) => resources(what, holders, lang),

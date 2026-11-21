@@ -21,7 +21,7 @@ use std::time::Duration;
 use microcam_core::controls::{By, Change as Ask, Code, Refusal};
 use microcam_core::formats::{FormatTable, HostStream};
 use microcam_core::policy::Recording;
-use microcam_core::protocol::{Envelope, Hello, Limits, ListInUse, OutputInfo, Request, ResState, Response, Snapshot, Source, PROTOCOL};
+use microcam_core::protocol::{Card, Envelope, Hello, Limits, ListInUse, OutputInfo, Request, ResState, Response, Snapshot, Source, PROTOCOL};
 use microcam_core::wish::Wish;
 use microcam_core::scene::{Kind, Node, Scene};
 use microcam_core::{scene, Size};
@@ -234,6 +234,11 @@ impl Control {
                 Ok(()) => Response::ok(),
                 Err(r) => Response::refused(r),
             },
+            // the card back from the USB host first (the card reader mode off), refused while the host keeps it open
+            req @ (Request::Photo | Request::Record) if card::now() == Card::Host => match card::take(false) {
+                Ok(()) => return self.handle(client, fds, seq, req),
+                Err(r) => Response::refused(r),
+            },
             Request::Photo => {
                 let path = card::photo(self.files.next());
                 match self.running.photo(&path.to_string_lossy(), self.player.info().is_some()) {
@@ -331,9 +336,9 @@ impl Control {
                 Ok(Ok(())) => flat(Ok(card::share())),
                 Ok(Err(e)) => Response::err(format!("card-share: {e}")),
             },
-            Request::CardTake => match self.running.card_free() {
+            Request::CardTake { force } => match self.running.card_free().and_then(|()| card::take(force)) {
                 Err(r) => Response::refused(r),
-                Ok(()) => flat(Ok(card::take())),
+                Ok(()) => Response::ok(),
             },
             Request::Account => match ask(&self.tx, Msg::Account, WAIT) {
                 Ok(priced) => Response { account: Some(crate::mem::account(priced)), ..Response::ok() },
