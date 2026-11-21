@@ -191,6 +191,14 @@ pub enum Flash {
 }
 
 
+/// A toast: its message, until when it is shown, and the time its caller gave it.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Toast {
+    pub msg: Msg,
+    pub until: u64,
+    pub ms: u64,
+}
+
 /// The camera as microcamd told it.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Cam {
@@ -230,7 +238,7 @@ pub struct State {
     pub lines: Vec<Line>,
     pub freeze: Freeze,
     pub flash: Option<(Flash, u64)>,
-    pub toast: Option<(Msg, u64)>,
+    pub toast: Option<Toast>,
     /// the build microcamd runs, as `status` told it for «О камере»
     pub build: Option<String>,
 }
@@ -349,7 +357,7 @@ impl Core {
 
     pub fn step(&mut self, now: u64, input: Input) -> Vec<Effect> {
         self.st.now = now;
-        if self.st.toast.as_ref().is_some_and(|t| t.1 <= now) {
+        if self.st.toast.as_ref().is_some_and(|t| t.until <= now) {
             self.st.toast = None;
         }
         if self.st.flash.as_ref().is_some_and(|f| f.1 <= now) {
@@ -382,7 +390,7 @@ impl Core {
         let now = self.st.now;
         let second = |ms: u64| now + 1000 - ms % 1000;
         let mut at: Vec<u64> = Vec::new();
-        at.extend(self.st.toast.as_ref().map(|t| t.1));
+        at.extend(self.st.toast.as_ref().map(|t| t.until));
         at.extend(self.st.flash.as_ref().map(|f| f.1));
         if let Link::Waiting(t) = self.st.link {
             at.push(t);
@@ -468,7 +476,7 @@ impl Core {
 
     /// A toast shown for `ms`.
     fn toast_for(&mut self, m: Msg, ms: u64) {
-        self.st.toast = Some((m, self.st.now + ms));
+        self.st.toast = Some(Toast { msg: m, until: self.st.now + ms, ms });
     }
 
     /// A refusal for lack of resources, whatever path it came by. The recording outranks the freeze: a recording
@@ -724,11 +732,11 @@ impl Core {
                     }
                 }
             }
-            // a refusal's toast could not be seen there until now: its time starts again
+            // the toast could not be seen there until now: its own time starts again
             Event::Presented { output, .. } if self.missing.contains(&output) => {
                 self.missing.retain(|o| *o != output);
-                if let Some((m @ Msg::Resources(..), _)) = self.st.toast.take() {
-                    self.toast_for(m, TOAST_LONG_MS);
+                if let Some(t) = self.st.toast.take() {
+                    self.toast_for(t.msg, t.ms);
                 }
             }
             Event::Presented { .. } => {}

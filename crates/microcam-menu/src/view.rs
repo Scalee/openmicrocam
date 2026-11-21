@@ -7,7 +7,7 @@ use microcam_core::protocol::{PlayerState, RecordState, ResCode, Source};
 use microcam_core::scene::{Align, Anchor, Colour, Fit, Group, ImageNode, Kind, Node, Paint, PathNode, RectNode, Space, Stroke, Style, TextNode};
 use microcam_draw::render::{measure, Fonts};
 
-use crate::core::{frozen_half_id, frozen_id, Core, Dir, Freeze, Gallery, GalleryView, Origin, Screen};
+use crate::core::{frozen_half_id, frozen_id, Core, Dir, Freeze, Gallery, GalleryView, Origin, Screen, Toast};
 use crate::menu::{Item, Kind as ItemKind};
 use crate::text::{self, Lang, T};
 
@@ -227,7 +227,7 @@ impl View<'_> {
                 }
             }
         }
-        if let Some((m, _)) = &st.toast {
+        if let Some(Toast { msg: m, .. }) = &st.toast {
             // a line a chip, the chips one panel: the widest sets its width, the lines below raise it; a line wider than
             // the screen leaves is broken after a comma
             let s = m.say(self.lang());

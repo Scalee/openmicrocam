@@ -486,7 +486,7 @@ impl Rig {
     }
 
     fn toast(&self) -> Option<String> {
-        self.core.st.toast.as_ref().map(|t| t.0.say(self.core.st.own.lang))
+        self.core.st.toast.as_ref().map(|t| t.msg.say(self.core.st.own.lang))
     }
 
     fn int(&self, name: &str) -> i64 {
