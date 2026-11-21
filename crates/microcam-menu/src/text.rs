@@ -134,8 +134,8 @@ pub enum Msg {
     NoFiles,
     /// the gallery refused while a recording runs
     Recording,
-    /// the computer keeps the card open: it is ejected there first
-    CardOpen,
+    /// what was asked could not be done: the computer keeps the card open, it is ejected there first
+    CardOpen(Asked),
     /// the card is not in the camera (none, or with the USB host)
     Card(microcam_core::protocol::Card),
     /// a request refused: what was asked and why
@@ -172,6 +172,7 @@ pub enum Asked {
     Reset,
     Play,
     Player,
+    Gallery,
     Control(String),
 }
 
@@ -236,6 +237,7 @@ fn asked(what: &Asked) -> T {
         Asked::Format => T("Форматирование", "Formatting"),
         Asked::Reset => T("Сброс настроек", "Settings reset"),
         Asked::Play | Asked::Player => T("Видео", "Video"),
+        Asked::Gallery => T("Галерея", "Gallery"),
         Asked::Control(name) => control(name),
     }
 }
@@ -308,7 +310,16 @@ impl Msg {
             Msg::SettingsReset => t(T("Настройки сброшены", "Settings reset")),
             Msg::NoFiles => t(T("На карте нет снимков и видео", "No photos or videos on the card")),
             Msg::Recording => t(T("Идёт запись", "Recording")),
-            Msg::CardOpen => t(T("Карта открыта на компьютере: извлеките её там", "The card is open on the computer: eject it there")),
+            Msg::CardOpen(what) => {
+                let head = match what {
+                    Asked::Photo => T("Снимок невозможен", "No photo"),
+                    Asked::Record => T("Запись невозможна", "No recording"),
+                    Asked::Gallery => T("Галерея недоступна", "No gallery"),
+                    Asked::Control(name) if name == "card-reader" => T("Режим картридера не выключен", "Card reader mode stays on"),
+                    what => asked(what),
+                };
+                format!("{}: {}", head.get(lang), T("карта открыта на компьютере, извлеките её там", "the card is open on the computer, eject it there").get(lang))
+            }
             Msg::Card(microcam_core::protocol::Card::Host) => t(T("Включён режим картридера", "Card reader mode is on")),
             Msg::Card(_) => t(T("Нет SD-карты", "No SD card")),
             Msg::NoFreeze => t(T("Стоп-кадр не получился", "Could not freeze the picture")),

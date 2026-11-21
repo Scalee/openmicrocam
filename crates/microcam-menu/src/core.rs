@@ -612,7 +612,7 @@ impl Core {
             }
             // the card back on the camera (its `card` and `files` events came before): the gallery opened now
             Pending::Gallery(from) if r.ok => self.open_gallery(from),
-            Pending::Gallery(_) => self.refused(Asked::Control("card-reader".into()), r.code, r.holders),
+            Pending::Gallery(_) => self.refused(Asked::Gallery, r.code, r.holders),
             Pending::Files => {
                 if let Some(w) = r.files {
                     self.window(w);
@@ -633,7 +633,7 @@ impl Core {
         match code {
             Some(Code::NoCard) => self.toast(Msg::Card(Card::None)),
             Some(Code::CardShared) => self.toast(Msg::Card(Card::Host)),
-            Some(Code::CardOpen) => self.toast_for(Msg::CardOpen, TOAST_LONG_MS),
+            Some(Code::CardOpen) => self.toast_for(Msg::CardOpen(what), TOAST_LONG_MS),
             Some(Code::Resources) => self.short(Wanted::Asked(what), holders),
             code => self.toast(Msg::Refused(what, code)),
         }

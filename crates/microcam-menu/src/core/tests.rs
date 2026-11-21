@@ -947,7 +947,7 @@ fn the_card_reader_mode_is_switched_in_the_card_page() {
     r.cam.open = true;
     r.press(Right);
     assert_eq!(r.asked(), [set(false)]);
-    assert_eq!((r.toast().as_deref(), r.value("Режим картридера")), (Some("Карта открыта на компьютере: извлеките её там"), "вкл".into()));
+    assert_eq!((r.toast().as_deref(), r.value("Режим картридера")), (Some("Режим картридера не выключен: карта открыта на компьютере, извлеките её там"), "вкл".into()));
     r.cam.open = false;
     r.press(Right);
     assert_eq!(r.value("Режим картридера"), "выкл");
@@ -977,7 +977,7 @@ fn the_gallery_takes_the_card_back_unless_the_computer_has_it_open() {
     r.asked();
     r.press(Key::Gallery);
     assert_eq!(r.asked(), [Request::Set { name: "card-reader".into(), value: Value::Bool(false) }]);
-    assert_eq!((r.screen(), r.toast().as_deref(), r.cam.card), (&Screen::Live, Some("Карта открыта на компьютере: извлеките её там"), Card::Host));
+    assert_eq!((r.screen(), r.toast().as_deref(), r.cam.card), (&Screen::Live, Some("Галерея недоступна: карта открыта на компьютере, извлеките её там"), Card::Host));
     r.wait(5999);
     assert!(r.toast().is_some(), "a toast to act on stays long");
     r.wait(1);
@@ -1035,7 +1035,9 @@ fn a_photo_says_its_file_and_no_card_says_so() {
     assert_eq!(r.toast().as_deref(), Some("Нет SD-карты"));
     (r.cam.card, r.cam.open) = (Card::Host, true);
     r.press(Record);
-    assert_eq!(r.toast().as_deref(), Some("Карта открыта на компьютере: извлеките её там"));
+    assert_eq!(r.toast().as_deref(), Some("Запись невозможна: карта открыта на компьютере, извлеките её там"));
+    r.press(Photo);
+    assert_eq!(r.toast().as_deref(), Some("Снимок невозможен: карта открыта на компьютере, извлеките её там"));
     assert_eq!(r.cam.card, Card::Host, "not taken");
     (r.cam.card, r.cam.open) = (Card::Camera, false);
     r.asked();
