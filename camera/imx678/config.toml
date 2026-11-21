@@ -1,0 +1,34 @@
+# microcamd on the IMX678 camera (black YIZHAN 4K), installed in /customer/omc/mcd; start.sh copies it to /tmp/omc with
+# the UVC interfaces of the gadget it loads
+# microcamd configuration. Every key is optional; these are the defaults for this camera. The controls' defaults are
+# microcamd's own; what the user sets is kept in the settings file.
+
+[paths]
+tables = "/customer/omc/mcd"                # directory of policy.toml
+modes = "/sys/module/drv_ms_cus_imx678_MIPI/parameters/modes"   # the mode list the loaded sensor driver shows
+formats = "/customer/omc/mcd/formats.toml"   # the format list of the gadget start.sh loads ($OMC/g_webcam.ko)
+iq_bin = "/config/iqfile/iq_file_imx678.bin"
+settings = "/customer/omc/mcd/settings.json"  # the controls the user set, written by microcamd alone
+
+[mounting]                # how the sensor sits; the
+mirror = false            # user's `mirror` and `flip` controls turn the picture over it
+flip = false
+
+[control]
+unix_socket = "/tmp/microcam.sock"
+tcp = "0.0.0.0:7700"      # the laptop reaches it over the USB network; "" = no TCP
+
+[usb]
+device = "/dev/video0"
+enabled = true
+buffers = 3               # gadget buffers; 2 lowers latency, 3 is the vendor's
+max_payload = 3072        # isochronous payload (g_webcam streaming_maxpacket)
+streamon_budget_ms = 4000 # pipeline + first frame must be ready within this after STREAMON (Linux hosts wait 5 s)
+vc_interface = 2          # UVC interfaces in the composite gadget (RNDIS takes 0 and 1): VideoControl 2, VideoStreaming 3
+vs_interface = 3
+
+[watchdog]
+device = "/dev/watchdog0" # fed while the pipeline thread is responsive and the sensor's frames arrive; "" = leave it alone
+
+[log]
+level = "debug"           # into a 1 MB ring in RAM; live: microcam log-level debug|info|off|…,ui=debug,kernel=off

@@ -1,0 +1,6 @@
+# the vendor app's USB plugin with rndis_function_enable=1 (USB network while the vendor app runs)
+# target /customer/lib/plugins/libmain_uvc.so
+# size 239680
+# from 1089cf35639ec8c696d1b06591576a62
+# to 9863cf91c10420f36d9827704eaf1078
+187839 31

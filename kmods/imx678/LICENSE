@@ -1,0 +1,12 @@
+imx678 — the IMX678 sensor driver of the black YIZHAN 4K camera (SigmaStar SSC8836 / Mercury6), in place of its stock
+imx678_MIPI.ko
+
+Licence: MIT No Attribution (../../LICENSE) or, at your choice, the GNU General Public License version 2 (../COPYING).
+
+imx678.c, modes.py and Kbuild are made from OpenMicroCam's GC8613 driver (../gc8613); mhal_sensor.h is that driver's.
+The register names follow the sensor's public Linux driver; none of its text is carried.
+
+The register values in tables/ are facts about the sensor, in our own form:
+- tables/vendor.txt: as the camera's stock sensor driver programs the sensor, read from that module of the camera's
+  flash; no text of its maker is carried.
+modes.py builds every mode's table from it and our changes to it; its output, modes.h, is made at build time.

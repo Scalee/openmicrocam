@@ -1,0 +1,87 @@
+# Which sensor mode serves which configuration on the IMX678 camera (black YIZHAN 4K), with kmods/imx678's modes:
+# 1080p60 2x2-binned (full view), 4K48 full view, 2688x1512@60 a 1:1 centre crop; the ISP at its stock 432 MHz. Pure
+# policy data read by microcamd; mode names are those of the sensor driver's mode list.
+schema = 1
+
+[presets]
+boot_4k = "3840x2160@48fps"
+boot_1080 = "1920x1080@60fps"
+
+[hdmi]
+candidates = ["2160p30", "2160p25", "1440p60", "1440p50", "1440p30", "1080p60", "1080p50", "1080p30", "1080p25", "1080p24",
+              "720p60", "720p50", "576p50", "480p60"]
+no_edid = "1080p60"
+
+# USB size -> sensor mode (the same for every monitor class; HDMI is untested on this camera)
+[[usb]]
+size = [3840, 2160]
+hd = "3840x2160@48fps"
+none = "3840x2160@48fps"
+uhd = "3840x2160@48fps"
+
+[[usb]]
+size = [2560, 1440]
+hd = "3840x2160@48fps"
+none = "3840x2160@48fps"
+uhd = "3840x2160@48fps"
+
+[[usb]]
+size = [2688, 1512]
+hd = "2688x1512@60fps"
+none = "2688x1512@60fps"
+uhd = "2688x1512@60fps"
+
+[[usb]]
+size = [1920, 1080]
+hd = "1920x1080@60fps"
+none = "1920x1080@60fps"
+uhd = "1920x1080@60fps"
+
+# 4:3 sizes: a centre crop of the binned 1080p frame
+[[usb]]
+size = [640, 480]
+hd = "1920x1080@60fps"
+none = "1920x1080@60fps"
+uhd = "1920x1080@60fps"
+
+# recording: per size the modes it may run on, best picture first, and the standard rates
+[[record]]
+size = [3840, 2160]
+modes = ["3840x2160@48fps"]
+rates = [24, 25]
+
+[[record]]
+size = [2560, 1440]
+modes = ["3840x2160@48fps"]
+rates = [24, 25, 30]
+
+[[record]]
+size = [1920, 1080]
+modes = ["3840x2160@48fps", "1920x1080@60fps"]
+rates = [24, 25, 30, 50, 60]
+
+# The H.26x encoder: one Wave5 core encodes USB's H.264 / H.265 stream and the recording (a third limit beside
+# the two written frames and the shared scaler). `frame`: the ms of its time a frame takes, by size (a size between rows takes the larger's;
+# H.264 and H.265 alike), the largest P frame seen with both channels encoding at microcamd's bitrates beside HDMI 4K
+# (`/proc/mhe/ctx_info`, 2026-11-14); `budget_ms`: what of each second the two may take together, below the saturation
+# measured, for the frames' spread. A recording and a stream that need more: the lower in the precedence gives way.
+# `mjpeg`: USB's MJPEG stream of more than `px_per_s` (its frames' pixels a second) slows the encoder's frames to
+# `frame` — the JPEG encoder and the stream's frames share the memory bus with it, which then runs near full; the
+# recording channel's 3-s average beside 4K at 25–45 fps; up to `px_per_s` the recordings measured were whole as alone,
+# 1080@100 beside 3840x1600 at the edge (`/proc/mhe/ctx_info`, `miu0/measure_all`, 2026-11-14). Where the recording does
+# not fit beside a faster stream, the stream gives way to the rate of `px_per_s`, or the recording when USB is above it.
+[h26x]
+budget_ms = 900
+frame = [
+  { size = [1920, 1080], ms = 7 },
+  { size = [2560, 1440], ms = 12 },
+  { size = [3840, 2160], ms = 28 },
+]
+
+[h26x.mjpeg]
+px_per_s = 207_360_000  # 3840x2160 at 25
+frame = [
+  { size = [1920, 1080], ms = 11 },
+  { size = [2560, 1440], ms = 23 },
+  { size = [3840, 2160], ms = 35 },
+]

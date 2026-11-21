@@ -1,0 +1,143 @@
+# USB formats of the patched g_webcam.ko (patches/g_webcam.ko.patch), from its descriptors
+schema = 1
+
+[[format]]
+index = 1
+codec = "mjpeg"
+default_frame = 1
+[[format.frame]]
+index = 1
+width = 3840
+height = 2160
+intervals = [208333, 333333, 1000000]
+default_interval = 208333
+[[format.frame]]
+index = 2
+width = 2560
+height = 1440
+intervals = [208333, 333333, 1000000]
+default_interval = 208333
+[[format.frame]]
+index = 3
+width = 1920
+height = 1080
+intervals = [166666, 666666, 1000000]
+default_interval = 166666
+[[format.frame]]
+index = 4
+width = 2688
+height = 1512
+intervals = [166666, 333333, 1000000]
+default_interval = 166666
+[[format.frame]]
+index = 5
+width = 1280
+height = 720
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 6
+width = 640
+height = 480
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 7
+width = 424
+height = 240
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+
+[[format]]
+index = 2
+codec = "h264"
+default_frame = 1
+[[format.frame]]
+index = 1
+width = 320
+height = 240
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 2
+width = 640
+height = 480
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 3
+width = 1280
+height = 720
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 4
+width = 1920
+height = 1080
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 5
+width = 2560
+height = 1440
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 6
+width = 3840
+height = 2160
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 7
+width = 424
+height = 240
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+
+[[format]]
+index = 3
+codec = "h265"
+default_frame = 1
+[[format.frame]]
+index = 1
+width = 320
+height = 240
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 2
+width = 640
+height = 480
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 3
+width = 1280
+height = 720
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 4
+width = 1920
+height = 1080
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 5
+width = 2560
+height = 1440
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 6
+width = 3840
+height = 2160
+intervals = [333333, 666666, 1000000]
+default_interval = 333333
+[[format.frame]]
+index = 7
+width = 424
+height = 240
+intervals = [333333, 666666, 1000000]
+default_interval = 333333

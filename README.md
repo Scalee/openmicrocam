@@ -1,3 +1,35 @@
+# OpenMicroCam for the IMX678 camera (black YIZHAN 4K): a fork
+
+> **This is a fork of [OpenMicroCam](https://github.com/apnix/openmicrocam) by [apnix](https://github.com/apnix).**
+> OpenMicroCam is their work: `microcamd`, the kernel modules, the build and the research into the SigmaStar platform.
+> This fork only adds support for a second camera. Everything below the line is the original README, unchanged.
+
+![The camera this fork is for: the black YIZHAN 4K with an 8.29 MP Sony IMX678 (1/1.8", 2 µm pixels), HDMI and USB 2.0](docs/images/yizhan-4k-black-imx678.png)
+
+## What differs in this fork
+
+This fork is for the **black YIZHAN 4K** microscope camera with a **Sony IMX678** sensor (1/1.8"), shown above. The
+original project targets the XHU4012 with a GalaxyCore GC8613 sensor. Both cameras have the same board and SoC, but this
+one has another sensor, another flash and another stock firmware:
+
+- **A sensor driver for the IMX678** (`kmods/imx678`), with modes that fit the SoC's ISP. Over USB that gives **4K at 48**,
+  **2560×1440 at 48** (full view), **1080p at 60** (full view, binned) and **2688×1512 at 60** (centre crop). The stock
+  firmware gives 30 real frames a second in every mode, including the 1080p60 it advertises.
+- **Install from a microSD card, without opening the camera.** The camera has 128 MiB SPI NAND, not the original's
+  16 MB NOR, so the original's USB installer doesn't apply. The card uses the vendor's own update path to run a one-time
+  install (`tools/imx678/mkcard.py`). The vendor's files stay on the flash, and the vendor app is one setting away.
+- **No vendor files are in the repository or on the card.** The install patches copies of the camera's own files on the
+  camera (`camera/imx678/patches`) and checks them against checksums.
+- **USB network and telnet** for the vendor app too, by setting.
+- **Small `microcamd` changes:** USB entries can be mapped to sensor modes individually, and the auto-exposure is capped
+  at the frame (anti-flicker steps), so the frame rate holds in dim light.
+- **Different limits:** no 1080p120 full view (the sensor's binning doesn't read faster), and the ISP caps 4K at 48.
+  HDMI, photos, recording and the menu are not tested on this camera yet.
+
+Details, install and build: **[docs/IMX678.md](docs/IMX678.md)**.
+
+---
+
 # OpenMicroCam — open firmware for the YIZHAN 4K microscope camera (XHU4012)
 
 ![OpenMicroCam — open firmware for the YIZHAN 4K (XHU4012) HDMI/USB microscope camera, SigmaStar SSC8836, GC8613: the camera and its picture with the on-screen menu](docs/images/yizhan-4k-microscope-camera-openmicrocam.png)
