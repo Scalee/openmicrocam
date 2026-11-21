@@ -43,10 +43,24 @@ rmmod drv_ms_cus_imx678_MIPI || fallback "the vendor's sensor driver did not unl
 insmod $M/drv_ms_cus_imx678_MIPI.ko chmap=1 lane_num=4 || fallback "our sensor driver did not load"
 echo "omc: $(up) s: gadget, modules and sensor driver in place; isp clk $(cat /sys/devices/virtual/mstar/isp0/isp_clk)"
 
+# the front light: red from power-on, orange once the camera runs (GPIO 46 high), as the vendor app does at its start
+[ -d /sys/class/gpio/gpio46 ] || echo 46 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio46/direction && echo 1 > /sys/class/gpio/gpio46/value
+
+# microcamd's console output (in RAM; its own log is a fixed 1 MB ring): kept to its last 64 KB once past 256 KB, so
+# months of uptime cannot fill /tmp
+( while true; do
+    sleep 600
+    if [ "$(wc -c < $L/microcamd.log 2>/dev/null || echo 0)" -gt 262144 ]; then
+      tail -c 65536 $L/microcamd.log > $L/trim.tmp && cat $L/trim.tmp > $L/microcamd.log; rm -f $L/trim.tmp
+    fi
+  done ) &
+
 quick=0
 while true; do
   t0=$(up)
-  ( trap - USR1 USR2 HUP; exec $M/microcamd $L/config.toml ) > $L/microcamd.log 2>&1 &
+  : > $L/microcamd.log
+  ( trap - USR1 USR2 HUP; exec $M/microcamd $L/config.toml ) >> $L/microcamd.log 2>&1 &
   pid=$!
   echo "omc: $t0 s: microcamd pid $pid"
   # a minute up: this boot counts as good

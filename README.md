@@ -2,7 +2,8 @@
 
 > **This is a fork of [OpenMicroCam](https://github.com/apnix/openmicrocam) by [apnix](https://github.com/apnix).**
 > OpenMicroCam is their work: `microcamd`, the kernel modules, the build and the research into the SigmaStar platform.
-> This fork only adds support for a second camera. Everything below the line is the original README, unchanged.
+> This fork only adds support for a second camera. Below the line is the original README, with the IMX678 camera added
+> to its frame-rate and hardware tables; the figures for the original camera are the original project's.
 
 ![The camera this fork is for: the black YIZHAN 4K with an 8.29 MP Sony IMX678 (1/1.8", 2 µm pixels), HDMI and USB 2.0](docs/images/yizhan-4k-black-imx678.png)
 
@@ -20,10 +21,17 @@ one has another sensor, another flash and another stock firmware:
   install (`tools/imx678/mkcard.py`). The vendor's files stay on the flash, and the vendor app is one setting away.
 - **No vendor files are in the repository or on the card.** The install patches copies of the camera's own files on the
   camera (`camera/imx678/patches`) and checks them against checksums.
-- **USB network and telnet** for the vendor app too, by setting.
+- **The card needs a version file.** U-Boot doesn't run on a normal boot here, so a card's `H161X.bin` is only run after
+  the vendor's updater has seen an `sd_version.txt` whose version differs from the camera's. It then sets
+  `ota_upgrade_status` and reboots into U-Boot. The card resets that variable and makes itself inert afterwards.
+- **Telnet is off on the stock firmware.** The login is the same (`root` / `ws123321`), but only on the serial console
+  inside the camera. The vendor app loads the USB gadget without RNDIS, so there's no network, and `/dev/pts` is only
+  mounted at a console login, so `telnetd` can't serve a session. The install turns on the USB network and telnet, for
+  the vendor app too.
 - **Small `microcamd` changes:** USB entries can be mapped to sensor modes individually, and the auto-exposure is capped
   at the frame (anti-flicker steps), so the frame rate holds in dim light.
-- **Different limits:** no 1080p120 full view (the sensor's binning doesn't read faster), and the ISP caps 4K at 48.
+- **Different limits:** 1080p tops out at 60 in full view (Sony rates the binned mode at 72 fps, and that needs a faster
+  MIPI link than the vendor's), and the ISP caps 4K at 48.
   HDMI, photos, recording and the menu are not tested on this camera yet.
 
 Details, install and build: **[docs/IMX678.md](docs/IMX678.md)**.
@@ -48,11 +56,18 @@ The stock firmware captures only 4K at 30 frames a second: its sensor driver has
 HDMI it advertises are each frame repeated. OpenMicroCam has a sensor driver of its own with a mode for each output, and
 every frame in a second is a real one.
 
-| | Stock | OpenMicroCam |
-|---|---|---|
-| USB | 4K, 2K, 1080p — up to 30 fps | 4K up to 45, 2K up to 66, 1080p up to 120 fps |
-| HDMI | 4K30; 1080p60 from 30 real frames | 4K30, 2K60, 1080p60 |
-| Recording | 4K30 and 1080p30, 10 Mbit/s | 4K up to 25, 2K up to 50, 1080p up to 100 fps; 4K at 20 Mbit/s |
+The frame rates depend on the camera; the two cameras have different sensors:
+
+| | Stock (both cameras) | OpenMicroCam, GC8613 camera (XHU4012) | This fork, IMX678 camera (black YIZHAN 4K) |
+|---|---|---|---|
+| USB | 4K, 2K, 1080p — up to 30 fps | 4K up to 45, 2K up to 66, 1080p up to 120 fps | 4K up to 48, 2560×1440 up to 48 (full view), 2688×1512 up to 60 (centre crop), 1080p up to 60 fps (MJPEG) |
+| HDMI | 4K30; 1080p60 from 30 real frames | 4K30, 2K60, 1080p60 | not tested |
+| Recording | 4K30 and 1080p30, 10 Mbit/s | 4K up to 25, 2K up to 50, 1080p up to 100 fps; 4K at 20 Mbit/s | not tested |
+
+On the IMX678 camera the limits are the SoC's ISP (about 432 Mpx/s, hence 4K48) and the sensor's readout (its binned
+1080p is rated 72 fps by Sony and runs 60 at the vendor's MIPI link speed, hence 1080p60, not 120):
+[docs/IMX678.md](docs/IMX678.md). The points below are the original project's,
+measured on the GC8613 camera.
 
 - **Low latency over USB:** in H.264 4K a frame reaches the computer in about 40 ms.
 - **The monitor is not reset:** the stream to the computer starts and stops without interrupting the picture on the monitor.
@@ -62,13 +77,15 @@ every frame in a second is a real one.
 
 ## Supported hardware
 
-| | |
-|---|---|
-| Tested camera | YIZHAN 4K, model XHU4012 — sold as «YIZHAN 4K 60MP UHD … HDMI Type-C» digital microscope camera; the housing reads «YIZHAN 4K ULTRA HD» |
-| Board | marked «oseecam WS03 V5.0 2023.09.16» |
-| SoC | SigmaStar SSC8836 (Mercury6) |
-| Sensor | GalaxyCore GC8613, 1/2.7" — sellers' listings name it «IMX415» or «IMX415L»; the 1/2.7" size in a listing gives it away (Sony's IMX415 is 1/2.8") |
-| Flash | 16 MB SPI NOR |
+| | GC8613 camera (the original project) | IMX678 camera (this fork) |
+|---|---|---|
+| Tested camera | YIZHAN 4K, model XHU4012 — sold as «YIZHAN 4K 60MP UHD … HDMI Type-C» digital microscope camera; the housing reads «YIZHAN 4K ULTRA HD» | black YIZHAN 4K; the housing reads «4K», its label «ALL 4K (3840x2160)» and «1/1.8" CMOS»; the same firmware as the Yizhan XHU4006 |
+| Board | marked «oseecam WS03 V5.0 2023.09.16» | the same marking |
+| SoC | SigmaStar SSC8836 (Mercury6) | the same |
+| Sensor | GalaxyCore GC8613, 1/2.7" — sellers' listings name it «IMX415» or «IMX415L»; the 1/2.7" size in a listing gives it away (Sony's IMX415 is 1/2.8") | Sony IMX678, 1/1.8", 8.29 MP, 2 µm pixels |
+| Flash | 16 MB SPI NOR | 128 MiB SPI NAND |
+| Stock firmware | app version `W11861322604301` | app `do_weishen`, version `W1167822507261` |
+| Install | over USB: [docs/INSTALL.md](docs/INSTALL.md) | from a microSD card: [docs/IMX678.md](docs/IMX678.md) |
 
 Other 4K microscope cameras on the same SigmaStar platform are probable candidates, none of them tested. A camera sold
 under another name may carry a different board, sensor or stock firmware version. The exact marks and the candidates:
@@ -77,13 +94,17 @@ under another name may carry a different board, sensor or stock firmware version
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how `microcamd` is built: its blocks, the pipeline model, the data paths.
-- [docs/HARDWARE.md](docs/HARDWARE.md) — the tested camera with its exact marks, and untested candidates.
+- [docs/HARDWARE.md](docs/HARDWARE.md) — the tested cameras with their exact marks, and untested candidates.
+- [docs/IMX678.md](docs/IMX678.md) — the IMX678 camera of this fork: modes, limits, install from a card, build.
 - [docs/INSTALL.md](docs/INSTALL.md) — dump your camera, check it, build, install, and back to stock, all over its USB
   cable; the stock camera's shell login is its known default, `root` / `ws123321`.
 - [docs/firmware/INDEX.md](docs/firmware/INDEX.md) — the specification of the camera's stock firmware, component by
   component: boot chain, kernel, SigmaStar MI and mhal media stack, ISP, codecs, the vendor's applications.
 
 ## How to install
+
+> **IMX678 camera (this fork):** the steps below are for the GC8613 camera and don't apply to it. Install from a
+> microSD card and build as [docs/IMX678.md](docs/IMX678.md) describes.
 
 OpenMicroCam runs on the stock firmware's kernel and video drivers for now. They are not in this repository: the build
 takes them from a dump of your own camera, so the dump comes first.

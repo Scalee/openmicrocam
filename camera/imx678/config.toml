@@ -31,4 +31,4 @@ vs_interface = 3
 device = "/dev/watchdog0" # fed while the pipeline thread is responsive and the sensor's frames arrive; "" = leave it alone
 
 [log]
-level = "debug"           # into a 1 MB ring in RAM; live: microcam log-level debug|info|off|…,ui=debug,kernel=off
+level = "info"            # into a 1 MB ring in RAM; live: microcam log-level debug|info|off|…,ui=debug,kernel=off

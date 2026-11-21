@@ -64,6 +64,13 @@ What of the installation ([INSTALL.md](INSTALL.md)) has been tried on this camer
 | with a microSD card in, the stock firmware on USB | a storage gadget only (`0525:a4a5`), no camera and no network |
 | over the serial console: `install.py access` | not yet |
 
+## The IMX678 camera — tested in this fork
+
+The black YIZHAN 4K with a Sony IMX678 (1/1.8") and 128 MiB SPI NAND; board marked «oseecam WS03 V5.0 2023.09.16», as
+above. Its stock firmware (app `do_weishen`, `W1167822507261`) is the one this page lists for the Yizhan XHU4006 below.
+It runs OpenMicroCam with its own sensor driver and an SD-card install: [IMX678.md](IMX678.md). Tested over USB (MJPEG):
+4K48, 2560×1440@48, 1920×1080@60, 2688×1512@60. Not tested: HDMI, photos, recording, the menu.
+
 ## Candidates — not tested
 
 Cameras that share the platform or the maker. None is tested; listed so owners know where to look, not as supported.
@@ -71,7 +78,7 @@ Cameras that share the platform or the maker. None is tested; listed so owners k
 | camera | what it shares | what differs or is unknown |
 |---|---|---|
 | OSEECAM H1605 / H1605-C (the board maker's own 4K HDMI + USB camera) | the kernel's release tag names `WS_H1605`; the same USB resolution list | the H1605-C page names a Sony sensor |
-| Yizhan XHU4006 | the same vendor application and MI SDK build, the same «Mercury6» machine | IMX678 sensor, SPI NAND flash, another board |
+| Yizhan XHU4006 | the same vendor application and MI SDK build, the same «Mercury6» machine | IMX678 sensor, SPI NAND flash; its firmware is the IMX678 camera's above, whose board has the same marking as the tested one |
 | PHONEFIX «4K-C1» and other listings with the same specification text (42 × 42 × 46 mm, 1/2.7", 4K30 HDMI) | the listing text and the housing | board not seen |
 
 What a camera with another label but the same board would most likely differ in: the sensor (another driver and IQ file),
