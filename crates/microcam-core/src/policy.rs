@@ -368,6 +368,9 @@ struct HdmiRules {
 #[derive(Debug, Deserialize)]
 struct UsbRow {
     size: [u32; 2],
+    /// the one USB entry this row serves: [UVC format index, frame index]; absent = every entry of the size
+    #[serde(default)]
+    frame: Option<[u8; 2]>,
     hd: String,
     none: String,
     uhd: String,
@@ -419,6 +422,7 @@ struct RecordRule {
 #[derive(Clone, Debug)]
 struct UsbRow2 {
     size: Size,
+    frame: Option<(u8, u8)>,
     hd: String,
     none: String,
     uhd: String,
@@ -452,7 +456,7 @@ impl Policy {
             boot_1080: f.presets.boot_1080,
             hdmi_candidates: f.hdmi.candidates,
             hdmi_no_edid: f.hdmi.no_edid,
-            usb: f.usb.into_iter().map(|r| UsbRow2 { size: Size::new(r.size[0], r.size[1]), hd: r.hd, none: r.none, uhd: r.uhd }).collect(),
+            usb: f.usb.into_iter().map(|r| UsbRow2 { size: Size::new(r.size[0], r.size[1]), frame: r.frame.map(|[f, i]| (f, i)), hd: r.hd, none: r.none, uhd: r.uhd }).collect(),
             record: f
                 .record
                 .into_iter()
@@ -478,7 +482,7 @@ impl Policy {
             boot_1080: m.clone(),
             hdmi_candidates: self.hdmi_candidates.clone(),
             hdmi_no_edid: self.hdmi_no_edid,
-            usb: self.usb.iter().map(|r| UsbRow2 { size: r.size, hd: m.clone(), none: m.clone(), uhd: m.clone() }).collect(),
+            usb: self.usb.iter().map(|r| UsbRow2 { size: r.size, frame: r.frame, hd: m.clone(), none: m.clone(), uhd: m.clone() }).collect(),
             record: self.record.iter().map(|r| RecordRule { modes: vec![m.clone()], ..r.clone() }).collect(),
             h26x_budget_ms: self.h26x_budget_ms,
             h26x_frames: self.h26x_frames.clone(),
@@ -549,7 +553,7 @@ impl Policy {
             let below: Vec<Timing> = self.hdmi_candidates.iter().copied().filter(|t| t.size().h < 2160).collect();
             steps.extend(best_timing(monitor, &below, self.hdmi_no_edid));
         }
-        let rule = self.usb_rule(host.size)?;
+        let rule = self.usb_rule(host.size, Some((host.format_index, host.frame_index)))?;
         for &t in &steps {
             if modes.get(rule.mode(Self::monitor_class(monitor, Some(t))))?.max_fps >= host.fps {
                 return Ok(Some(t));
@@ -573,14 +577,18 @@ impl Policy {
         out
     }
 
-    /// The USB rule for a size: exact row, else the row with the same aspect (±1 %) and the smallest larger size.
-    fn usb_rule(&self, size: Size) -> Result<&UsbRow2, PolicyError> {
-        if let Some(r) = self.usb.iter().find(|r| r.size == size) {
+    /// The USB rule for a size, or for one USB entry: the row naming that entry, else (among the rows naming none)
+    /// the exact size's row, else the row with the same aspect (±1 %) and the smallest larger size.
+    fn usb_rule(&self, size: Size, frame: Option<(u8, u8)>) -> Result<&UsbRow2, PolicyError> {
+        if let Some(r) = frame.and_then(|f| self.usb.iter().find(|r| r.frame == Some(f))) {
+            return Ok(r);
+        }
+        if let Some(r) = self.usb.iter().find(|r| r.frame.is_none() && r.size == size) {
             return Ok(r);
         }
         self.usb
             .iter()
-            .filter(|r| r.size.aspect_diff(size) <= 0.01 && r.size.w >= size.w && r.size.h >= size.h)
+            .filter(|r| r.frame.is_none() && r.size.aspect_diff(size) <= 0.01 && r.size.w >= size.w && r.size.h >= size.h)
             .min_by_key(|r| r.size.w as u64 * r.size.h as u64)
             .ok_or(PolicyError::NoUsbRule(size))
     }
@@ -704,7 +712,7 @@ impl Policy {
         let (mode, usb): (&Mode, Option<UsbPlan>) = match host {
             None => {
                 let name = match prefs.boot_preset {
-                    _ if idle_as_4k_stream => self.usb_rule(Size::new(3840, 2160))?.mode(class),
+                    _ if idle_as_4k_stream => self.usb_rule(Size::new(3840, 2160), None)?.mode(class),
                     BootPreset::Uhd => &self.boot_4k,
                     BootPreset::Fhd => &self.boot_1080,
                 };
@@ -713,7 +721,7 @@ impl Policy {
             Some((host, epoch)) => {
                 let mode = match held {
                     Some(m) => m,
-                    None => modes.get(self.usb_rule(host.size)?.mode(class))?,
+                    None => modes.get(self.usb_rule(host.size, Some((host.format_index, host.frame_index)))?.mode(class))?,
                 };
                 let fps = match &record {
                     Some(r) => host.fps.min(r.fps),

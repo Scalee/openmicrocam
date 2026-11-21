@@ -24,6 +24,16 @@ macro_rules! get {
 }
 
 /// The IQ file's values of every structure a knob changes.
+/// The IQ file's mains half-cycle in us (the AE's anti-flicker step): 10000 at 50 Hz, 8333 at 60 Hz, None when off.
+pub fn flicker_half_us(b: &Baseline) -> Option<u32> {
+    use ffi::MI_ISP_AE_FLICKER_TYPE_e::*;
+    match b.flicker {
+        SS_AE_FLICKER_TYPE_50HZ => Some(10000),
+        SS_AE_FLICKER_TYPE_60HZ => Some(8333),
+        _ => None,
+    }
+}
+
 pub struct Baseline {
     brightness: Box<ffi::MI_ISP_IQ_BRIGHTNESS_TYPE_t>,
     contrast: Box<ffi::MI_ISP_IQ_CONTRAST_TYPE_t>,

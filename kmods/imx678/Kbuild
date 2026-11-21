@@ -1,0 +1,8 @@
+# The IMX678 sensor driver of the black YIZHAN 4K camera; build: build-ko.sh . (named like the vendor's module it replaces)
+obj-m := drv_ms_cus_imx678_MIPI.o
+drv_ms_cus_imx678_MIPI-y := imx678.o
+ccflags-y += -march=armv7-a
+$(obj)/imx678.o: $(obj)/modes.h
+$(obj)/modes.h: $(src)/modes.py $(src)/tables/vendor.txt
+	python3 $(src)/modes.py > $@
+clean-files := modes.h

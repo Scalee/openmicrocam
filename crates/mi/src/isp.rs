@@ -10,6 +10,22 @@ use crate::{check, rect, Result, PIXEL_NV12};
 /// The vendor app's IQ-bin user key: the last argument it passes to `MI_ISP_API_CmdLoadBinFile` when it loads the IQ file.
 const IQ_USER_KEY: u32 = 0x4d2;
 
+/// The AE's exposure limit, raw words (MI_ISP_AE_EXPO_LIMIT_TYPE_t: [0] min shutter us, [1] max shutter us, ...).
+pub fn ae_limit(dev: u32, chn: u32) -> Result<[u32; 16]> {
+    let mut w = [0u32; 16];
+    check("MI_ISP_AE_GetExposureLimit", unsafe { ffi::MI_ISP_AE_GetExposureLimit(dev, chn, w.as_mut_ptr()) })?;
+    Ok(w)
+}
+
+/// The AE's longest exposure, the rest of its limit kept.
+pub fn set_ae_max_shutter(dev: u32, chn: u32, us: u32) -> Result<[u32; 16]> {
+    let mut w = ae_limit(dev, chn)?;
+    let was = w;
+    w[1] = us.max(w[0]);
+    check("MI_ISP_AE_SetExposureLimit", unsafe { ffi::MI_ISP_AE_SetExposureLimit(dev, chn, w.as_mut_ptr()) })?;
+    Ok(was)
+}
+
 pub fn create_device(dev: u32) -> Result<()> {
     let mut a = ffi::MI_ISP_DevAttr_t { u32DevStitchMask: 1 };
     check("MI_ISP_CreateDevice", unsafe { ffi::MI_ISP_CreateDevice(dev, &mut a) })

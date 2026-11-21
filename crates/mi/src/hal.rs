@@ -61,6 +61,12 @@ pub struct MiHal {
     player: Box<dyn PlayerControl>,
     /// the sensor's plane info, read after every sensor enable (the VIF is configured from it)
     plane: Option<sensor::PlaneInfo>,
+    /// pad and max fps of the mode last set: a vendor driver's rate goes through MI_SNR_SetFps, where 0 means this
+    snr_mode: Option<(u32, u32)>,
+    /// the ISP channel the AE runs on and the frame rate the sensor runs at: the AE's exposure limit follows them
+    ae_chn: Option<(u32, u32)>,
+    fps_now: u32,
+    ae_limit_logged: bool,
     /// the encoder currently feeding USB: (dev, chn, codec)
     pub encoder: Option<(u32, u32, microcam_core::Codec)>,
     hdmi_open: bool,
@@ -83,6 +89,29 @@ pub struct MiHal {
 }
 
 impl MiHal {
+    /// The AE's longest exposure for the frame rate now: whole flicker half-cycles inside 98 % of the frame (the
+    /// sensor leaves a few lines), the frame itself when anti-flicker is off. Logged when it changes.
+    fn ae_limit(&mut self) {
+        let (Some((dev, chn)), true) = (self.ae_chn, self.fps_now > 0) else { return };
+        let frame_us = 1_000_000 / self.fps_now * 98 / 100;
+        let max = match self.baseline.as_ref().and_then(tune::flicker_half_us) {
+            Some(h) if frame_us >= h => frame_us / h * h,
+            _ => frame_us,
+        };
+        match isp::set_ae_max_shutter(dev, chn, max) {
+            Ok(was) => {
+                if !self.ae_limit_logged {
+                    log::info!("AE exposure limit as read: {:?}", &was[..8]);
+                    self.ae_limit_logged = true;
+                }
+                if was[1] != max {
+                    log::info!("AE max shutter {} -> {} us ({} fps)", was[1], max, self.fps_now);
+                }
+            }
+            Err(e) => log::warn!("AE exposure limit: {e}"),
+        }
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         pump: Box<dyn PumpControl>,
@@ -93,7 +122,7 @@ impl MiHal {
         on_lost: feed::OnLost,
         patches: [std::sync::Arc<compose::PatchBox>; 3],
     ) -> Self {
-        Self { pump, recorder, player, plane: None, encoder: None, hdmi_open: true, baseline: None, on_baseline, pictures, feeder: feed::Feeder::default(), lost: feed::Lost::default(), on_lost, patches, rings: Vec::new() }
+        Self { pump, recorder, player, plane: None, snr_mode: None, ae_chn: None, fps_now: 0, ae_limit_logged: false, encoder: None, hdmi_open: true, baseline: None, on_baseline, pictures, feeder: feed::Feeder::default(), lost: feed::Lost::default(), on_lost, patches, rings: Vec::new() }
     }
 
     fn fail(op: &Op, detail: String) -> HalError {
@@ -155,10 +184,16 @@ impl Hal for MiHal {
     }
 
     fn frame_lines(&mut self) -> Option<u32> {
+        if !sysfs::has_fps_live() {
+            return None; // a vendor driver: no frame length to read, no display lock
+        }
         sysfs::frame_lines().map_err(|e| log::warn!("frame length read: {e}")).ok()
     }
 
     fn set_frame_lines(&mut self, lines: u32) -> Result<(), HalError> {
+        if !sysfs::has_fps_live() {
+            return Ok(());
+        }
         sysfs::set_frame_lines(lines).map_err(|e| HalError { op: format!("frame length {lines}"), detail: e.to_string() })
     }
 
@@ -221,14 +256,28 @@ impl Hal for MiHal {
             SensorSetRes { pad, index, .. } => {
                 self.plane = None;
                 Self::mi(op, sensor::set_plane_mode(*pad, false))?;
+                self.snr_mode = sensor::modes(*pad).ok().and_then(|l| l.into_iter().find(|d| d.index == *index)).map(|d| (*pad, d.max_fps));
+                self.fps_now = self.snr_mode.map_or(0, |(_, f)| f);
                 Self::mi(op, sensor::set_res(*pad, *index))
             }
-            SensorEnable { pad } => Self::mi(op, sensor::enable(*pad)),
+            SensorEnable { pad } => {
+                let r = Self::mi(op, sensor::enable(*pad));
+                self.ae_limit();
+                r
+            }
             SensorDisable { pad } => {
                 self.plane = None;
                 Self::mi(op, sensor::disable(*pad))
             }
-            SensorFpsLive { fps } => Self::io(op, sysfs::set_fps_live(*fps)),
+            SensorFpsLive { fps } if sysfs::has_fps_live() => {
+                self.fps_now = if *fps == 0 { self.snr_mode.map_or(0, |(_, f)| f) } else { *fps };
+                self.ae_limit();
+                Self::io(op, sysfs::set_fps_live(*fps))
+            }
+            SensorFpsLive { fps } => {
+                let (pad, max) = self.snr_mode.ok_or_else(|| HalError { op: format!("{op:?}"), detail: "no sensor mode set".into() })?;
+                Self::mi(op, sensor::set_fps(pad, if *fps == 0 { max } else { (*fps).min(max) }))
+            }
             SensorOrientation { pad, mirror, flip } => Self::io(op, sysfs::set_orientation(*pad, *mirror, *flip)),
 
             VifCreateGroup { group } => Self::mi(op, vif::create_group(*group)),
@@ -277,6 +326,7 @@ impl Hal for MiHal {
                     Ok(b) => {
                         log::info!("{}", b.describe());
                         (self.on_baseline)(b.hardware_defaults());
+                        self.ae_chn = Some((*dev, *chn));
                         Some(b)
                     }
                     Err(e) => {
@@ -284,6 +334,7 @@ impl Hal for MiHal {
                         None
                     }
                 };
+                self.ae_limit();
                 Ok(())
             }
             IspAdjust { dev, chn, adjust } => {

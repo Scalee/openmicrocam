@@ -14,6 +14,11 @@ pub fn set_res(pad: u32, index: u8) -> Result<()> {
     check("MI_SNR_SetRes", unsafe { ffi::MI_SNR_SetRes(pad, index) })
 }
 
+/// The frame rate through the sensor driver's own SetFPS (a vendor driver: no fps_live parameter).
+pub fn set_fps(pad: u32, fps: u32) -> Result<()> {
+    check("MI_SNR_SetFps", unsafe { ffi::MI_SNR_SetFps(pad, fps) })
+}
+
 pub fn enable(pad: u32) -> Result<()> {
     check("MI_SNR_Enable", unsafe { ffi::MI_SNR_Enable(pad) })
 }

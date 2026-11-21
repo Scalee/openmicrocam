@@ -178,6 +178,8 @@ int MI_SNR_GetPlaneInfo(unsigned int u32PadId, unsigned int u32PlaneID, MI_SNR_P
 int MI_SNR_QueryResCount(unsigned int u32PadId, unsigned int *pu32ResCount);
 int MI_SNR_GetRes(unsigned int u32PadId, unsigned char u8ResIdx, MI_SNR_Res_t *pstRes);
 int MI_SNR_SetRes(unsigned int u32PadId, unsigned char u8ResIdx);
+/* the vendor sensor drivers' frame rate (pCus_SetFPS: fps, or fps x 1000) */
+int MI_SNR_SetFps(unsigned int u32PadId, unsigned int u32Fps);
 int MI_SNR_SetPlaneMode(unsigned int u32PadId, unsigned char bEnable);
 
 /* ---- VIF ---- */
@@ -432,6 +434,9 @@ int MI_ISP_AE_SetManualExpo(unsigned int DevId, unsigned int Channel, MI_ISP_AE_
 int MI_ISP_AE_GetManualExpo(unsigned int DevId, unsigned int Channel, MI_ISP_AE_EXPO_VALUE_TYPE_t *data);
 int MI_ISP_AE_SetFlicker(unsigned int DevId, unsigned int Channel, MI_ISP_AE_FLICKER_TYPE_e *data);
 int MI_ISP_AE_GetFlicker(unsigned int DevId, unsigned int Channel, MI_ISP_AE_FLICKER_TYPE_e *data);
+/* MI_ISP_AE_EXPO_LIMIT_TYPE_t as raw words (u32MinShutterUS, u32MaxShutterUS, ...): read-modify-write of one word */
+int MI_ISP_AE_GetExposureLimit(unsigned int DevId, unsigned int Channel, unsigned int *data);
+int MI_ISP_AE_SetExposureLimit(unsigned int DevId, unsigned int Channel, unsigned int *data);
 int MI_ISP_AWB_QueryInfo(unsigned int DevId, unsigned int Channel, MI_ISP_AWB_QUERY_INFO_TYPE_t *data);
 int MI_ISP_AWB_SetAttr(unsigned int DevId, unsigned int Channel, MI_ISP_AWB_ATTR_TYPE_t *data);
 int MI_ISP_AWB_GetAttr(unsigned int DevId, unsigned int Channel, MI_ISP_AWB_ATTR_TYPE_t *data);
