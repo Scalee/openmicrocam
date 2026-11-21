@@ -89,7 +89,7 @@ def let_go(disk, secs=15.0):
             time.sleep(0.5)
 
 
-def reader(on):
+def switch_mode(on):
     """The card reader mode switched (`set card-reader`, put back when the tester ends): microcamd's reply."""
     return camlib.change('card-reader', on)
 
@@ -101,7 +101,7 @@ def give_back(disk):
         return
     if disk:
         let_go(disk)
-    if not reader(False).get('ok') and disk:
+    if not switch_mode(False).get('ok') and disk:
         run('sudo', 'eject', disk)
         end = time.time() + 5
         while time.time() < end and (camlib.status(5).get('card') or {}).get('at') == 'host':
@@ -141,7 +141,7 @@ def mode_on():
 
 def share(c):
     t = time.monotonic()
-    r = reader(True)
+    r = switch_mode(True)
     if not r.get('ok'):
         raise RuntimeError(f"card-reader on: {r.get('error')}")
     told = event(c, t, 'host')
@@ -202,7 +202,7 @@ def case_share():
         rep.case('share: write, read back', hashlib.md5(back).digest() == hashlib.md5(data).digest(), mb_s_write=round(8 / w, 2))
         r = microcam({'cmd': 'record'})
         rep.case('share: recording refused', not r.get('ok') and r.get('code') == 'card-open', error=r.get('error'))
-        r = reader(False)
+        r = switch_mode(False)
         rep.case('share: mode off while mounted refused', not r.get('ok') and r.get('code') == 'card-open', error=r.get('error'))
         if r.get('ok'):
             return
@@ -236,7 +236,7 @@ def case_take():
                 time.sleep(0.2)
             let_go(disk)
         t = time.monotonic()
-        r = reader(False)
+        r = switch_mode(False)
         told = event(c, t, 'camera')
         mounted, n = camera_files()
         rep.case('take: back on the camera', bool(r.get('ok')) and told is not None and mounted, s=told, files=n, error=r.get('error'))
