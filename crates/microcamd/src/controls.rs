@@ -33,6 +33,8 @@ use crate::followers::Followers;
 /// it), or the refusal.
 pub type Reply = Box<dyn FnOnce(Result<Value, Refusal>) + Send>;
 
+/// How long the card reader mode waits for the pipeline's queue before the card goes to the USB host.
+const SETTLE: Duration = Duration::from_secs(15);
 /// How long the settings stay unchanged before the file is written (a run of changes is saved once).
 const QUIET: Duration = Duration::from_millis(1500);
 
@@ -116,6 +118,14 @@ impl Controls {
                 return reply(Err(r));
             }
         };
+        if drive == Some(Drive::Card) {
+            drop(st);
+            let r = self.card_reader(v == Value::Bool(true));
+            if r.is_ok() {
+                self.edit(|l| l.store(name, v.clone(), by, &Now::default()));
+            }
+            return reply(r.map(|()| v));
+        }
         if drive == Some(Drive::Stored) {
             let told = st.list.store(name, v.clone(), by, &Now::default());
             self.mark(&mut st);
@@ -131,6 +141,23 @@ impl Controls {
             self.running.built(Action::Control(name.to_string()), &[name.to_string()], Err(Refusal::new(Code::Refused, "the pipeline thread is gone")));
         }
         reply(Ok(v))
+    }
+
+    /// The card reader mode switched: the card given to the USB host — after what the pipeline still has queued (a menu
+    /// that just left stops its player there, the file it read open until then) — or taken back.
+    fn card_reader(&self, on: bool) -> Result<(), Refusal> {
+        self.running.card_free()?;
+        if !on {
+            return crate::card::take();
+        }
+        let tx = self.pipeline.lock().unwrap().clone();
+        crate::pipeline::ask(&tx, Msg::Settle, SETTLE).map_err(|e| Refusal::new(Code::Refused, e))?;
+        crate::card::share()
+    }
+
+    /// Whether the card reader mode is on.
+    pub fn card_reader_on(&self) -> bool {
+        self.st.lock().unwrap().list.get("card-reader").is_some_and(|c| c.value == Value::Bool(true))
     }
 
     /// The list changed by `f` (the names of the entries it changed): told, the file to be written.

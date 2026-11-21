@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""The SD card as the USB host's disk beside the webcam, from the laptop, a host's USB stream on (docs/BENCH.md).
+"""The SD card as the USB host's disk beside the webcam in the card reader mode (the control `card-reader`), from the
+laptop, a host's USB stream on (docs/BENCH.md).
 
-  share  `card share`: the menu told `host`, the laptop sees the gadget's disk, reads the card's files (MB/s), writes,
-         reads back and deletes a test file; USB video and microcamd's control go on meanwhile; a recording is refused
-         (`card-shared`); `card take` while the laptop holds it mounted is refused; the laptop unmounts and ejects it —
-         the camera takes it back by itself (`camera`, mounted, the same files)
-  take   `card share`, then `card take` with the disk not mounted on the laptop: back on the camera, mounted
-  photo  `card share`, the laptop unmounts it, a photo: the camera takes the card back by itself and saves the photo
-  force  `card share`, mounted on the laptop: a recording refused, `card take force` takes it all the same (the laptop's
-         disk without a medium), a recording runs and stops
+  share  the mode on: the menu told `host`, the laptop sees the gadget's disk, reads the card's files (MB/s), writes,
+         reads back and deletes a test file; USB video and microcamd's control go on meanwhile; with the card mounted
+         on the laptop a recording and the mode's off are refused (`card-open`); the laptop unmounts and ejects it —
+         the camera takes it back by itself (`camera`, mounted, the same files) and the mode is off
+  take   the mode on, then off with the disk not mounted on the laptop: back on the camera, mounted
+  photo  the mode on, the laptop unmounts it, a photo: the camera takes the card back, saves the photo, the mode off
+  boot   by hand (not in `cam check`): the mode on, the camera rebooted — the mode kept, the card the laptop's again
   plug   by hand (not in `cam check`): a 1080p recording runs, the user pulls the card — `none` told, the recording
          stopped, /mnt let go; the user puts it back — `camera` told, mounted, the files there (waits 3 min for each)
 
 usage: card.py [--json] case...        details: $MICROCAM_LOGS/card-<date>.log
 Thresholds: the menu's `card` events within 3 s; the disk on the laptop within 15 s; the test file read back equal;
-USB video at least 90 % of the stream's rate while the disk is read; microcamd answering; the recording refused.
+USB video at least 90 % of the stream's rate while the disk is read; microcamd answering; the refusals' code.
 """
 import argparse, glob, hashlib, json, os, subprocess, sys, tempfile, time
 
@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.join(HERE, '..'))
 import camlib  # noqa: E402
 
 ap = argparse.ArgumentParser()
-ap.add_argument('case', nargs='+', choices=['share', 'take', 'photo', 'force', 'plug'])
+ap.add_argument('case', nargs='+', choices=['share', 'take', 'photo', 'boot', 'plug'])
 ap.add_argument('--json', action='store_true')
 a = ap.parse_args()
 rep = camlib.Report('card', a.json)
@@ -89,19 +89,23 @@ def let_go(disk, secs=15.0):
             time.sleep(0.5)
 
 
+def reader(on):
+    """The card reader mode switched (`set card-reader`, put back when the tester ends): microcamd's reply."""
+    return camlib.change('card-reader', on)
+
+
 def give_back(disk):
-    """The card back on the camera however the case ended: the laptop lets it go, the camera takes it; ejected when
-    the camera is still refused (the eject gives it back by itself)."""
+    """The card back on the camera however the case ended: the laptop lets it go, the mode goes off; ejected when the
+    camera is still refused (the eject gives it back by itself and the mode goes off with it)."""
     if (camlib.status(5).get('card') or {}).get('at') != 'host':
         return
     if disk:
         let_go(disk)
-    if not camlib.take_card().get('ok') and disk:
+    if not reader(False).get('ok') and disk:
         run('sudo', 'eject', disk)
         end = time.time() + 5
         while time.time() < end and (camlib.status(5).get('card') or {}).get('at') == 'host':
             time.sleep(0.3)
-        camlib.take_card()
 
 
 def mountpoint(dev):
@@ -130,11 +134,16 @@ def camera_files():
     return int(m) > 0, int(n)
 
 
+def mode_on():
+    snap = camlib.microcam({'cmd': 'watch'}, 5).get('snapshot') or {}
+    return next((x['value'] for x in snap.get('controls', []) if x['name'] == 'card-reader'), None)
+
+
 def share(c):
     t = time.monotonic()
-    r = camlib.share_card()
+    r = reader(True)
     if not r.get('ok'):
-        raise RuntimeError(f"card-share: {r.get('error')}")
+        raise RuntimeError(f"card-reader on: {r.get('error')}")
     told = event(c, t, 'host')
     disk = gadget_disk()
     return told, disk
@@ -192,9 +201,9 @@ def case_share():
         os.sync()
         rep.case('share: write, read back', hashlib.md5(back).digest() == hashlib.md5(data).digest(), mb_s_write=round(8 / w, 2))
         r = microcam({'cmd': 'record'})
-        rep.case('share: recording refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
-        r = camlib.take_card()
-        rep.case('share: take while mounted refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
+        rep.case('share: recording refused', not r.get('ok') and r.get('code') == 'card-open', error=r.get('error'))
+        r = reader(False)
+        rep.case('share: mode off while mounted refused', not r.get('ok') and r.get('code') == 'card-open', error=r.get('error'))
         if r.get('ok'):
             return
         # the laptop lets it go: unmounted and ejected
@@ -207,7 +216,7 @@ def case_share():
         run('sudo', 'eject', disk)
         told = event(c, t, 'camera', 5)
         mounted, n = camera_files()
-        rep.case('share: back after the eject', told is not None and mounted and n == files, s=told, mounted=mounted, files=n)
+        rep.case('share: back after the eject, the mode off', told is not None and mounted and n == files and mode_on() is False, s=told, mounted=mounted, files=n)
     finally:
         give_back(disk)
         c.close()
@@ -227,7 +236,7 @@ def case_take():
                 time.sleep(0.2)
             let_go(disk)
         t = time.monotonic()
-        r = camlib.take_card()
+        r = reader(False)
         told = event(c, t, 'camera')
         mounted, n = camera_files()
         rep.case('take: back on the camera', bool(r.get('ok')) and told is not None and mounted, s=told, files=n, error=r.get('error'))
@@ -262,42 +271,37 @@ def case_photo():
         r = camlib.press_photo()
         back = event(c, t, 'camera')
         saved = c.event(lambda m: m.get('event') in ('photo-saved', 'failed'), t, 10)
-        rep.case('photo: card taken back, photo saved', bool(r.get('ok')) and back is not None and (saved or {}).get('event') == 'photo-saved',
+        rep.case('photo: card taken back, photo saved, the mode off', bool(r.get('ok')) and back is not None and (saved or {}).get('event') == 'photo-saved' and mode_on() is False,
                  s=back, error=r.get('error'), saved=(saved or {}).get('file'))
     finally:
         give_back(disk)
         c.close()
 
 
-def case_force():
+def case_boot():
     disk = None
     c = camlib.Menu()
     c.ask({'cmd': 'hello', 'take': True})
     try:
         told, disk = share(c)
-        rep.case('force: host told', told is not None and disk is not None, s=told, dev=disk)
+        rep.case('boot: host told', told is not None and disk is not None, s=told, dev=disk)
         if not disk:
             return
-        part = mounted_on_laptop(disk)
-        rep.case('force: mounted on the laptop', mountpoint(part) is not None, at=mountpoint(part))
-        r = microcam({'cmd': 'record'})
-        rep.case('force: recording refused', not r.get('ok') and r.get('code') == 'card-shared', error=r.get('error'))
-        t = time.monotonic()
-        r = camlib.take_card(force=True)
-        back = event(c, t, 'camera')
-        mounted, n = camera_files()
-        rep.case('force: taken', bool(r.get('ok')) and back is not None and mounted, s=back, files=n, error=r.get('error'))
-        # the laptop's kernel sees no medium at its next poll (about every 2 s)
-        time.sleep(4)
-        size = run('cat', f'/sys/block/{os.path.basename(disk)}/size').stdout.strip()
-        rep.case('force: the laptop\'s disk empty', size == '0', size=size)
-        err = camlib.record_start()
-        time.sleep(2)
-        f, err2 = camlib.record_stop() if not err else (None, None)
-        rep.case('force: recording after', not err and not err2 and f is not None, error=err or err2, file=f)
+        let_go(disk)
     finally:
-        give_back(disk)
         c.close()
+    # the settings file is written once they have stayed for a moment
+    time.sleep(3)
+    camlib.sh('setsid sh -c "sleep 1; reboot" </dev/null >/dev/null 2>&1 & true', 10, log=False)
+    time.sleep(5)
+    end = time.time() + 120
+    while time.time() < end and not camlib.ping():
+        time.sleep(1)
+    subprocess.run([os.path.join(HERE, '..', 'cam'), 'wait', 'microcamd', '60'], capture_output=True)
+    disk = gadget_disk(30)
+    at = (camlib.status(5).get('card') or {}).get('at')
+    rep.case('boot: the mode kept, the card the laptop\'s', mode_on() is True and at == 'host' and disk is not None, at=at, dev=disk)
+    give_back(disk)
 
 
 def case_plug():
@@ -327,7 +331,7 @@ def case_plug():
 
 for case in a.case:
     try:
-        {'share': case_share, 'take': case_take, 'photo': case_photo, 'force': case_force, 'plug': case_plug}[case]()
+        {'share': case_share, 'take': case_take, 'photo': case_photo, 'boot': case_boot, 'plug': case_plug}[case]()
     except (RuntimeError, camlib.Gone) as e:
         rep.case(case, False, note=str(e))
 sys.exit(1 if rep.fails else 0)

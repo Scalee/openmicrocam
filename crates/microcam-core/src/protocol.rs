@@ -127,16 +127,6 @@ pub enum Request {
     /// The sensor back in the live windows: answered at once, the player `stopping` before the answer; its outcome the
     /// player gone, or `failed` with the player as it was.
     PlayStop,
-    /// The SD card to the USB host as the gadget's removable disk (the menu's card reader mode): unmounted on the
-    /// camera first, refused while a recording, a photo or a file playing uses it. A photo or a recording takes it back
-    /// first, refused (`card-shared`) while the host keeps it open.
-    CardShare,
-    /// The SD card back from the USB host and mounted on the camera; refused (`card-shared`) while the host keeps it
-    /// open, unless `force`: then the host loses it as if pulled out. An eject on the host gives it back too.
-    CardTake {
-        #[serde(default)]
-        force: bool,
-    },
     /// Tear the pipeline down (then build it again from the current inputs).
     Rebuild,
     /// Last log lines.

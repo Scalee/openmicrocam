@@ -1,7 +1,8 @@
 //! The SD card: microcamd owns it. It mounts the card on `/mnt` when it comes in and lets it go when it is pulled
-//! (the kernel's block uevents; the vendor's mdev hook is switched off by `app-start.sh`), hands it to the USB host as
-//! the gadget's removable mass-storage LUN on `card-share` and takes it back on `card-take`, before a photo or a
-//! recording, or when the host ejects it.
+//! (the kernel's block uevents; the vendor's mdev hook is switched off by `app-start.sh`). In the card reader mode (the
+//! kept control `card-reader`) it is the USB host's, the gadget's removable mass-storage LUN, whenever it is in its
+//! slot — at start, put in, the mode switched on; it comes back when the mode is switched off, before a photo or a
+//! recording, or when the host ejects it, and the mode is off then.
 //! Photos and recordings go to `PHOTO/` and `VIDEO/` on it (where the vendor's menu listed them). Its space is read
 //! when it is mounted and after each change of microcamd's own ([`space_changed`]), never on a clock.
 
@@ -31,6 +32,13 @@ const NODE_WAIT: Duration = Duration::from_secs(2);
 type Moved = Box<dyn Fn(Card) + Send>;
 type Tell = Box<dyn Fn(CardInfo) + Send>;
 
+/// The card reader mode as the controls keep it: read, and switched off when the card leaves the host for the camera
+/// or cannot be given to it.
+pub struct Mode {
+    pub on: Box<dyn Fn() -> bool + Send>,
+    pub off: Box<dyn Fn() + Send>,
+}
+
 struct Followed {
     at: Card,
     /// the space read at each mount; false until the card's thread runs, which reads it first — at start the first read
@@ -38,6 +46,7 @@ struct Followed {
     live: bool,
     moved: Moved,
     tell: Tell,
+    mode: Mode,
     tx: Sender<Msg>,
 }
 
@@ -98,63 +107,42 @@ pub fn photo(n: u32) -> PathBuf {
     PathBuf::from(format!("{CARD}/PHOTO/P{}.jpg", name_number(n)))
 }
 
-/// The card as the facts put it at start (the host's, mounted by the boot, or mounted now), then its thread following the kernel's events;
-/// `moved` gets every move, `tell` every change of the card's state (a move, its space), `tx` is told to stop a
-/// recording and the player when the card is pulled.
-pub fn start(tx: Sender<Msg>, moved: Moved, tell: Tell) -> io::Result<()> {
+/// The card as the facts and the mode put it at start (the host's, mounted by the boot, or mounted now), then its thread
+/// following the kernel's events; `moved` gets every move, `tell` every change of the card's state (a move, its space),
+/// `tx` is told to stop a recording and the player when the card is pulled.
+pub fn start(tx: Sender<Msg>, moved: Moved, tell: Tell, mode: Mode) -> io::Result<()> {
     let sock = uevents()?;
-    *CARD_STATE.lock().unwrap() = Some(Followed { at: Card::None, live: false, moved, tell, tx });
+    *CARD_STATE.lock().unwrap() = Some(Followed { at: Card::None, live: false, moved, tell, mode, tx });
     settle();
     thread::Builder::new().name("card".into()).spawn(move || run(sock))?;
     Ok(())
 }
 
-/// The card to the USB host: unmounted here, the gadget's LUN given its block device.
-pub fn share() -> Result<(), String> {
+/// The card to the USB host (the mode switched on): unmounted here, the gadget's LUN given its block device.
+pub fn share() -> Result<(), Refusal> {
     let mut g = CARD_STATE.lock().unwrap();
-    let c = g.as_mut().ok_or("the card is not followed")?;
+    let c = g.as_mut().ok_or_else(|| Refusal::new(Code::Refused, "the card is not followed"))?;
     match c.at {
-        Card::Host => return Ok(()),
-        Card::None => return Err(missing()),
-        Card::Camera => {}
+        Card::Host => Ok(()),
+        Card::None => Err(Refusal::new(Code::NoCard, missing())),
+        Card::Camera => c.give(),
     }
-    let lun = lun_file().ok_or("the USB gadget has no mass-storage LUN")?;
-    // SAFETY: plain call.
-    unsafe { libc::sync() };
-    umount(0).map_err(|e| match e.raw_os_error() {
-        Some(libc::EBUSY) => "the card is in use (a recording, a photo or a file playing)".to_string(),
-        _ => format!("unmount {CARD}: {e}"),
-    })?;
-    // the whole card, its partition table with it, as a card reader shows it
-    if let Err(e) = std::fs::write(&lun, WHOLE) {
-        let back = mount().err().map(|m| format!("; mounting it again: {m}")).unwrap_or_default();
-        return Err(format!("the LUN took no card: {e}{back}"));
-    }
-    c.set(Card::Host);
-    Ok(())
 }
 
-/// The card back from the USB host and mounted here; refused (`CardShared`) while the host keeps it open (it locks
-/// the medium while it has it mounted), unless `force`: then taken out of the LUN regardless (the gadget's
-/// `forced_eject`) and the host loses it as if pulled out.
-pub fn take(force: bool) -> Result<(), Refusal> {
+/// The card back from the USB host and mounted here (the mode switched off; none to take without a card); refused
+/// (`CardOpen`) while the host keeps it open (it locks the medium while it has it mounted).
+pub fn take() -> Result<(), Refusal> {
     let refused = |e: String| Refusal::new(Code::Refused, e);
     let mut g = CARD_STATE.lock().unwrap();
     let c = g.as_mut().ok_or_else(|| refused("the card is not followed".into()))?;
-    match c.at {
-        Card::Camera => return Ok(()),
-        Card::None => return Err(Refusal::new(Code::NoCard, missing())),
-        Card::Host => {}
+    if c.at != Card::Host {
+        return Ok(());
     }
     if let Some(lun) = lun_file() {
-        let (file, what) = if force { (lun.with_file_name("forced_eject"), "1") } else { (lun, "\n") };
-        std::fs::write(&file, what).map_err(|e| match e.raw_os_error() {
-            Some(libc::EBUSY) => Refusal::new(Code::CardShared, "the USB host keeps the card open: eject it there first"),
-            _ => refused(format!("{}: {e}", file.display())),
+        std::fs::write(&lun, "\n").map_err(|e| match e.raw_os_error() {
+            Some(libc::EBUSY) => Refusal::new(Code::CardOpen, "the USB host keeps the card open: eject it there first"),
+            _ => refused(format!("the LUN did not let the card go: {e}")),
         })?;
-        if force {
-            log::info!("card: taken from the USB host by force");
-        }
     }
     mount().map_err(|e| refused(format!("mount {CARD}: {e}")))?;
     c.set(Card::Camera);
@@ -198,9 +186,51 @@ pub fn format() -> Result<(), String> {
 }
 
 impl Followed {
+    /// The card in its slot, mounted here or not, to the USB host: unmounted, the gadget's LUN given its block device;
+    /// mounted here when it could not be given.
+    fn give(&mut self) -> Result<(), Refusal> {
+        let lun = lun_file().ok_or_else(|| Refusal::new(Code::Refused, "the USB gadget has no mass-storage LUN"))?;
+        if mounted() {
+            // SAFETY: plain call.
+            unsafe { libc::sync() };
+            umount(0).map_err(|e| match e.raw_os_error() {
+                Some(libc::EBUSY) => Refusal::new(Code::Busy, "the card is in use (a recording, a photo or a file playing)"),
+                _ => Refusal::new(Code::Refused, format!("unmount {CARD}: {e}")),
+            })?;
+        }
+        // the whole card, its partition table with it, as a card reader shows it
+        if let Err(e) = std::fs::write(&lun, WHOLE) {
+            let back = match mount() {
+                Ok(()) => {
+                    self.set(Card::Camera);
+                    String::new()
+                }
+                Err(m) => format!("; mounting it again: {m}"),
+            };
+            return Err(Refusal::new(Code::Refused, format!("the LUN took no card: {e}{back}")));
+        }
+        self.set(Card::Host);
+        Ok(())
+    }
+
+    /// The card given to the USB host by the mode; when it cannot be, mounted here and the mode off.
+    fn give_by_mode(&mut self) {
+        if let Err(r) = self.give() {
+            log::error!("card: not given to the USB host ({}); the card reader mode off", r.error);
+            (self.mode.off)();
+            if !mounted() && mount().is_ok() {
+                self.set(Card::Camera);
+            }
+        }
+    }
+
     fn set(&mut self, at: Card) {
         if self.at != at {
             log::info!("card: {:?} → {:?}", self.at, at);
+            // back from the host (its eject, the mode switched off, a photo or a recording): the mode is off
+            if self.at == Card::Host && at == Card::Camera {
+                (self.mode.off)();
+            }
             self.at = at;
             *SPACE.lock().unwrap() = if at == Card::Camera && self.live { space() } else { None };
             AT.store(at as u8, Ordering::SeqCst);
@@ -295,7 +325,10 @@ fn settle() {
             }
             c.set(Card::Host);
         }
+        // mounted by the boot, or put in, in the card reader mode: the host's
+        Place::Camera | Place::Free if c.at != Card::Host && (c.mode.on)() => c.give_by_mode(),
         Place::Camera => c.set(Card::Camera),
+        // the host's eject among them: the mode goes off as the card comes back
         Place::Free => match mount() {
             Ok(()) => c.set(Card::Camera),
             Err(e) => {

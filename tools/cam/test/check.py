@@ -8,7 +8,7 @@ into $MICROCAM_LOGS/check-<date>.log and the testers' own logs. Exit code = the 
          by HDMI (median ≤ 40 ms) + a 4K recording on HDMI's frame with USB stopped and started, and a photo during it
          (onepool.py shared photo) + USB's JPEG rings at 4K30, 4K45, 1080p120 on the latency clock (rings.py) + a paused
          output beside a recording (pause.py hdmi usb) + the player: play, pause, seek, resume, the end, the menu while
-         paused (play.py) + the SD card as the laptop's disk and back (card.py share take photo force) + a 4K recording in
+         paused (play.py) + the SD card as the laptop's disk and back (card.py share take photo) + a 4K recording in
          H.265 and in H.264 (record.py h265 h264)
 The menu cases run beside a host's USB stream when one runs (as in use); the stream cases free it through the host's
 stream hooks and give it back. What the bench needs: docs/BENCH.md.
@@ -81,7 +81,7 @@ if full:
     tester(['rings.py'], 150)
     tester(['pause.py', 'hdmi', 'usb'], 200)
     tester(['play.py', 'play', 'ended', 'menu'], 200)
-    tester(['card.py', 'share', 'take', 'photo', 'force'], 200)
+    tester(['card.py', 'share', 'take', 'photo'], 200)
     tester(['record.py', 'h265', 'h264'], 120)
 
 was = camlib.stream_release()

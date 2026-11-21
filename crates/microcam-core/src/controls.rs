@@ -85,8 +85,10 @@ pub enum Code {
     Refused,
     /// no SD card in the camera
     NoCard,
-    /// the SD card is with the USB host, which keeps it open
+    /// the SD card is with the USB host
     CardShared,
+    /// the SD card is with the USB host, which keeps it open: it is ejected there first
+    CardOpen,
     /// one of its kind is running already (a photo, a recording starting or stopping, a format, this control's build)
     Busy,
     /// a file is playing
@@ -198,6 +200,9 @@ pub enum Drive {
     Built,
     /// only kept here
     Stored,
+    /// the card reader mode: the SD card given to the USB host or taken back (microcamd's `card`), kept once it got
+    /// there; a factory reset leaves it
+    Card,
 }
 
 const POWER_LINE: [&str; 3] = ["off", "50", "60"];
@@ -537,6 +542,7 @@ impl List {
             num("nr3d", 0, MAX_NR3D),
             num("mjpeg-quality", 1, 99),
             on("standby", false),
+            Entry { c: switch("card-reader", false, true), drive: Drive::Card },
         ];
         let timings = policy.hdmi_timings().to_vec();
         for e in entries.iter_mut().filter(|e| e.c.name == "hdmi") {

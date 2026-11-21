@@ -7,7 +7,7 @@ use microcam_core::protocol::{PlayerState, RecordState, ResCode, Source};
 use microcam_core::scene::{Align, Anchor, Colour, Fit, Group, ImageNode, Kind, Node, Paint, PathNode, RectNode, Space, Stroke, Style, TextNode};
 use microcam_draw::render::{measure, Fonts};
 
-use crate::core::{frozen_half_id, frozen_id, Core, Dir, Freeze, Gallery, GalleryView, Level, Origin, Screen, Spot};
+use crate::core::{frozen_half_id, frozen_id, Core, Dir, Freeze, Gallery, GalleryView, Origin, Screen};
 use crate::menu::{Item, Kind as ItemKind};
 use crate::text::{self, Lang, T};
 
@@ -217,11 +217,7 @@ impl View<'_> {
                 self.overlays(screen, &mut nodes);
                 self.chips(&mut nodes);
                 match screen {
-                    Screen::Menu => {
-                        let back = if st.menu.len() > 1 { text::H_BACK } else { text::H_CLOSE };
-                        nodes.push(self.panel(*st.menu.last().expect("the menu has its root"), back));
-                    }
-                    Screen::CardAsk { shot, sel, .. } => nodes.push(self.panel(Spot { level: Level::CardAsk(*shot), sel: *sel }, text::H_CANCEL)),
+                    Screen::Menu => nodes.push(self.panel()),
                     Screen::Slider { item, .. } => nodes.push(self.slider(*item)),
                     Screen::Place(_) => {
                         let parts = [(K::S("▲▼"), text::H_MOVE), (K::S("▶"), text::H_PUT), (K::S("◀"), text::H_CANCEL)];
@@ -340,18 +336,18 @@ impl View<'_> {
         nodes.push(group("chips", Some(CHIPS), Anchor::TopRight, Space::Screen, 0.0, 0.0, children));
     }
 
-    /// The menu panel, top left: the title (a question too long for a line goes on in the next), the rows, the chosen
-    /// row's description (the panel as tall as the longest of its level's), the keys, ◀ named `back`.
-    fn panel(&self, spot: Spot, back: T) -> Node {
+    /// The menu panel, top left: the title, the rows, the chosen row's description (the panel as tall as the
+    /// longest of its level's), the keys.
+    fn panel(&self) -> Node {
         const W: f32 = 560.0;
         const ROW: f32 = 64.0;
-        const TITLE: f32 = 26.0;
+        let st = &self.core.st;
+        let spot = *st.menu.last().expect("the menu has its root");
         let page = self.core.page(spot.level);
         let mut c = Vec::new();
         let mut y = 10.0;
-        let title = TextNode { width: Some(W - 56.0), line_height: 34.0 / (TITLE * EM), ..text_node(28.0, y + (52.0 - TITLE * EM) / 2.0, TITLE, &page.title, DIM, Align::Left) };
-        y += 52.0 + measure(&title, self.fonts).h - TITLE * EM;
-        c.push(node(Kind::Text(title)));
+        c.push(text(28.0, y, 52.0, 26.0, &page.title, DIM, Align::Left));
+        y += 52.0;
         for (i, r) in page.rows.iter().enumerate() {
             let sel = i == spot.sel;
             if sel {
@@ -373,6 +369,7 @@ impl View<'_> {
             }
             y += 24.0 + tall;
         }
+        let back = if st.menu.len() > 1 { text::H_BACK } else { text::H_CLOSE };
         let (h, _) = self.hint(28.0, y + 8.0, &[(K::S("▲▼"), text::H_CHOOSE), (K::S("▶"), text::H_ENTER), (K::S("◀"), back)]);
         c.extend(h);
         y += 8.0 + 34.0 + 12.0;

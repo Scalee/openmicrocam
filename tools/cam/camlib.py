@@ -398,7 +398,7 @@ def mp4_gaps(path):
 
 
 # ---- what a tester changes, put back -------------------------------------------------------------------------------
-# A control a tester sets (`change`) and the card it hands to the USB host (`share_card`) go first into a journal on the
+# A control a tester sets (`change`), the card reader mode among them, goes first into a journal on the
 # laptop with what they were; when the tester ends — at its end, by an exception, Ctrl-C, SIGTERM, SIGHUP, SIGALRM — they
 # are put back, the last changed first, and the journal emptied. What cannot be put back then (the link lost, the
 # process killed outright) stays in the journal and is put back when the next tester starts (`Report`).
@@ -412,11 +412,11 @@ def _journal():
         with open(JOURNAL) as f:
             return json.load(f)
     except (OSError, ValueError):
-        return {'controls': {}, 'order': [], 'card': False}
+        return {'controls': {}, 'order': []}
 
 
 def _write_journal(j):
-    if not j['controls'] and not j['card']:
+    if not j['controls']:
         if os.path.exists(JOURNAL):
             os.remove(JOURNAL)
         return
@@ -480,35 +480,13 @@ def change(name, value, timeout=20):
     return _set(name, value, timeout)
 
 
-def share_card(timeout=20):
-    """The SD card to the USB host (`card-share`): microcamd's reply; it is taken back when the tester ends."""
-    j = _journal()
-    j['card'] = True
-    _write_journal(j)
-    _restore_on_exit()
-    return microcam({'cmd': 'card-share'}, timeout)
-
-
-def take_card(timeout=20, force=False):
-    """The SD card back from the USB host (`card-take`, `force`: even while the host keeps it open): microcamd's reply;
-    taken, the journal forgets it."""
-    r = microcam({'cmd': 'card-take', 'force': force}, timeout)
-    if r.get('ok'):
-        j = _journal()
-        j['card'] = False
-        _write_journal(j)
-    return r
-
-
 def restore():
-    """Everything in the journal put back, the card first, then the controls last changed first; what cannot be (the
-    camera gone, a control refused) stays for the next run and is said on stderr."""
+    """Everything in the journal put back, the controls last changed first; what cannot be (the camera gone, a control
+    refused) stays for the next run and is said on stderr."""
     j = _journal()
-    if not j['controls'] and not j['card']:
+    if not j['controls']:
         return
     try:
-        if j['card'] and microcam({'cmd': 'card-take'}, 20).get('ok'):
-            j['card'] = False
         for name in reversed(list(j['order'])):
             r = {}
             for _ in range(40):
@@ -525,7 +503,7 @@ def restore():
     except (Gone, OSError) as e:
         print(f'camlib: the camera does not answer ({e}); what is left is put back at the next tester\'s start', file=sys.stderr)
     _write_journal(j)
-    if j['controls'] or j['card']:
+    if j['controls']:
         print(f'camlib: left to put back: {JOURNAL}', file=sys.stderr)
 
 

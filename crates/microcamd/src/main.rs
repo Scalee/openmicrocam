@@ -217,7 +217,12 @@ fn run(cfg: Config, tables: PathBuf) -> Result<(), String> {
         let (followers, files) = (followers.clone(), files.clone());
         let moved = Box::new(move |at| files.card(at));
         let tell = Box::new(move |card| followers.tell(&microcam_core::protocol::Event::Card { card }));
-        if let Err(e) = card::start(tx.clone(), moved, tell) {
+        let (on, off) = (controls.clone(), controls.clone());
+        let mode = card::Mode {
+            on: Box::new(move || on.card_reader_on()),
+            off: Box::new(move || off.edit(|l| l.store("card-reader", microcam_core::controls::Value::Bool(false), microcam_core::controls::By::User, &microcam_core::controls::Now::default()))),
+        };
+        if let Err(e) = card::start(tx.clone(), moved, tell, mode) {
             log::error!("card: not followed ({e}); photos and recordings only while the boot's card stays");
         }
     }

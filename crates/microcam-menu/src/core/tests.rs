@@ -134,14 +134,28 @@ impl Fake {
         }
     }
 
-    /// The card back from the computer, as microcamd's `card-take`: its `card` event, or refused while the computer
-    /// keeps it open and it is not forced.
-    fn take(&mut self, force: bool) -> Result<Vec<Input>, Refusal> {
+    /// The card to the computer, as microcamd's card reader mode switched on: its `card` event.
+    fn share(&mut self) -> Result<Vec<Input>, Refusal> {
         match self.card {
-            Card::Host if self.open && !force => Err(Refusal::new(Code::CardShared, "the USB host keeps the card open")),
-            Card::Host => {
-                (self.card, self.open) = (Card::Camera, false);
+            Card::None => Err(Refusal::new(Code::NoCard, "no card")),
+            Card::Host => Ok(vec![]),
+            Card::Camera => {
+                self.card = Card::Host;
                 Ok(vec![Input::Event(Event::Card { card: self.card_info() })])
+            }
+        }
+    }
+
+    /// The card back from the computer, as microcamd takes it: its `card` event and the mode off, or refused while the
+    /// computer keeps it open.
+    fn take(&mut self) -> Result<Vec<Input>, Refusal> {
+        match self.card {
+            Card::Host if self.open => Err(Refusal::new(Code::CardOpen, "the USB host keeps the card open")),
+            Card::Host => {
+                self.card = Card::Camera;
+                let mut ev = vec![Input::Event(Event::Card { card: self.card_info() })];
+                ev.extend(self.change("card-reader", Change::Set(Value::Bool(false))).1);
+                Ok(ev)
             }
             _ => Ok(vec![]),
         }
@@ -183,7 +197,7 @@ impl Fake {
         }
         // a photo or a recording takes the card back from the computer first, refused while it keeps it open
         if matches!(e.req, Request::Photo | Request::Record) {
-            match self.take(false) {
+            match self.take() {
                 Err(r) => return vec![Input::Reply(Response { seq: e.seq, ..Response::refused(r) })],
                 Ok(mut taken) if !taken.is_empty() => {
                     self.log.pop();
@@ -203,6 +217,15 @@ impl Fake {
                 let limits = Limits { nodes: 4096, depth: 32, segments: 65536, text: 1024, text_total: 16384, levels: 3, menu_bytes: 1 << 26, picture_side: 4096 };
                 (vec![], Response { snapshot: Some(self.snapshot()), hello: Some(Hello { protocol: 5, scene: 2, limits }), ..ok() }, vec![])
             }
+            // the card moved first, the mode stored then, both told before the answer
+            Request::Set { name, value } if name == "card-reader" => match if value == Value::Bool(true) { self.share() } else { self.take() } {
+                Err(r) => refused(r),
+                Ok(mut ev) => {
+                    let (r, told) = self.change(&name, Change::Set(value));
+                    ev.extend(told);
+                    (ev, r, vec![])
+                }
+            },
             Request::Set { name, value } => {
                 let (r, ev) = self.change(&name, Change::Set(value));
                 (vec![], r, ev)
@@ -263,17 +286,6 @@ impl Fake {
                     let card = Input::Event(Event::Card { card: self.card_info() });
                     (vec![busy], ok(), vec![Input::Event(Event::Formatted), self.running(), Input::Event(Event::Files { version: self.version, total: 0 }), card])
                 }
-            },
-            Request::CardShare => match self.card_free() {
-                Err(r) => refused(r),
-                Ok(()) => {
-                    self.card = Card::Host;
-                    (vec![], ok(), vec![Input::Event(Event::Card { card: self.card_info() })])
-                }
-            },
-            Request::CardTake { force } => match self.take(force) {
-                Err(r) => refused(r),
-                Ok(ev) => (vec![], ok(), ev),
             },
             Request::Reset => {
                 let (told, build) = self.list.reset();
@@ -884,7 +896,7 @@ fn every_row_has_its_words_in_both_languages() {
     let mut r = Rig::new();
     for lang in Lang::ALL {
         r.core.st.own.lang = lang;
-        let levels = [Level::Root, Level::AddLine, Level::Card, Level::FormatAsk, Level::ResetAsk, Level::CardAsk(Shot::Photo), Level::CardAsk(Shot::Record), Level::About]
+        let levels = [Level::Root, Level::AddLine, Level::Card, Level::FormatAsk, Level::ResetAsk, Level::About]
             .into_iter()
             .chain([Section::Picture, Section::Exposure, Section::Overlays, Section::Recording, Section::Setup, Section::System].map(Level::Section));
         for l in levels {
@@ -918,7 +930,7 @@ fn the_card_is_formatted_after_a_question() {
     assert_eq!(r.value("Свободно"), "28,9 из 29,0 ГБ", "the space told after the format");
     r.cam.card = Card::None;
     r.event(Event::Card { card: CardInfo { at: Card::None, ..CardInfo::default() } });
-    assert_eq!(r.names(), ["Карты нет"]);
+    assert_eq!(r.names(), ["Карты нет", "Режим картридера"], "the mode is kept without a card too");
 }
 
 #[test]
@@ -928,13 +940,14 @@ fn the_card_reader_mode_is_switched_in_the_card_page() {
     assert_eq!(r.value("Режим картридера"), "выкл");
     r.asked();
     r.press(Right);
-    assert_eq!(r.asked(), [Request::CardShare]);
+    let set = |on| Request::Set { name: "card-reader".into(), value: Value::Bool(on) };
+    assert_eq!(r.asked(), [set(true)]);
     assert_eq!(r.names(), ["Карта", "Режим картридера"], "the space and the format are the computer's now");
     assert_eq!((r.value("Карта"), r.chosen(), r.value("Режим картридера")), ("у компьютера".into(), "Режим картридера".into(), "вкл".into()));
     r.cam.open = true;
     r.press(Right);
-    assert_eq!(r.asked(), [Request::CardTake { force: false }]);
-    assert_eq!(r.toast().as_deref(), Some("Режим картридера: карта открыта на компьютере"));
+    assert_eq!(r.asked(), [set(false)]);
+    assert_eq!((r.toast().as_deref(), r.value("Режим картридера")), (Some("Карта открыта на компьютере: извлеките её там"), "вкл".into()));
     r.cam.open = false;
     r.press(Right);
     assert_eq!(r.value("Режим картридера"), "выкл");
@@ -944,53 +957,15 @@ fn the_card_reader_mode_is_switched_in_the_card_page() {
 #[test]
 fn a_photo_takes_the_card_back_when_the_computer_has_it_closed() {
     let mut r = Rig::new();
-    r.cam.card = Card::Host;
-    r.event(Event::Card { card: r.cam.card_info() });
+    r.open(&["Система", "SD-карта", "Режим картридера"]);
+    assert_eq!((r.core.st.cam.card.at, r.value("Режим картридера")), (Card::Host, "вкл".into()));
+    r.press(Menu);
     r.asked();
     r.press(Photo);
-    assert_eq!(r.asked(), [Request::Photo], "no question");
+    assert_eq!(r.asked(), [Request::Photo]);
     assert_eq!((r.core.st.cam.card.at, r.toast().as_deref()), (Card::Camera, Some("Снимок сохранён · P00041.jpg")));
-}
-
-#[test]
-fn a_recording_asks_before_the_card_is_taken_from_the_computer() {
-    let mut r = Rig::new();
-    (r.cam.card, r.cam.open) = (Card::Host, true);
-    r.event(Event::Card { card: r.cam.card_info() });
-    r.asked();
-    r.press(Record);
-    let Screen::CardAsk { back, .. } = r.screen().clone() else { panic!("no question: {:?}", r.screen()) };
-    assert_eq!(*back, Screen::Live);
-    let page = r.core.page(Level::CardAsk(Shot::Record));
-    assert_eq!(page.title, "Карта открыта на компьютере. Выключить режим картридера и начать запись?");
-    assert_eq!(page.rows.iter().map(|r| r.name.as_str()).collect::<Vec<_>>(), ["Нет", "Да"]);
-    // «no»: nothing happens
-    r.press(Right);
-    assert_eq!((r.screen(), r.cam.card), (&Screen::Live, Card::Host));
-    assert_eq!(r.asked(), [Request::Record]);
-    // ◀ the same
-    r.press(Record);
-    r.press(Left);
-    assert_eq!((r.screen(), r.cam.card), (&Screen::Live, Card::Host));
-    // «yes»: the card taken by force, the recording asked; the mode stays off after it
-    r.press(Record);
-    r.asked();
-    r.keys(&[Down, Right]);
-    assert_eq!(r.asked(), [Request::CardTake { force: true }, Request::Record]);
-    assert_eq!(*r.screen(), Screen::Live);
-    assert_eq!(r.core.st.cam.card.at, Card::Camera);
-    assert!(r.core.st.cam.running.record.is_some());
-}
-
-#[test]
-fn the_question_goes_back_to_the_menu_it_came_on() {
-    let mut r = Rig::new();
-    r.open(&["Система"]);
-    (r.cam.card, r.cam.open) = (Card::Host, true);
-    r.press(Photo);
-    assert!(matches!(r.screen(), Screen::CardAsk { shot: Shot::Photo, .. }));
-    r.press(Left);
-    assert_eq!((r.screen(), r.title()), (&Screen::Menu, "Система".to_string()));
+    r.open(&["Система", "SD-карта"]);
+    assert_eq!(r.value("Режим картридера"), "выкл", "the mode off with the card back");
 }
 
 #[test]
@@ -1036,7 +1011,11 @@ fn a_photo_says_its_file_and_no_card_says_so() {
     r.cam.card = Card::None;
     r.press(Photo);
     assert_eq!(r.toast().as_deref(), Some("Нет SD-карты"));
-    r.cam.card = Card::Camera;
+    (r.cam.card, r.cam.open) = (Card::Host, true);
+    r.press(Record);
+    assert_eq!(r.toast().as_deref(), Some("Карта открыта на компьютере: извлеките её там"));
+    assert_eq!(r.cam.card, Card::Host, "not taken");
+    (r.cam.card, r.cam.open) = (Card::Camera, false);
     r.asked();
     r.hold(Photo, 3);
     assert_eq!(r.asked().iter().filter(|q| **q == Request::Photo).count(), 1, "the photo key does not repeat");
@@ -1276,7 +1255,7 @@ mod drawn {
         check(&r, &fonts, "a toast");
         for lang in Lang::ALL {
             r.core.st.own.lang = lang;
-            let levels = [Level::Root, Level::AddLine, Level::Card, Level::FormatAsk, Level::ResetAsk, Level::CardAsk(Shot::Photo), Level::CardAsk(Shot::Record), Level::About]
+            let levels = [Level::Root, Level::AddLine, Level::Card, Level::FormatAsk, Level::ResetAsk, Level::About]
                 .into_iter()
                 .chain([Section::Picture, Section::Exposure, Section::Overlays, Section::Recording, Section::Setup, Section::System].map(Level::Section));
             for l in levels {

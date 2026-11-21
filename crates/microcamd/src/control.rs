@@ -234,8 +234,9 @@ impl Control {
                 Ok(()) => Response::ok(),
                 Err(r) => Response::refused(r),
             },
-            // the card back from the USB host first (the card reader mode off), refused while the host keeps it open
-            req @ (Request::Photo | Request::Record) if card::now() == Card::Host => match card::take(false) {
+            // the card back from the USB host first (the card reader mode off with it), refused while the host keeps it
+            // open
+            req @ (Request::Photo | Request::Record) if card::now() == Card::Host => match card::take() {
                 Ok(()) => return self.handle(client, fds, seq, req),
                 Err(r) => Response::refused(r),
             },
@@ -329,17 +330,6 @@ impl Control {
             Request::PlayPause => flat(Ok(self.player.pause())),
             Request::PlayResume => flat(Ok(self.player.resume())),
             Request::PlaySeek { ms } => flat(Ok(self.player.seek(ms))),
-            // after what the pipeline still has queued: a menu that just left stops its player there, the file it read
-            // open until then
-            Request::CardShare => match self.running.card_free().map(|()| ask(&self.tx, Msg::Settle, WAIT)) {
-                Err(r) => Response::refused(r),
-                Ok(Ok(())) => flat(Ok(card::share())),
-                Ok(Err(e)) => Response::err(format!("card-share: {e}")),
-            },
-            Request::CardTake { force } => match self.running.card_free().and_then(|()| card::take(force)) {
-                Err(r) => Response::refused(r),
-                Ok(()) => Response::ok(),
-            },
             Request::Account => match ask(&self.tx, Msg::Account, WAIT) {
                 Ok(priced) => Response { account: Some(crate::mem::account(priced)), ..Response::ok() },
                 Err(e) => Response::err(e),

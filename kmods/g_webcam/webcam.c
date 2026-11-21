@@ -189,33 +189,11 @@ MODULE_PARM_DESC(rndis_function_enable, "RNDIS Function Enable");
 
 #if defined(CONFIG_USB_WEBCAM_MSC)
 /* microcam: the SD card as a removable mass-storage LUN beside the webcam. The LUN starts with no medium; microcamd puts
- * the card in (writes the block device into lun0/file) and takes it out again (an empty write, refused while the host
- * keeps the medium locked; lun0/forced_eject takes it out regardless). */
+ * the card in (writes the block device into lun0/file) and takes it out again (an empty write). */
 #include "f_mass_storage.h"
 
 static struct usb_function_instance *fi_msc;
 static struct usb_function *f_msc;
-/* lun0, while it carries forced_eject */
-static struct device *msc_lun;
-
-/* Linux 6.0's forced_eject, which usb_f_mass_storage of this kernel lacks: the host's lock dropped, the medium taken out.
- * The LUN's device lies in its struct fsg_lun, its driver data is the common file semaphore (as the module's own
- * attributes find them). */
-static ssize_t forced_eject_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct fsg_lun *curlun = container_of(dev, struct fsg_lun, dev);
-	int ret;
-
-	curlun->prevent_medium_removal = 0;
-	ret = fsg_store_file(curlun, dev_get_drvdata(dev), "", 0);
-	return ret < 0 ? ret : count;
-}
-static DEVICE_ATTR_WO(forced_eject);
-
-static int msc_lun_match(struct device *dev, void *name)
-{
-	return !strcmp(dev_name(dev), name);
-}
 #endif
 
 #if defined(CONFIG_USB_WEBCAM_DFU)
@@ -1790,23 +1768,11 @@ static int __init msc_bind(struct usb_composite_dev *cdev)
 		return status;
 	}
 	fsg_common_set_inquiry_string(opts->common, NULL, NULL);
-	msc_lun = device_find_child(&cdev->gadget->dev, "lun0", msc_lun_match);
-	if (msc_lun && device_create_file(msc_lun, &dev_attr_forced_eject)) {
-		put_device(msc_lun);
-		msc_lun = NULL;
-	}
-	if (!msc_lun)
-		pr_warn("g_webcam: no forced_eject on lun0\n");
 	return 0;
 }
 
 static int msc_unbind(struct usb_composite_dev *cdev)
 {
-	if (msc_lun) {
-		device_remove_file(msc_lun, &dev_attr_forced_eject);
-		put_device(msc_lun);
-		msc_lun = NULL;
-	}
 	if (!IS_ERR_OR_NULL(f_msc)) {
 		usb_put_function(f_msc);
 		f_msc = NULL;

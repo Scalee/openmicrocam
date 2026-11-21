@@ -90,13 +90,6 @@ pub enum Freeze {
     Compare(u32),
 }
 
-/// What the card reader mode's question goes on to when it is answered «yes».
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Shot {
-    Photo,
-    Record,
-}
-
 /// The resource id of the camera picture of a freeze.
 pub fn frozen_id(n: u32) -> String {
     format!("frozen-{n}")
@@ -130,8 +123,6 @@ pub enum Level {
     Card,
     FormatAsk,
     ResetAsk,
-    /// a photo or a recording asked while the computer has the card open in card reader mode
-    CardAsk(Shot),
     About,
 }
 
@@ -185,8 +176,6 @@ pub enum Screen {
     /// a line being put
     Place(Line),
     Gallery(Gallery),
-    /// the card reader mode's question ([`Level::CardAsk`]) over the screen it came on, `sel` its row
-    CardAsk { shot: Shot, sel: usize, back: Box<Screen> },
 }
 
 /// A chip that comes for a moment.
@@ -277,8 +266,6 @@ pub enum Act {
     ResetAll,
     /// the card reader mode on or off
     CardReader(bool),
-    /// the card taken from the computer by force, then the photo or the recording asked
-    TakeCard(Shot),
     Back,
 }
 
@@ -298,8 +285,6 @@ enum Pending {
     Set { name: String, group: Option<u64> },
     Adjust { name: String },
     Asked(Asked),
-    /// the card taken by force for this photo or recording
-    Taken(Shot),
     Files,
     Status,
     /// a reply nobody acts on
@@ -618,8 +603,6 @@ impl Core {
                 }
                 self.refused(what, r.code, r.holders);
             }
-            Pending::Taken(shot) if r.ok => self.shoot(shot),
-            Pending::Taken(_) => self.refused(Asked::CardReader, r.code, r.holders),
             Pending::Files => {
                 if let Some(w) = r.files {
                     self.window(w);
@@ -634,32 +617,16 @@ impl Core {
         }
     }
 
-    /// A request refused: the card's absence said as such, whatever was asked of it; the resources' refusal one way; a
-    /// photo or a recording the computer's open card stands in the way of asks whether to take the card.
+    /// A request refused: the card's absence, the card reader mode and the computer's hold on the card said as such,
+    /// whatever was asked of the card; the resources' refusal one way.
     fn refused(&mut self, what: Asked, code: Option<Code>, holders: Vec<Holder>) {
-        match (what, code) {
-            (_, Some(Code::NoCard)) => self.toast(Msg::Card(Card::None)),
-            (Asked::Photo, Some(Code::CardShared)) => self.card_ask(Shot::Photo),
-            (Asked::Record, Some(Code::CardShared)) => self.card_ask(Shot::Record),
-            (what, Some(Code::Resources)) => self.short(Wanted::Asked(what), holders),
-            (what, code) => self.toast(Msg::Refused(what, code)),
+        match code {
+            Some(Code::NoCard) => self.toast(Msg::Card(Card::None)),
+            Some(Code::CardShared) => self.toast(Msg::Card(Card::Host)),
+            Some(Code::CardOpen) => self.toast(Msg::CardOpen),
+            Some(Code::Resources) => self.short(Wanted::Asked(what), holders),
+            code => self.toast(Msg::Refused(what, code)),
         }
-    }
-
-    /// The card reader mode's question over the screen shown, «no» chosen.
-    fn card_ask(&mut self, shot: Shot) {
-        let back = match std::mem::replace(&mut self.st.screen, Screen::Live) {
-            Screen::CardAsk { back, .. } => back,
-            screen => Box::new(screen),
-        };
-        self.st.screen = Screen::CardAsk { shot, sel: 0, back };
-    }
-
-    fn shoot(&mut self, shot: Shot) {
-        match shot {
-            Shot::Photo => self.ask(Request::Photo, Pending::Asked(Asked::Photo)),
-            Shot::Record => self.ask(Request::Record, Pending::Asked(Asked::Record)),
-        };
     }
 
     fn event(&mut self, e: Event) {
@@ -868,7 +835,6 @@ impl Core {
                 Screen::Menu => self.menu_key(k),
                 Screen::Slider { item, round } => self.slider_key(k, item, round),
                 Screen::Place(line) => self.place_key(k, line),
-                Screen::CardAsk { shot, sel, back } => self.card_ask_key(k, shot, sel, back),
                 Screen::Live | Screen::Gallery(_) => {}
             },
         }
@@ -956,21 +922,6 @@ impl Core {
         }
     }
 
-    /// ▲▼ between «no» and «yes»; ◀ or «no» back to the screen it came on, «yes» the card taken there.
-    fn card_ask_key(&mut self, k: Key, shot: Shot, sel: usize, back: Box<Screen>) {
-        let rows = self.page(Level::CardAsk(shot)).rows;
-        match k {
-            Key::Up | Key::Down => self.st.screen = Screen::CardAsk { shot, sel: (sel + 1) % rows.len(), back },
-            Key::Left => self.st.screen = *back,
-            _ => {
-                self.st.screen = *back;
-                if let Some(a @ Act::TakeCard(_)) = rows.get(sel).and_then(|r| r.act) {
-                    self.act(a);
-                }
-            }
-        }
-    }
-
     // ---- the menu's levels
 
     fn push(&mut self, level: Level) {
@@ -1040,13 +991,7 @@ impl Core {
                 self.ask(Request::Format, Pending::Asked(Asked::Format));
                 self.pop();
             }
-            Act::CardReader(on) => {
-                let req = if on { Request::CardShare } else { Request::CardTake { force: false } };
-                self.ask(req, Pending::Asked(Asked::CardReader));
-            }
-            Act::TakeCard(shot) => {
-                self.ask(Request::CardTake { force: true }, Pending::Taken(shot));
-            }
+            Act::CardReader(on) => self.set("card-reader", Value::Bool(on), None),
             Act::ResetAll => {
                 self.resetting = true;
                 self.ask(Request::Reset, Pending::Asked(Asked::Reset));
@@ -1174,17 +1119,18 @@ impl Core {
             },
             Level::Card => {
                 let cam = &self.st.cam;
-                let reader = |on: bool| row(w(text::CARD_READER), w(if on { text::ON } else { text::OFF }), Some(text::CARD_READER_HELP), Some(Act::CardReader(!on)));
+                let on = self.wanted_on("card-reader");
+                let reader = || row(w(text::CARD_READER), w(if on { text::ON } else { text::OFF }), Some(text::CARD_READER_HELP), Some(Act::CardReader(!on)));
                 let mut rows = match (cam.card.at, cam.card.free.zip(cam.card.total)) {
                     // the card is unmounted while it is formatted
                     _ if cam.running.format => vec![info(w(text::CARD_STATE), w(text::CARD_FORMATTING))],
-                    (Card::None, _) => vec![info(w(text::CARD_NONE), String::new())],
-                    (Card::Host, _) => vec![info(w(text::CARD_STATE), w(text::CARD_HOST)), reader(true)],
+                    (Card::None, _) => vec![info(w(text::CARD_NONE), String::new()), reader()],
+                    (Card::Host, _) => vec![info(w(text::CARD_STATE), w(text::CARD_HOST)), reader()],
                     (Card::Camera, Some((free, total))) => vec![info(w(text::CARD_FREE), format!("{} {} {}", gb(free, lang), w(text::OF), gb_unit(total, lang)))],
                     (Card::Camera, None) => vec![info(w(text::CARD_STATE), w(text::CARD_IN))],
                 };
                 if cam.card.at == Card::Camera && !cam.running.format {
-                    rows.push(reader(false));
+                    rows.push(reader());
                     rows.push(row(w(text::FORMAT), "›".into(), Some(text::FORMAT_HELP), Some(Act::Open(Level::FormatAsk))));
                 }
                 Page { title: w(Item::Card.name()), rows }
@@ -1192,10 +1138,6 @@ impl Core {
             Level::FormatAsk => Page {
                 title: w(text::FORMAT_ASK),
                 rows: vec![row(w(text::CANCEL), String::new(), Some(text::FORMAT_CANCEL_HELP), Some(Act::Back)), row(w(text::FORMAT), String::new(), Some(text::FORMAT_YES_HELP), Some(Act::Format))],
-            },
-            Level::CardAsk(shot) => Page {
-                title: w(if shot == Shot::Photo { text::CARD_ASK_PHOTO } else { text::CARD_ASK_RECORD }),
-                rows: vec![row(w(text::NO), String::new(), Some(text::CARD_ASK_NO_HELP), Some(Act::Back)), row(w(text::YES), String::new(), Some(text::CARD_ASK_YES_HELP), Some(Act::TakeCard(shot)))],
             },
             Level::ResetAsk => Page {
                 title: w(text::RESET_ASK),

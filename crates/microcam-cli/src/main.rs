@@ -56,7 +56,7 @@ fn main() -> ExitCode {
     let brief = args.iter().any(|a| a == "--brief");
     args.retain(|a| a != "--brief");
     let Some(cmd) = args.first().map(String::as_str) else {
-        eprintln!("usage: microcam [--sock P|--tcp H:P] status|set NAME VALUE|adjust NAME STEPS|get [NAME]|watch|photo|format|files [FROM [COUNT]]|reset|key NAME [press|release]|record start|record stop|play FILE|play pause|resume|stop|seek MS|card share|take [force]|scene FILE [S]|scene clear|ui-windows|mem [reset]|account|price REQ [+ REQ…]|sim F FR IV|sim off|rebuild|log [N]|log follow|log-level [SPEC]|quit|raw JSON");
+        eprintln!("usage: microcam [--sock P|--tcp H:P] status|set NAME VALUE|adjust NAME STEPS|get [NAME]|watch|photo|format|files [FROM [COUNT]]|reset|key NAME [press|release]|record start|record stop|play FILE|play pause|resume|stop|seek MS|scene FILE [S]|scene clear|ui-windows|mem [reset]|account|price REQ [+ REQ…]|sim F FR IV|sim off|rebuild|log [N]|log follow|log-level [SPEC]|quit|raw JSON");
         return ExitCode::from(2);
     };
     let req = match (cmd, &args[1..]) {
@@ -247,9 +247,6 @@ fn request(words: &[String], brief: bool) -> Result<Request, String> {
             Err(_) => return Err(format!("seek: '{ms}' is not milliseconds")),
         },
         ("play", [file]) => Request::Play { file: file.clone() },
-        ("card", [a]) if a == "share" => Request::CardShare,
-        ("card", [a]) if a == "take" => Request::CardTake { force: false },
-        ("card", [a, f]) if a == "take" && f == "force" => Request::CardTake { force: true },
         ("ui-windows", _) => Request::UiWindows,
         ("mem", []) => Request::Mem { reset: false, brief },
         ("mem", [a]) if a == "reset" => Request::Mem { reset: true, brief },
