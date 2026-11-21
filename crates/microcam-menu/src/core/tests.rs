@@ -969,6 +969,24 @@ fn a_photo_takes_the_card_back_when_the_computer_has_it_closed() {
 }
 
 #[test]
+fn the_gallery_takes_the_card_back_unless_the_computer_has_it_open() {
+    let mut r = Rig::new();
+    r.open(&["Система", "SD-карта", "Режим картридера"]);
+    r.press(Menu);
+    r.cam.open = true;
+    r.asked();
+    r.press(Key::Gallery);
+    assert_eq!(r.asked(), [Request::Set { name: "card-reader".into(), value: Value::Bool(false) }]);
+    assert_eq!((r.screen(), r.toast().as_deref(), r.cam.card), (&Screen::Live, Some("Карта открыта на компьютере: извлеките её там"), Card::Host));
+    r.cam.open = false;
+    r.press(Key::Gallery);
+    assert_eq!((r.gallery().from, r.core.st.cam.card.at, r.chosen_file()), (Origin::Live, Card::Camera, "P00040.jpg".into()));
+    r.press(Key::Gallery);
+    r.open(&["Система", "SD-карта"]);
+    assert_eq!(r.value("Режим картридера"), "выкл", "the mode off with the card back");
+}
+
+#[test]
 fn a_reset_is_a_new_session_from_the_defaults() {
     let mut r = Rig::new();
     r.press(Cross);

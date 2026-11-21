@@ -285,6 +285,8 @@ enum Pending {
     Set { name: String, group: Option<u64> },
     Adjust { name: String },
     Asked(Asked),
+    /// the card reader mode switched off for the gallery opened from there
+    Gallery(Origin),
     Files,
     Status,
     /// a reply nobody acts on
@@ -603,6 +605,9 @@ impl Core {
                 }
                 self.refused(what, r.code, r.holders);
             }
+            // the card back on the camera (its `card` and `files` events came before): the gallery opened now
+            Pending::Gallery(from) if r.ok => self.open_gallery(from),
+            Pending::Gallery(_) => self.refused(Asked::Control("card-reader".into()), r.code, r.holders),
             Pending::Files => {
                 if let Some(w) = r.files {
                     self.window(w);
@@ -1233,8 +1238,14 @@ impl Core {
 
     // ---- the gallery
 
+    /// The gallery opened, the card taken back from the computer first as a photo or a recording takes it (the card
+    /// reader mode off), or why not.
     fn open_gallery(&mut self, from: Origin) {
         let cam = &self.st.cam;
+        if cam.card.at == Card::Host {
+            self.ask(Request::Set { name: "card-reader".into(), value: Value::Bool(false) }, Pending::Gallery(from));
+            return;
+        }
         let refusal = if cam.card.at != Card::Camera {
             Some(Msg::Card(cam.card.at))
         } else if cam.running.record.is_some() {
