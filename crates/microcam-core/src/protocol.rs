@@ -210,7 +210,8 @@ pub enum DaemonState {
     Stopping,
 }
 
-/// Where the SD card is: none in the camera, mounted on the camera, or the USB host's disk.
+/// Where the SD card is: none in the camera, mounted on the camera, the USB host's disk, or on the camera and not
+/// mounted: its file system one the camera cannot read (not FAT, or broken) — formatting it is all it can do.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Card {
@@ -218,6 +219,7 @@ pub enum Card {
     None,
     Camera,
     Host,
+    Unreadable,
 }
 
 /// The SD card: where it is and, mounted on the camera, its space — read when it is mounted (at microcamd's start just

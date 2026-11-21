@@ -23,6 +23,8 @@ struct Fake {
     card: Card,
     /// the computer keeps the card open (it has it mounted)
     open: bool,
+    /// the camera cannot read the card's file system
+    unreadable: bool,
     /// the card's free bytes
     free: u64,
     /// a `play-stop` leaves the player stopping until the test lets it go
@@ -69,6 +71,7 @@ impl Fake {
             monitor,
             card: Card::Camera,
             open: false,
+            unreadable: false,
             free: 12_400 << 20,
             slow_stop: false,
             files: (1..=40).rev().map(file).collect(),
@@ -130,6 +133,7 @@ impl Fake {
         match self.card {
             Card::None => Err(Refusal::new(Code::NoCard, "no card")),
             Card::Host => Err(Refusal::new(Code::CardShared, "with the host")),
+            Card::Unreadable => Err(Refusal::new(Code::CardUnreadable, "cannot read it")),
             Card::Camera => Ok(()),
         }
     }
@@ -139,7 +143,7 @@ impl Fake {
         match self.card {
             Card::None => Err(Refusal::new(Code::NoCard, "no card")),
             Card::Host => Ok(vec![]),
-            Card::Camera => {
+            Card::Camera | Card::Unreadable => {
                 self.card = Card::Host;
                 Ok(vec![Input::Event(Event::Card { card: self.card_info() })])
             }
@@ -152,7 +156,7 @@ impl Fake {
         match self.card {
             Card::Host if self.open => Err(Refusal::new(Code::CardOpen, "the USB host keeps the card open")),
             Card::Host => {
-                self.card = Card::Camera;
+                self.card = if self.unreadable { Card::Unreadable } else { Card::Camera };
                 let mut ev = vec![Input::Event(Event::Card { card: self.card_info() })];
                 ev.extend(self.change("card-reader", Change::Set(Value::Bool(false))).1);
                 Ok(ev)
@@ -194,18 +198,6 @@ impl Fake {
         if self.short.as_ref().is_some_and(|(m, _)| m(&e.req)) {
             let (_, holders) = self.short.take().unwrap();
             return vec![Input::Reply(Response { seq: e.seq, ..Response::refused(Refusal::resources("short", holders)) })];
-        }
-        // a photo or a recording takes the card back from the computer first, refused while it keeps it open
-        if matches!(e.req, Request::Photo | Request::Record) {
-            match self.take() {
-                Err(r) => return vec![Input::Reply(Response { seq: e.seq, ..Response::refused(r) })],
-                Ok(mut taken) if !taken.is_empty() => {
-                    self.log.pop();
-                    taken.extend(self.handle(now, e));
-                    return taken;
-                }
-                Ok(_) => {}
-            }
         }
         let ok = Response::ok;
         let refused = |r| (vec![], Response::refused(r), vec![]);
@@ -274,9 +266,10 @@ impl Fake {
                     (vec![stopping], ok(), vec![Input::Event(Event::Recorded { file: r.file }), self.running(), files])
                 }
             },
-            Request::Format => match self.card_free() {
+            Request::Format => match if self.card == Card::Unreadable { Ok(()) } else { self.card_free() } {
                 Err(r) => refused(r),
                 Ok(()) => {
+                    self.card = Card::Camera;
                     self.running.format = true;
                     let busy = self.running();
                     self.running.format = false;
@@ -942,7 +935,7 @@ fn the_card_reader_mode_is_switched_in_the_card_page() {
     r.press(Right);
     let set = |on| Request::Set { name: "card-reader".into(), value: Value::Bool(on) };
     assert_eq!(r.asked(), [set(true)]);
-    assert_eq!(r.names(), ["Карта", "Режим картридера"], "the space and the format are the computer's now");
+    assert_eq!(r.names(), ["Карта", "Режим картридера", "Форматировать"], "the space is the computer's now; formatting takes the card as a photo does");
     assert_eq!((r.value("Карта"), r.chosen(), r.value("Режим картридера")), ("у компьютера".into(), "Режим картридера".into(), "вкл".into()));
     r.cam.open = true;
     r.press(Right);
@@ -962,7 +955,7 @@ fn a_photo_takes_the_card_back_when_the_computer_has_it_closed() {
     r.press(Menu);
     r.asked();
     r.press(Photo);
-    assert_eq!(r.asked(), [Request::Photo]);
+    assert_eq!(r.asked(), [Request::Set { name: "card-reader".into(), value: Value::Bool(false) }, Request::Photo]);
     assert_eq!((r.core.st.cam.card.at, r.toast().as_deref()), (Card::Camera, Some("Снимок сохранён · P00041.jpg")));
     r.open(&["Система", "SD-карта"]);
     assert_eq!(r.value("Режим картридера"), "выкл", "the mode off with the card back");
@@ -1034,6 +1027,8 @@ fn a_photo_says_its_file_and_no_card_says_so() {
     r.press(Photo);
     assert_eq!(r.toast().as_deref(), Some("Нет SD-карты"));
     (r.cam.card, r.cam.open) = (Card::Host, true);
+    let card = r.cam.card_info();
+    r.event(Event::Card { card });
     r.press(Record);
     assert_eq!(r.toast().as_deref(), Some("Запись невозможна: карта открыта на компьютере, извлеките её там"));
     r.press(Photo);
@@ -1734,4 +1729,34 @@ fn a_compare_that_does_not_fit_goes_back_to_the_freeze_said_once_for_every_outpu
     r.event(Event::Presented { output: Out::Usb, revision: 10, complete: true });
     r.wait(5000);
     assert!(r.toast().is_some(), "seen only from now on: its time starts again");
+}
+
+#[test]
+fn a_photo_that_fails_gives_the_card_back_to_the_computer() {
+    let mut r = Rig::new();
+    r.open(&["Система", "SD-карта", "Режим картридера"]);
+    r.press(Menu);
+    r.asked();
+    r.cam.short = Some((|q| matches!(q, Request::Photo), vec![]));
+    r.press(Photo);
+    let set = |on| Request::Set { name: "card-reader".into(), value: Value::Bool(on) };
+    assert_eq!(r.asked(), [set(false), Request::Photo, set(true)]);
+    assert_eq!(r.core.st.cam.card.at, Card::Host, "as it was before the press");
+}
+
+#[test]
+fn a_card_the_camera_cannot_read_is_given_back_and_only_formatted() {
+    let mut r = Rig::new();
+    r.open(&["Система", "SD-карта", "Режим картридера"]);
+    r.press(Menu);
+    r.asked();
+    r.cam.unreadable = true;
+    r.press(Photo);
+    let set = |on| Request::Set { name: "card-reader".into(), value: Value::Bool(on) };
+    assert_eq!(r.asked(), [set(false), set(true)]);
+    assert_eq!(r.toast().as_deref(), Some("Снимок невозможен: камера не читает эту карту, отформатируйте её в меню камеры"));
+    assert_eq!(r.core.st.cam.card.at, Card::Host);
+    r.open(&["Система", "SD-карта", "Форматировать", "Форматировать"]);
+    assert_eq!(r.asked(), [set(false), Request::Format]);
+    assert_eq!((r.core.st.cam.card.at, r.toast().as_deref()), (Card::Camera, Some("SD-карта отформатирована")));
 }

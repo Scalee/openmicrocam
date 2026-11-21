@@ -66,6 +66,7 @@ pub fn mounted() -> bool {
 pub fn missing() -> String {
     match now() {
         Card::Host => "the SD card is with the USB host".into(),
+        Card::Unreadable => "the camera cannot read the SD card".into(),
         _ => format!("no SD card at {CARD}"),
     }
 }
@@ -94,6 +95,7 @@ pub fn now() -> Card {
     match AT.load(Ordering::SeqCst) {
         x if x == Card::Camera as u8 => Card::Camera,
         x if x == Card::Host as u8 => Card::Host,
+        x if x == Card::Unreadable as u8 => Card::Unreadable,
         _ => Card::None,
     }
 }
@@ -125,12 +127,13 @@ pub fn share() -> Result<(), Refusal> {
     match c.at {
         Card::Host => Ok(()),
         Card::None => Err(Refusal::new(Code::NoCard, missing())),
-        Card::Camera => c.give(),
+        Card::Camera | Card::Unreadable => c.give(),
     }
 }
 
-/// The card back from the USB host and mounted here (the mode switched off; none to take without a card); refused
-/// (`CardOpen`) while the host keeps it open (it locks the medium while it has it mounted).
+/// The card back from the USB host and mounted here (the mode switched off; none to take without a card), or left
+/// unmounted when the camera cannot read it (`Unreadable`); refused (`CardOpen`) while the host keeps it open (it locks
+/// the medium while it has it mounted).
 pub fn take() -> Result<(), Refusal> {
     let refused = |e: String| Refusal::new(Code::Refused, e);
     let mut g = CARD_STATE.lock().unwrap();
@@ -144,13 +147,13 @@ pub fn take() -> Result<(), Refusal> {
             _ => refused(format!("the LUN did not let the card go: {e}")),
         })?;
     }
-    // a card the camera cannot mount (a file system not FAT, a broken one) stays the host's, the mode on
-    if let Err(e) = mount() {
-        let back = lun_file().map_or(Ok(()), |lun| std::fs::write(lun, WHOLE));
-        log::error!("card: mount {CARD}: {e}; given back to the USB host: {back:?}");
-        return Err(refused(format!("mount {CARD}: {e}; the card stays with the USB host")));
+    match mount() {
+        Ok(()) => c.set(Card::Camera),
+        Err(e) => {
+            log::warn!("card: mount {} on {CARD}: {e}", device().display());
+            c.set(Card::Unreadable);
+        }
     }
-    c.set(Card::Camera);
     Ok(())
 }
 
@@ -159,15 +162,17 @@ pub fn take() -> Result<(), Refusal> {
 pub fn format() -> Result<(), String> {
     let mut g = CARD_STATE.lock().unwrap();
     let c = g.as_mut().ok_or("the card is not followed")?;
-    if c.at != Card::Camera {
+    if !matches!(c.at, Card::Camera | Card::Unreadable) {
         return Err(missing());
     }
-    // SAFETY: plain call.
-    unsafe { libc::sync() };
-    umount(0).map_err(|e| match e.raw_os_error() {
-        Some(libc::EBUSY) => "the card is in use".to_string(),
-        _ => format!("unmount {CARD}: {e}"),
-    })?;
+    if mounted() {
+        // SAFETY: plain call.
+        unsafe { libc::sync() };
+        umount(0).map_err(|e| match e.raw_os_error() {
+            Some(libc::EBUSY) => "the card is in use".to_string(),
+            _ => format!("unmount {CARD}: {e}"),
+        })?;
+    }
     c.set(Card::None);
     let dev = device();
     let t0 = Instant::now();
@@ -233,7 +238,7 @@ impl Followed {
         if self.at != at {
             log::info!("card: {:?} → {:?}", self.at, at);
             // back from the host (its eject, the mode switched off, a photo or a recording): the mode is off
-            if self.at == Card::Host && at == Card::Camera {
+            if self.at == Card::Host && matches!(at, Card::Camera | Card::Unreadable) {
                 (self.mode.off)();
             }
             self.at = at;
@@ -337,8 +342,8 @@ fn settle() {
         Place::Free => match mount() {
             Ok(()) => c.set(Card::Camera),
             Err(e) => {
-                log::error!("card: mount {} on {CARD}: {e}", device().display());
-                c.set(Card::None);
+                log::warn!("card: mount {} on {CARD}: {e}", device().display());
+                c.set(Card::Unreadable);
             }
         },
     }

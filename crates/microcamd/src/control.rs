@@ -21,7 +21,7 @@ use std::time::Duration;
 use microcam_core::controls::{By, Change as Ask, Code, Refusal};
 use microcam_core::formats::{FormatTable, HostStream};
 use microcam_core::policy::Recording;
-use microcam_core::protocol::{Card, Envelope, Hello, Limits, ListInUse, OutputInfo, Request, ResState, Response, Snapshot, Source, PROTOCOL};
+use microcam_core::protocol::{Envelope, Hello, Limits, ListInUse, OutputInfo, Request, ResState, Response, Snapshot, Source, PROTOCOL};
 use microcam_core::wish::Wish;
 use microcam_core::scene::{Kind, Node, Scene};
 use microcam_core::{scene, Size};
@@ -232,12 +232,6 @@ impl Control {
             },
             Request::Key { key, phase } => match self.keys.key(client.conn, key, phase) {
                 Ok(()) => Response::ok(),
-                Err(r) => Response::refused(r),
-            },
-            // the card back from the USB host first (the card reader mode off with it), refused while the host keeps it
-            // open
-            req @ (Request::Photo | Request::Record) if card::now() == Card::Host => match card::take() {
-                Ok(()) => return self.handle(client, fds, seq, req),
                 Err(r) => Response::refused(r),
             },
             Request::Photo => {

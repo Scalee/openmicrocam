@@ -288,18 +288,36 @@ enum Pick {
 }
 
 /// What a request's reply is for.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 enum Pending {
     Hello,
     Set { name: String, group: Option<u64> },
     Adjust { name: String },
     Asked(Asked),
-    /// the card reader mode switched off for the gallery opened from there
-    Gallery(Origin),
+    /// the card reader mode switched off: the card taken from the computer for what follows
+    Took(Then),
+    /// asked with the card just taken from the computer: given back when it is refused
+    Lent(Asked),
     Files,
     Status,
     /// a reply nobody acts on
     Quiet,
+}
+
+/// What a press does with the card once the camera has it.
+#[derive(Clone, Debug, PartialEq)]
+enum Then {
+    Ask(Asked, Request),
+    Gallery(Origin),
+}
+
+impl Then {
+    fn asked(&self) -> Asked {
+        match self {
+            Then::Ask(what, _) => what.clone(),
+            Then::Gallery(_) => Asked::Gallery,
+        }
+    }
 }
 
 /// Sets sent together whose toast comes once all are accepted.
@@ -320,6 +338,8 @@ pub struct Core {
     next_group: u64,
     /// a `reset` sent: the scene microcamd takes with it is asked for again at once
     resetting: bool,
+    /// what the card was taken from the computer for, until its outcome: given back when it fails
+    lent: Option<Asked>,
     /// the start's chip shown (once a run)
     started: bool,
     /// the recording's length as last told, for the toast at its end
@@ -352,7 +372,7 @@ impl Core {
             toast: None,
             build: None,
         };
-        Core { st, take, seq: 0, pending: BTreeMap::new(), asked: BTreeMap::new(), groups: BTreeMap::new(), next_group: 0, resetting: false, started: false, record_ms: 0, frozen: 0, missing: Vec::new(), said_rev: None, fx: Vec::new() }
+        Core { st, take, seq: 0, pending: BTreeMap::new(), asked: BTreeMap::new(), groups: BTreeMap::new(), next_group: 0, resetting: false, lent: None, started: false, record_ms: 0, frozen: 0, missing: Vec::new(), said_rev: None, fx: Vec::new() }
     }
 
     pub fn step(&mut self, now: u64, input: Input) -> Vec<Effect> {
@@ -618,9 +638,22 @@ impl Core {
                 }
                 self.refused(what, r.code, r.holders);
             }
-            // the card back on the camera (its `card` and `files` events came before): the gallery opened now
-            Pending::Gallery(from) if r.ok => self.open_gallery(from),
-            Pending::Gallery(_) => self.refused(Asked::Gallery, r.code, r.holders),
+            Pending::Took(then) if !r.ok => self.refused(then.asked(), r.code, r.holders),
+            // the card on the camera (its `card` and `files` events came before): what was pressed done now; a card the
+            // camera cannot read is only formatted
+            Pending::Took(then) => {
+                if self.st.cam.card.at == Card::Unreadable && !matches!(then, Then::Ask(Asked::Format, _)) {
+                    self.toast_for(Msg::CardUnreadable(then.asked()), TOAST_LONG_MS);
+                    self.give_back();
+                } else {
+                    self.then(then, true);
+                }
+            }
+            Pending::Lent(what) if !r.ok => {
+                self.refused(what, r.code, r.holders);
+                self.give_back();
+            }
+            Pending::Lent(what) => self.lent = Some(what),
             Pending::Files => {
                 if let Some(w) = r.files {
                     self.window(w);
@@ -642,6 +675,7 @@ impl Core {
             Some(Code::NoCard) => self.toast(Msg::Card(Card::None)),
             Some(Code::CardShared) => self.toast(Msg::Card(Card::Host)),
             Some(Code::CardOpen) => self.toast_for(Msg::CardOpen(what), TOAST_LONG_MS),
+            Some(Code::CardUnreadable) => self.toast_for(Msg::CardUnreadable(what), TOAST_LONG_MS),
             Some(Code::Resources) => self.short(Wanted::Asked(what), holders),
             code => self.toast(Msg::Refused(what, code)),
         }
@@ -654,6 +688,10 @@ impl Core {
                 self.st.cam.controls.insert(control.name.clone(), control);
             }
             Event::Running { running } => {
+                // a recording that runs keeps the card it was taken for
+                if running.record.as_ref().is_some_and(|r| r.state == RecordState::Running) {
+                    self.kept(Asked::Record);
+                }
                 self.record_ms = match &running.record {
                     Some(r) => r.ms,
                     None => self.record_now(),
@@ -665,10 +703,25 @@ impl Core {
                 self.st.cam.files = FilesInfo { version, total };
                 self.want_window();
             }
-            Event::PhotoSaved { file } => self.toast(Msg::PhotoSaved(basename(&file))),
+            Event::PhotoSaved { file } => {
+                self.kept(Asked::Photo);
+                self.toast(Msg::PhotoSaved(basename(&file)));
+            }
             Event::Recorded { file } => self.toast(Msg::Recorded(basename(&file), self.record_ms / 1000)),
-            Event::Formatted => self.toast(Msg::Formatted),
+            Event::Formatted => {
+                self.kept(Asked::Format);
+                self.toast(Msg::Formatted);
+            }
             Event::Failed { what, code, holders, .. } => {
+                let failed = match what {
+                    Action::Photo => Some(Asked::Photo),
+                    Action::Record => Some(Asked::Record),
+                    Action::Format => Some(Asked::Format),
+                    _ => None,
+                };
+                if failed.is_some() && self.lent == failed {
+                    self.give_back();
+                }
                 // a video that did not start: its file alone again
                 if what == Action::Play {
                     if let Screen::Gallery(g) = &mut self.st.screen {
@@ -837,13 +890,9 @@ impl Core {
                 }
             }
             Key::Play => {}
-            Key::Photo => {
-                self.ask(Request::Photo, Pending::Asked(Asked::Photo));
-            }
+            Key::Photo => self.with_card(Then::Ask(Asked::Photo, Request::Photo)),
             Key::Record => match self.st.cam.running.record.as_ref().map(|r| r.state) {
-                None => {
-                    self.ask(Request::Record, Pending::Asked(Asked::Record));
-                }
+                None => self.with_card(Then::Ask(Asked::Record, Request::Record)),
                 Some(RecordState::Starting | RecordState::Running) => {
                     self.ask(Request::RecordStop, Pending::Asked(Asked::RecordStop));
                 }
@@ -1006,7 +1055,7 @@ impl Core {
             Act::Do(_) => {}
             Act::Line(dir) => self.st.screen = Screen::Place(Line { dir, pos: 500 }),
             Act::Format => {
-                self.ask(Request::Format, Pending::Asked(Asked::Format));
+                self.with_card(Then::Ask(Asked::Format, Request::Format));
                 self.pop();
             }
             Act::CardReader(on) => self.set("card-reader", Value::Bool(on), None),
@@ -1144,12 +1193,18 @@ impl Core {
                     _ if cam.running.format => vec![info(w(text::CARD_STATE), w(text::CARD_FORMATTING))],
                     (Card::None, _) => vec![info(w(text::CARD_NONE), String::new()), reader()],
                     (Card::Host, _) => vec![info(w(text::CARD_STATE), w(text::CARD_HOST)), reader()],
+                    (Card::Unreadable, _) => vec![info(w(text::CARD_STATE), w(text::CARD_UNREADABLE)), reader()],
                     (Card::Camera, Some((free, total))) => vec![info(w(text::CARD_FREE), format!("{} {} {}", gb(free, lang), w(text::OF), gb_unit(total, lang)))],
                     (Card::Camera, None) => vec![info(w(text::CARD_STATE), w(text::CARD_IN))],
                 };
-                if cam.card.at == Card::Camera && !cam.running.format {
-                    rows.push(reader());
-                    rows.push(row(w(text::FORMAT), "›".into(), Some(text::FORMAT_HELP), Some(Act::Open(Level::FormatAsk))));
+                if !cam.running.format {
+                    if cam.card.at == Card::Camera {
+                        rows.push(reader());
+                    }
+                    // formatting takes the card from the computer as a photo does
+                    if cam.card.at != Card::None {
+                        rows.push(row(w(text::FORMAT), "›".into(), Some(text::FORMAT_HELP), Some(Act::Open(Level::FormatAsk))));
+                    }
                 }
                 Page { title: w(Item::Card.name()), rows }
             }
@@ -1240,6 +1295,7 @@ impl Core {
                     (Card::Camera, None) => text::SD.get(lang).into(),
                     (Card::None, _) => text::NO_SD.get(lang).into(),
                     (Card::Host, _) => text::SD_HOST.get(lang).into(),
+                    (Card::Unreadable, _) => text::SD_UNREADABLE.get(lang).into(),
                 };
                 let mut parts: Vec<String> = self.hdmi_timing().into_iter().collect();
                 parts.push(zoom());
@@ -1251,15 +1307,17 @@ impl Core {
 
     // ---- the gallery
 
-    /// The gallery opened, the card taken back from the computer first as a photo or a recording takes it (the card
-    /// reader mode off), or why not.
+    /// The gallery opened, the card taken from the computer first as for a photo.
     fn open_gallery(&mut self, from: Origin) {
+        self.with_card(Then::Gallery(from));
+    }
+
+    /// The gallery opened on the camera's card, or why not (false).
+    fn show_gallery(&mut self, from: Origin) -> bool {
         let cam = &self.st.cam;
-        if cam.card.at == Card::Host {
-            self.ask(Request::Set { name: "card-reader".into(), value: Value::Bool(false) }, Pending::Gallery(from));
-            return;
-        }
-        let refusal = if cam.card.at != Card::Camera {
+        let refusal = if cam.card.at == Card::Unreadable {
+            Some(Msg::CardUnreadable(Asked::Gallery))
+        } else if cam.card.at != Card::Camera {
             Some(Msg::Card(cam.card.at))
         } else if cam.running.record.is_some() {
             Some(Msg::Recording)
@@ -1269,10 +1327,52 @@ impl Core {
             None
         };
         if let Some(m) = refusal {
-            return self.toast(m);
+            let ms = if matches!(m, Msg::CardUnreadable(_)) { TOAST_LONG_MS } else { TOAST_MS };
+            self.toast_for(m, ms);
+            return false;
         }
         self.st.screen = Screen::Gallery(Gallery { from, at: 0, path: None, view: GalleryView::Strip, list: None, back: false, asking: false, seek: None });
         self.want_window();
+        true
+    }
+
+    // ---- the card for what is pressed
+
+    /// What is pressed done on the card: the card taken from the computer first when it has it (the card reader mode
+    /// off), then what was pressed, the card given back when that does not get there.
+    fn with_card(&mut self, then: Then) {
+        if self.st.cam.card.at == Card::Host {
+            self.ask(Request::Set { name: "card-reader".into(), value: Value::Bool(false) }, Pending::Took(then));
+        } else {
+            self.then(then, false);
+        }
+    }
+
+    /// What was pressed, the card on the camera; `took`: taken from the computer for it.
+    fn then(&mut self, then: Then, took: bool) {
+        match then {
+            Then::Ask(what, req) => {
+                self.ask(req, if took { Pending::Lent(what) } else { Pending::Asked(what) });
+            }
+            Then::Gallery(from) => {
+                if !self.show_gallery(from) && took {
+                    self.give_back();
+                }
+            }
+        }
+    }
+
+    /// What the card was taken for got there: the card stays.
+    fn kept(&mut self, what: Asked) {
+        if self.lent.as_ref() == Some(&what) {
+            self.lent = None;
+        }
+    }
+
+    /// The card back to the computer, as it was before the press (the card reader mode on).
+    fn give_back(&mut self) {
+        self.lent = None;
+        self.ask(Request::Set { name: "card-reader".into(), value: Value::Bool(true) }, Pending::Quiet);
     }
 
     fn leave_gallery(&mut self, to: Origin) {

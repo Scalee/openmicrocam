@@ -7,7 +7,8 @@ laptop, a host's USB stream on (docs/BENCH.md).
          on the laptop a recording and the mode's off are refused (`card-open`); the laptop unmounts and ejects it —
          the camera takes it back by itself (`camera`, mounted, the same files) and the mode is off
   take   the mode on, then off with the disk not mounted on the laptop: back on the camera, mounted
-  photo  the mode on, the laptop unmounts it, a photo: the camera takes the card back, saves the photo, the mode off
+  photo  the mode on, the laptop unmounts it, the photo key pressed (the remote's, through the running menu): the menu
+         takes the card back, the photo saved, the mode off
   boot   by hand (not in `cam check`): the mode on, the camera rebooted — the mode kept, the card the laptop's again
   plug   by hand (not in `cam check`): a 1080p recording runs, the user pulls the card — `none` told, the recording
          stopped, /mnt let go; the user puts it back — `camera` told, mounted, the files there (waits 3 min for each)
@@ -259,7 +260,7 @@ def mounted_on_laptop(disk):
 def case_photo():
     disk = None
     c = camlib.Menu()
-    c.ask({'cmd': 'hello', 'take': True})
+    c.ask({'cmd': 'watch'})   # the menu itself takes the card for the photo: it stays the menu's
     try:
         told, disk = share(c)
         rep.case('photo: host told', told is not None and disk is not None, s=told, dev=disk)
@@ -268,7 +269,8 @@ def case_photo():
         mounted_on_laptop(disk)
         let_go(disk)
         t = time.monotonic()
-        r = camlib.press_photo()
+        r = microcam({'cmd': 'key', 'key': 'photo', 'phase': 'press'})
+        microcam({'cmd': 'key', 'key': 'photo', 'phase': 'release'})
         back = event(c, t, 'camera')
         saved = c.event(lambda m: m.get('event') in ('photo-saved', 'failed'), t, 10)
         rep.case('photo: card taken back, photo saved, the mode off', bool(r.get('ok')) and back is not None and (saved or {}).get('event') == 'photo-saved' and mode_on() is False,

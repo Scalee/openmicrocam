@@ -89,6 +89,8 @@ pub enum Code {
     CardShared,
     /// the SD card is with the USB host, which keeps it open: it is ejected there first
     CardOpen,
+    /// the camera cannot read the SD card's file system: it is formatted first
+    CardUnreadable,
     /// one of its kind is running already (a photo, a recording starting or stopping, a format, this control's build)
     Busy,
     /// a file is playing

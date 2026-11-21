@@ -71,6 +71,7 @@ pub const GB: T = T("ГБ", "GB");
 pub const CARD_IN: T = T("в камере", "in the camera");
 pub const CARD_NONE: T = T("Карты нет", "No card");
 pub const CARD_HOST: T = T("у компьютера", "with the computer");
+pub const CARD_UNREADABLE: T = T("не читается", "unreadable");
 pub const CARD_FORMATTING: T = T("форматируется", "formatting");
 pub const CARD_READER: T = T("Режим картридера", "Card reader mode");
 pub const CARD_READER_HELP: T = T("Компьютер видит камеру ещё и как картридер с этой картой. Пока режим включён, карта у компьютера.", "The computer sees the camera as a card reader with this card in it, too. While the mode is on, the card is the computer's.");
@@ -99,6 +100,7 @@ pub const OF: T = T("из", "of");
 pub const SD: T = T("SD", "SD");
 pub const NO_SD: T = T("нет SD", "no SD");
 pub const SD_HOST: T = T("SD: режим картридера", "SD: card reader mode");
+pub const SD_UNREADABLE: T = T("SD: не читается", "SD: unreadable");
 
 // what a key does, in the hints
 pub const H_CHOOSE: T = T("выбор", "choose");
@@ -136,7 +138,9 @@ pub enum Msg {
     Recording,
     /// what was asked could not be done: the computer keeps the card open, it is ejected there first
     CardOpen(Asked),
-    /// the card is not in the camera (none, or with the USB host)
+    /// what was asked could not be done: the camera cannot read the card, it is formatted in the menu first
+    CardUnreadable(Asked),
+    /// the card is not in the camera (none, or with the USB host), or cannot be read there
     Card(microcam_core::protocol::Card),
     /// a request refused: what was asked and why
     Refused(Asked, Option<Code>),
@@ -176,12 +180,25 @@ pub enum Asked {
     Control(String),
 }
 
+/// What could not be done, as a toast that says why opens.
+fn cannot(what: &Asked) -> T {
+    match what {
+        Asked::Photo => T("Снимок невозможен", "No photo"),
+        Asked::Record => T("Запись невозможна", "No recording"),
+        Asked::Gallery => T("Галерея недоступна", "No gallery"),
+        Asked::Format => T("Форматирование невозможно", "No format"),
+        Asked::Control(name) if name == "card-reader" => T("Режим картридера не выключен", "Card reader mode stays on"),
+        what => asked(what),
+    }
+}
+
 /// Why a thing was refused or failed, in words.
 fn why(code: Code, lang: Lang) -> &'static str {
     match code {
         Code::NoCard => T("нет SD-карты", "no SD card"),
         Code::CardShared => T("включён режим картридера", "card reader mode is on"),
         Code::CardOpen => T("карта открыта на компьютере", "the card is open on the computer"),
+        Code::CardUnreadable => T("камера не читает эту карту", "the camera cannot read this card"),
         Code::Busy => T("камера ещё занята прошлым", "the camera is still busy with the last one"),
         Code::Playing => T("идёт просмотр видео", "a video is playing"),
         Code::Recording => T("идёт запись", "a recording is running"),
@@ -311,16 +328,13 @@ impl Msg {
             Msg::NoFiles => t(T("На карте нет снимков и видео", "No photos or videos on the card")),
             Msg::Recording => t(T("Идёт запись", "Recording")),
             Msg::CardOpen(what) => {
-                let head = match what {
-                    Asked::Photo => T("Снимок невозможен", "No photo"),
-                    Asked::Record => T("Запись невозможна", "No recording"),
-                    Asked::Gallery => T("Галерея недоступна", "No gallery"),
-                    Asked::Control(name) if name == "card-reader" => T("Режим картридера не выключен", "Card reader mode stays on"),
-                    what => asked(what),
-                };
-                format!("{}: {}", head.get(lang), T("карта открыта на компьютере, извлеките её там", "the card is open on the computer, eject it there").get(lang))
+                format!("{}: {}", cannot(what).get(lang), T("карта открыта на компьютере, извлеките её там", "the card is open on the computer, eject it there").get(lang))
+            }
+            Msg::CardUnreadable(what) => {
+                format!("{}: {}", cannot(what).get(lang), T("камера не читает эту карту, отформатируйте её в меню камеры", "the camera cannot read this card, format it in the camera's menu").get(lang))
             }
             Msg::Card(microcam_core::protocol::Card::Host) => t(T("Включён режим картридера", "Card reader mode is on")),
+            Msg::Card(microcam_core::protocol::Card::Unreadable) => t(T("Камера не читает эту карту: отформатируйте её в меню камеры", "The camera cannot read this card: format it in the camera's menu")),
             Msg::Card(_) => t(T("Нет SD-карты", "No SD card")),
             Msg::NoFreeze => t(T("Стоп-кадр не получился", "Could not freeze the picture")),
             Msg::Resources(what, holders) => resources(what, holders, lang),

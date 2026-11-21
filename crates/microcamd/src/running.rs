@@ -87,6 +87,7 @@ impl State {
             Card::Camera => Ok(()),
             Card::Host => Err(Refusal::new(Code::CardShared, "the SD card is with the USB host")),
             Card::None => Err(Refusal::new(Code::NoCard, "no SD card")),
+            Card::Unreadable => Err(Refusal::new(Code::CardUnreadable, "the camera cannot read the SD card")),
         }
     }
 }
@@ -280,7 +281,10 @@ impl Running {
             if st.format {
                 return Err(Refusal::new(Code::Busy, "the card is being formatted"));
             }
-            st.card()?;
+            // a card the camera cannot read is formatted all the same
+            if card::now() != Card::Unreadable {
+                st.card()?;
+            }
             if st.record.is_some() {
                 return Err(Refusal::new(Code::Recording, "a recording is running"));
             }
