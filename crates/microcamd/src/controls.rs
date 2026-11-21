@@ -118,11 +118,20 @@ impl Controls {
                 return reply(Err(r));
             }
         };
+        // switched on: stored before the card goes, so the host's eject right after it switches it off again;
+        // put back when the card did not go. Switched off: stored once the card is back
         if drive == Some(Drive::Card) {
+            let was = st.list.get(name).map(|c| c.value.clone());
             drop(st);
-            let r = self.card_reader(v == Value::Bool(true));
-            if r.is_ok() {
+            let on = v == Value::Bool(true);
+            if on {
                 self.edit(|l| l.store(name, v.clone(), by, &Now::default()));
+            }
+            let r = self.card_reader(on);
+            match (&r, was) {
+                (Ok(()), _) if !on => self.edit(|l| l.store(name, v.clone(), by, &Now::default())),
+                (Err(_), Some(was)) if on => self.edit(|l| l.store(name, was, by, &Now::default())),
+                _ => {}
             }
             return reply(r.map(|()| v));
         }
@@ -149,6 +158,9 @@ impl Controls {
         self.running.card_free()?;
         if !on {
             return crate::card::take();
+        }
+        if self.running.info().record.is_some() {
+            return Err(Refusal::new(Code::Recording, "a recording is running"));
         }
         let tx = self.pipeline.lock().unwrap().clone();
         crate::pipeline::ask(&tx, Msg::Settle, SETTLE).map_err(|e| Refusal::new(Code::Refused, e))?;

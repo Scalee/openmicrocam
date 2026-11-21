@@ -144,7 +144,12 @@ pub fn take() -> Result<(), Refusal> {
             _ => refused(format!("the LUN did not let the card go: {e}")),
         })?;
     }
-    mount().map_err(|e| refused(format!("mount {CARD}: {e}")))?;
+    // a card the camera cannot mount (a file system not FAT, a broken one) stays the host's, the mode on
+    if let Err(e) = mount() {
+        let back = lun_file().map_or(Ok(()), |lun| std::fs::write(lun, WHOLE));
+        log::error!("card: mount {CARD}: {e}; given back to the USB host: {back:?}");
+        return Err(refused(format!("mount {CARD}: {e}; the card stays with the USB host")));
+    }
     c.set(Card::Camera);
     Ok(())
 }
